@@ -226,9 +226,7 @@
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
 
     /* ── HOME PANEL ──────────────────────────────────────────── */
@@ -258,27 +256,49 @@
       overflow: hidden;
     }
 
+    /* Animation stage — sits behind everything */
+    #hero-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    #hero-stage canvas,
+    #hero-stage svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Gradient overlay — above animation, below text */
     .hero::before {
       content: '';
       position: absolute;
       inset: 0;
+      z-index: 1;
       background:
-        radial-gradient(ellipse 55% 55% at 10% 90%, rgba(255, 55, 0, .2) 0%, transparent 65%),
-        radial-gradient(ellipse 35% 50% at 85% 15%, rgba(255, 55, 0, .06) 0%, transparent 60%);
+        radial-gradient(ellipse 55% 55% at 10% 90%, rgba(255, 55, 0, .18) 0%, transparent 65%),
+        radial-gradient(ellipse 35% 50% at 85% 15%, rgba(255, 55, 0, .05) 0%, transparent 60%),
+        linear-gradient(to top, rgba(10,9,8,.7) 0%, transparent 50%);
       pointer-events: none;
     }
 
+    /* Noise — above gradient */
     .hero-noise {
       position: absolute;
       inset: 0;
+      z-index: 2;
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.9  0 0 0 0 0.9  0 0 0 0 0.85  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
       background-size: 300px 300px;
-      opacity: .35;
+      opacity: .25;
       mix-blend-mode: overlay;
       pointer-events: none;
     }
 
+    /* Text content — above all */
     .hero-label {
+      position: relative;
+      z-index: 3;
       font-family: 'DM Mono', monospace;
       font-size: 11px;
       letter-spacing: .15em;
@@ -291,13 +311,13 @@
     }
 
     .hero-title {
+      position: relative;
+      z-index: 3;
       font-size: clamp(48px, 8.5vw, 120px);
       font-weight: 700;
       line-height: .88;
       letter-spacing: -.04em;
       color: var(--text);
-      position: relative;
-      z-index: 1;
     }
 
     .hero-title .word {
@@ -313,23 +333,15 @@
       animation: wordUp .75s ease forwards;
     }
 
-    .hero-title .word:nth-child(1) span {
-      animation-delay: .2s;
-    }
+    .hero-title .word:nth-child(1) span { animation-delay: .2s;  }
+    .hero-title .word:nth-child(2) span { animation-delay: .32s; }
+    .hero-title .word:nth-child(3) span { animation-delay: .44s; }
 
-    .hero-title .word:nth-child(2) span {
-      animation-delay: .32s;
-    }
-
-    .hero-title .word:nth-child(3) span {
-      animation-delay: .44s;
-    }
-
-    .hero-accent {
-      color: var(--accent);
-    }
+    .hero-accent { color: var(--accent); }
 
     .hero-sub {
+      position: relative;
+      z-index: 3;
       margin-top: 24px;
       max-width: 360px;
       font-size: 14px;
@@ -342,17 +354,50 @@
     }
 
     @keyframes wordUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* ── BG TOGGLE — inside hero, bottom-right ── */
+    #bg-toggle {
+      position: absolute;
+      bottom: 1.4rem;
+      right: 1.4rem;
+      z-index: 10;
+      display: flex;
+      gap: .22rem;
+      background: rgba(0,0,0,.28);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: .28rem;
+      border-radius: 40px;
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    #bg-toggle button {
+      padding: .28rem .82rem;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.35);
+      border-radius: 40px;
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+      font-size: .62rem;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transition: all .18s ease;
+      outline: none;
+      white-space: nowrap;
+    }
+
+    #bg-toggle button:hover { color: rgba(255,255,255,.7); }
+
+    #bg-toggle button.active {
+      background: rgba(255,255,255,.1);
+      color: rgba(255,255,255,.75);
     }
 
     /* ── SECTION DIVIDER ─────────────────────────────────────── */
@@ -396,32 +441,18 @@
       animation: fadeUp .7s ease forwards;
     }
 
-    .tool-card:nth-child(1) {
-      animation-delay: .25s;
-    }
-
-    .tool-card:nth-child(2) {
-      animation-delay: .38s;
-    }
-
-    .tool-card:nth-child(3) {
-      animation-delay: .51s;
-    }
+    .tool-card:nth-child(1) { animation-delay: .25s; }
+    .tool-card:nth-child(2) { animation-delay: .38s; }
+    .tool-card:nth-child(3) { animation-delay: .51s; }
 
     .tool-card:hover {
       border-color: rgba(255, 55, 0, .38);
       transform: translateY(-4px);
     }
 
-    .tool-card:hover .card-arrow {
-      transform: translate(3px, -3px);
-    }
+    .tool-card:hover .card-arrow { transform: translate(3px, -3px); }
+    .tool-card:active { transform: translateY(-1px); }
 
-    .tool-card:active {
-      transform: translateY(-1px);
-    }
-
-    /* radial glow */
     .tool-card::before {
       content: '';
       position: absolute;
@@ -432,11 +463,8 @@
       pointer-events: none;
     }
 
-    .tool-card:hover::before {
-      opacity: 1;
-    }
+    .tool-card:hover::before { opacity: 1; }
 
-    /* card noise */
     .tool-card::after {
       content: '';
       position: absolute;
@@ -449,25 +477,9 @@
       border-radius: inherit;
     }
 
-    .card-icon {
-      font-size: 26px;
-      line-height: 1;
-      margin-bottom: 18px;
-    }
-
-    .card-name {
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -.01em;
-      color: var(--text);
-      margin-bottom: 7px;
-    }
-
-    .card-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.55;
-    }
+    .card-icon  { font-size: 26px; line-height: 1; margin-bottom: 18px; }
+    .card-name  { font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: var(--text); margin-bottom: 7px; }
+    .card-desc  { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
     .card-footer {
       display: flex;
@@ -488,11 +500,7 @@
       border: 1px solid rgba(255, 55, 0, .18);
     }
 
-    .card-arrow {
-      color: var(--muted);
-      font-size: 16px;
-      transition: transform .2s;
-    }
+    .card-arrow { color: var(--muted); font-size: 16px; transition: transform .2s; }
 
     /* ── FOOTER ──────────────────────────────────────────────── */
     .home-footer {
@@ -510,41 +518,19 @@
       letter-spacing: .05em;
     }
 
-    .footer-dot {
-      color: var(--accent);
-      margin: 0 6px;
-    }
+    .footer-dot { color: var(--accent); margin: 0 6px; }
 
     /* ── RESPONSIVE ──────────────────────────────────────────── */
     @media (max-width:900px) {
-
-      .hero,
-      .home-footer {
-        padding-left: 28px;
-        padding-right: 28px;
-      }
-
-      .section-divider {
-        margin: 0 28px;
-      }
-
-      .tools-section {
-        padding: 36px 28px 48px;
-      }
-
-      .tools-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      .hero, .home-footer { padding-left: 28px; padding-right: 28px; }
+      .section-divider    { margin: 0 28px; }
+      .tools-section      { padding: 36px 28px 48px; }
+      .tools-grid         { grid-template-columns: 1fr 1fr; }
     }
 
     @media (max-width:580px) {
-      .tools-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-title {
-        font-size: clamp(38px, 11vw, 64px);
-      }
+      .tools-grid  { grid-template-columns: 1fr; }
+      .hero-title  { font-size: clamp(38px, 11vw, 64px); }
     }
   </style>
 </head>
@@ -590,15 +576,28 @@
       <div class="home-panel visible" id="homePanel">
 
         <section class="hero">
+
+          <!-- ① Animation stage (lowest layer) -->
+          <div id="hero-stage"></div>
+
+          <!-- ② Existing gradient overlay + noise -->
           <div class="hero-noise"></div>
+
+          <!-- ③ Text content -->
           <p class="hero-label">Personal &middot; Tools</p>
           <h1 class="hero-title">
             <span class="word"><span>My</span></span>
             <span class="word"><span>work,</span></span>
             <span class="word"><span class="hero-accent">centralised.</span></span>
           </h1>
-          <p class="hero-sub">Banner tracking, task management, and time estimation — all in one place. No tab juggling.
-          </p>
+          <p class="hero-sub">Banner tracking, task management, and time estimation — all in one place. No tab juggling.</p>
+
+          <!-- ④ Background toggle -->
+          <div id="bg-toggle">
+            <button id="btn-geo" onclick="switchBg('geo')" class="active">Geo</button>
+            <button id="btn-flow" onclick="switchBg('flow')">Flow</button>
+          </div>
+
         </section>
 
         <div class="section-divider"></div>
@@ -642,8 +641,7 @@
 
         <footer class="home-footer">
           <span class="footer-copy">
-            Tung<span class="footer-dot">&middot;</span>Hub<span class="footer-dot">&middot;</span><span
-              id="footerYear"></span>
+            Tung<span class="footer-dot">&middot;</span>Hub<span class="footer-dot">&middot;</span><span id="footerYear"></span>
           </span>
           <span class="footer-copy" id="footerHost"></span>
         </footer>
@@ -653,20 +651,29 @@
     </main>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════
+       GSAP
+  ════════════════════════════════════════════════════════ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
   <script>
+    // ─────────────────────────────────────────────────────────
+    // HUB NAVIGATION (unchanged)
+    // ─────────────────────────────────────────────────────────
     const TOOLS = {
-      Banner_Tracker: { file: 'Banner_Tracker.html', label: 'Banner Tracker' },
-      Tasks_Tracking: { file: 'Tasks_Tracking.html', label: 'Task Tracking' },
-      Tasks_Estimation: { file: 'Tasks_Estimation.html', label: 'Task Estimation' },
+      Banner_Tracker:   { file: 'Banner_Tracker.html',   label: 'Banner Tracker'   },
+      Tasks_Tracking:   { file: 'Tasks_Tracking.html',   label: 'Task Tracking'    },
+      Tasks_Estimation: { file: 'Tasks_Estimation.html', label: 'Task Estimation'  },
     };
 
     const frames = {};
-    let current = 'home';
+    let currentTab = 'home';
 
     window.addEventListener('DOMContentLoaded', () => {
       updateEnvBadge();
       document.getElementById('footerYear').textContent = new Date().getFullYear();
       document.getElementById('footerHost').textContent = location.hostname || 'local';
+      initBg();
     });
 
     function switchTab(btn) {
@@ -683,9 +690,9 @@
     }
 
     function showHome() {
-      if (current !== 'home' && frames[current]) frames[current].wrap.classList.remove('visible');
+      if (currentTab !== 'home' && frames[currentTab]) frames[currentTab].wrap.classList.remove('visible');
       document.getElementById('homePanel').classList.add('visible');
-      current = 'home';
+      currentTab = 'home';
     }
 
     function switchToHome() {
@@ -695,12 +702,11 @@
 
     function loadTool(key) {
       document.getElementById('homePanel').classList.remove('visible');
-      if (current && current !== 'home' && frames[current]) frames[current].wrap.classList.remove('visible');
-      current = key;
-
+      if (currentTab && currentTab !== 'home' && frames[currentTab]) frames[currentTab].wrap.classList.remove('visible');
+      currentTab = key;
       if (frames[key]) { frames[key].wrap.classList.add('visible'); return; }
 
-      const wrap = document.createElement('div');
+      const wrap   = document.createElement('div');
       wrap.className = 'frame-wrap visible';
 
       const loader = document.createElement('div');
@@ -708,7 +714,7 @@
       loader.innerHTML = `<div class="loader-icon"></div><div class="loader-label">Loading ${TOOLS[key].label}…</div>`;
 
       const iframe = document.createElement('iframe');
-      iframe.src = TOOLS[key].file;
+      iframe.src   = TOOLS[key].file;
       iframe.title = TOOLS[key].label;
       iframe.setAttribute('allow', 'same-origin');
       iframe.addEventListener('load', () => { loader.classList.add('hidden'); setTimeout(() => loader.remove(), 350); });
@@ -721,12 +727,183 @@
 
     function updateEnvBadge() {
       const badge = document.getElementById('envBadge');
-      const host = location.hostname;
-      if (host === 'localhost' || host === '127.0.0.1') { badge.textContent = 'localhost'; badge.style.color = '#2DB87D'; }
-      else if (host.includes('github.io')) { badge.textContent = 'github.io'; badge.style.color = '#f0a84c'; }
-      else if (host.includes('netlify')) { badge.textContent = 'netlify'; badge.style.color = '#f0a84c'; }
+      const host  = location.hostname;
+      if      (host === 'localhost' || host === '127.0.0.1') { badge.textContent = 'localhost'; badge.style.color = '#2DB87D'; }
+      else if (host.includes('github.io'))                   { badge.textContent = 'github.io'; badge.style.color = '#f0a84c'; }
+      else if (host.includes('netlify'))                     { badge.textContent = 'netlify';   badge.style.color = '#f0a84c'; }
       else { badge.textContent = host || 'local'; }
     }
+
+
+    // ─────────────────────────────────────────────────────────
+    // BACKGROUND ANIMATION ENGINE
+    // ─────────────────────────────────────────────────────────
+    const heroStage = document.getElementById('hero-stage');
+    let activeBg    = null;
+    let bgRafId     = null;
+    let bgResizeFn  = null;
+
+    function clearBg() {
+      gsap.killTweensOf(heroStage.querySelectorAll('*'));
+      if (bgRafId)    { cancelAnimationFrame(bgRafId); bgRafId = null; }
+      if (bgResizeFn) { window.removeEventListener('resize', bgResizeFn); bgResizeFn = null; }
+      heroStage.innerHTML = '';
+    }
+
+    function switchBg(name) {
+      if (name === activeBg) return;
+      clearBg();
+      activeBg = name;
+      document.getElementById('btn-geo').classList.toggle('active',  name === 'geo');
+      document.getElementById('btn-flow').classList.toggle('active', name === 'flow');
+      name === 'geo' ? bgGeoMorph() : bgFlowField();
+    }
+
+    function initBg() { switchBg('geo'); }
+
+
+    // ─────────────────────────────────────────────────────────
+    // GEO MORPH — SVG shapes rotating + grid
+    // ─────────────────────────────────────────────────────────
+    function bgGeoMorph() {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 1440 900');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+      heroStage.appendChild(svg);
+
+      // Dot grid
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `
+        <pattern id="pgrid" width="64" height="64" patternUnits="userSpaceOnUse">
+          <path d="M 64 0 L 0 0 0 64" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+        </pattern>`;
+      svg.appendChild(defs);
+
+      const gridBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      gridBg.setAttribute('width', '100%');
+      gridBg.setAttribute('height', '100%');
+      gridBg.setAttribute('fill', 'url(#pgrid)');
+      svg.appendChild(gridBg);
+
+      const shapes = [
+        { tag:'polygon', attrs:{ points:'180,80 340,340 20,340'        }, fill:'rgba(139,92,246,.15)',  cx:180,  cy:240 },
+        { tag:'rect',    attrs:{ x:580,  y:180, width:220, height:220  }, fill:'rgba(59,130,246,.12)',  cx:690,  cy:290 },
+        { tag:'polygon', attrs:{ points:'1180,40 1380,310 980,310'      }, fill:'rgba(20,184,166,.13)',  cx:1180, cy:220 },
+        { tag:'rect',    attrs:{ x:80,   y:590, width:160, height:160  }, fill:'rgba(245,158,11,.10)',  cx:160,  cy:670 },
+        { tag:'polygon', attrs:{ points:'870,610 1060,820 680,820'      }, fill:'rgba(236,72,153,.12)',  cx:870,  cy:750 },
+        { tag:'rect',    attrs:{ x:1220, y:620, width:130, height:130  }, fill:'none', stroke:'rgba(139,92,246,.2)',  sw:2,   cx:1285, cy:685 },
+        { tag:'polygon', attrs:{ points:'700,380 760,480 640,480'       }, fill:'none', stroke:'rgba(6,182,212,.18)', sw:1.5, cx:700,  cy:447 },
+        { tag:'rect',    attrs:{ x:360,  y:500, width:80,  height:80   }, fill:'none', stroke:'rgba(245,158,11,.16)',sw:1.5, cx:400,  cy:540 },
+      ];
+
+      shapes.forEach((s, i) => {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', s.tag);
+        Object.entries(s.attrs).forEach(([k, v]) => el.setAttribute(k, v));
+        el.setAttribute('fill', s.fill || 'none');
+        if (s.stroke) { el.setAttribute('stroke', s.stroke); el.setAttribute('stroke-width', s.sw); }
+        svg.appendChild(el);
+
+        gsap.set(el, { transformOrigin: `${s.cx}px ${s.cy}px` });
+        gsap.to(el, {
+          rotation: (i % 2 === 0 ? 1 : -1) * (15 + i * 7),
+          scale:    .8 + Math.random() * .35,
+          x:        (Math.random() - .5) * 70,
+          y:        (Math.random() - .5) * 50,
+          opacity:  .3 + Math.random() * .7,
+          duration: 7 + i * 1.1,
+          yoyo: true, repeat: -1,
+          ease: 'sine.inOut',
+          delay: i * .45,
+        });
+      });
+    }
+
+
+    // ─────────────────────────────────────────────────────────
+    // FLOW FIELD — Canvas particles, sine vector field
+    // ─────────────────────────────────────────────────────────
+    function bgFlowField() {
+      const hero   = document.querySelector('.hero');
+      const canvas = document.createElement('canvas');
+      heroStage.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      let W = canvas.width  = hero.offsetWidth;
+      let H = canvas.height = hero.offsetHeight;
+
+      bgResizeFn = () => {
+        W = canvas.width  = hero.offsetWidth;
+        H = canvas.height = hero.offsetHeight;
+      };
+      window.addEventListener('resize', bgResizeFn);
+
+      const palette = [
+        [139, 92,  246],
+        [59,  130, 246],
+        [20,  184, 166],
+        [236, 72,  153],
+        [245, 158, 11 ],
+        [16,  185, 129],
+      ];
+
+      const particles = Array.from({ length: 900 }, (_, i) => ({
+        x:       Math.random() * W,
+        y:       Math.random() * H,
+        vx:      0, vy: 0,
+        speed:   .8  + Math.random() * 1.4,
+        life:    Math.random() * Math.PI,
+        lifeSpd: .005 + Math.random() * .012,
+        size:    .5  + Math.random() * 1.2,
+        color:   palette[i % palette.length],
+      }));
+
+      let t = 0;
+
+      function field(x, y, t) {
+        const nx = x / W, ny = y / H;
+        return (
+          Math.sin(nx * 3.2 + t * .35) * Math.PI
+          + Math.cos(ny * 2.1 - t * .25) * Math.PI * .8
+          + Math.sin((nx + ny) * 2.6 + t * .18) * Math.PI * .5
+        );
+      }
+
+      function reset(p) {
+        p.x = Math.random() * W; p.y = Math.random() * H;
+        p.vx = 0; p.vy = 0; p.life = 0;
+        p.lifeSpd = .005 + Math.random() * .012;
+      }
+
+      function draw() {
+        ctx.fillStyle = 'rgba(3,3,10,.13)';
+        ctx.fillRect(0, 0, W, H);
+        t += .005;
+
+        particles.forEach(p => {
+          const angle = field(p.x, p.y, t);
+          p.vx += Math.cos(angle) * .14;
+          p.vy += Math.sin(angle) * .14;
+
+          const spd = Math.hypot(p.vx, p.vy);
+          if (spd > p.speed) { p.vx = p.vx / spd * p.speed; p.vy = p.vy / spd * p.speed; }
+
+          p.x += p.vx; p.y += p.vy; p.life += p.lifeSpd;
+
+          if (p.x < -5 || p.x > W + 5 || p.y < -5 || p.y > H + 5 || p.life > Math.PI) { reset(p); return; }
+
+          const alpha  = Math.max(0, Math.min(.7, Math.sin(p.life) * .7));
+          const [r,g,b] = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+          ctx.fill();
+        });
+
+        bgRafId = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
   </script>
 
 </body>
