@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Task Estimation Calculator</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1e201e;
+      --surface2: #3c3d37;
+      --surface3: #697565;
+      --border: #3c3d37;
+      --border-light: #444a5e;
+      --text: #ecdfcc;
+      --text-dim: #ecdfcc;
+      --text-muted: #ecdfcc96;
+      --accent: #ecdfcc;
+      --accent-dim: rgba(108, 159, 255, .12);
+      --accent-glow: rgba(108, 159, 255, .25);
+      --green: #4ecb8d;
+      --green-dim: rgba(78, 203, 141, .12);
+      --orange: #f0a050;
+      --orange-dim: rgba(240, 160, 80, .12);
+      --red: #f06060;
+      --red-dim: rgba(240, 96, 96, .12);
+      --purple: #a07cff;
+      --purple-dim: rgba(160, 124, 255, .12);
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .badge-chip {
+      background: var(--accent);
+      color: #0f1117;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: .5px
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    /* Lang toggle */
+    .lang-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .15s;
+      line-height: 1
+    }
+
+    .lang-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all .15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0f1117
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 20px var(--accent-glow)
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-dim);
+      border: 1px solid var(--border)
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--border-light);
+      color: var(--text)
+    }
+
+    .btn-sm {
+      padding: 7px 13px;
+      font-size: 12px
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-icon:hover {
+      border-color: var(--border-light);
+      color: var(--text)
+    }
+
+    .btn-icon.delete:hover {
+      background: var(--red-dim);
+      border-color: var(--red);
+      color: var(--red)
+    }
+
+    .btn-present.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    /* Save indicator */
+    #saveIndicator {
+      font-size: 11px;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .4s;
+      white-space: nowrap
+    }
+
+    /* Project bar */
+    .project-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px
+    }
+
+    .project-field {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: border-color .15s
+    }
+
+    .project-field:focus-within {
+      border-color: var(--border-light)
+    }
+
+    .project-field label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .8px
+    }
+
+    .project-input {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%
+    }
+
+    .project-input::placeholder {
+      color: var(--text-muted)
+    }
+
+    /* Config bar */
+    .config-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 20px
+    }
+
+    .config-presets {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px
+    }
+
+    .config-presets label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      display: block;
+      margin-bottom: 8px
+    }
+
+    .config-sliders {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px
+    }
+
+    .config-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      overflow: visible
+    }
+
+    .config-card label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      display: block;
+      margin-bottom: 10px
+    }
+
+    .config-card .value-row {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .config-card .value-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 56px;
+      text-align: right;
+      white-space: nowrap;
+      flex-shrink: 0
+    }
+
+    .config-card .value-unit {
+      font-size: 11px;
+      color: var(--text-muted)
+    }
+
+    .preset-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .preset-chip {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .preset-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .preset-chip.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    /* Range input */
+    .config-card input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      min-width: 0;
+      height: 4px;
+      background: var(--surface3);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .config-card input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: var(--surface3);
+      border-radius: 2px;
+    }
+
+    .config-card input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: grab;
+      margin-top: -6px;
+      box-shadow: 0 0 0 3px var(--accent-dim);
+      transition: box-shadow .15s, background .15s;
+    }
+
+    .config-card input[type="range"]:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 0 5px var(--accent-dim);
+    }
+
+    .config-card input[type="range"]:active::-webkit-slider-thumb {
+      cursor: grabbing;
+      background: #fff;
+      box-shadow: 0 0 0 5px var(--accent-glow);
+    }
+
+    .config-card input[type="range"]::-moz-range-track {
+      height: 4px;
+      background: var(--surface3);
+      border-radius: 2px;
+      border: none;
+    }
+
+    .config-card input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: grab;
+      border: none;
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .config-card input[type="range"]:active::-moz-range-thumb {
+      cursor: grabbing;
+      background: #fff;
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      overflow-y: hidden;
+      margin-bottom: 20px
+    }
+
+    table {
+      width: 100%;
+      min-width: 1000px;
+      border-collapse: collapse
+    }
+
+    thead th {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      position: sticky;
+      top: 0;
+      white-space: nowrap
+    }
+
+    thead th.center {
+      text-align: center
+    }
+
+    tbody td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none
+    }
+
+    tbody tr {
+      transition: background .1s
+    }
+
+    tbody tr:hover {
+      background: rgba(108, 159, 255, .03)
+    }
+
+    /* Inputs in table */
+    .t-input {
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--surface3);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      width: 100%;
+      transition: all .15s
+    }
+
+    .t-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--bg);
+      box-shadow: 0 0 0 3px var(--accent-dim)
+    }
+
+    .t-input::placeholder {
+      color: var(--text-muted)
+    }
+
+    .t-input.num {
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+      width: 80px
+    }
+
+    /* Ẩn spinner mặc định của browser */
+    .t-input.num::-webkit-outer-spin-button,
+    .t-input.num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0 }
+    .t-input.num { -moz-appearance: textfield; appearance: textfield }
+
+    .t-input.task-name {
+      min-width: 180px
+    }
+
+    .t-input.notes {
+      font-size: 12px;
+      color: var(--text-dim);
+      min-width: 130px
+    }
+
+    .t-input.notes:focus {
+      color: var(--text)
+    }
+
+    .t-select {
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--surface3);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all .15s;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b90a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px
+    }
+
+    .t-select:focus {
+      outline: none;
+      border-color: var(--accent)
+    }
+
+    .t-select option {
+      background: #1a1d27;
+      color: #f0f1f5;
+      padding: 8px
+    }
+
+    /* Computed cells */
+    .computed {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      text-align: center;
+      color: var(--text);
+      padding: 8px 12px
+    }
+
+    .computed.highlight {
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    /* Row number */
+    .row-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      width: 36px
+    }
+
+    /* Summary strip */
+    .summary-strip {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap
+    }
+
+    .ss-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      flex: 1;
+      min-width: 140px;
+      display: flex;
+      flex-direction: column
+    }
+
+    .ss-item .ss-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px
+    }
+
+    .ss-item .ss-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -1px
+    }
+
+    .ss-item .ss-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px
+    }
+
+    .ss-item.blue .ss-value {
+      color: var(--accent)
+    }
+
+    .ss-item.green .ss-value {
+      color: var(--green)
+    }
+
+    .ss-item.orange .ss-value {
+      color: var(--orange)
+    }
+
+    .ss-item.purple .ss-value {
+      color: var(--purple)
+    }
+
+    .ss-item.red .ss-value {
+      color: var(--red)
+    }
+
+    .ss-total {
+      background: var(--surface2);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      flex: 1;
+      min-width: 160px
+    }
+
+    .ss-total .ss-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 6px
+    }
+
+    .ss-total .ss-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: -1px
+    }
+
+    .ss-total .ss-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px
+    }
+
+    /* Mobile cards */
+    .mobile-cards {
+      display: none
+    }
+
+    .mobile-cards-add {
+      display: none;
+      text-align: center;
+      margin-bottom: 16px
+    }
+
+    /* Breakdown */
+    .breakdown {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px
+    }
+
+    .breakdown h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .time-bar {
+      height: 8px;
+      background: var(--surface3);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      margin-top: 8px
+    }
+
+    .time-bar .seg {
+      height: 100%;
+      transition: width .3s ease
+    }
+
+    .time-bar .seg.master {
+      background: var(--accent)
+    }
+
+    .time-bar .seg.version {
+      background: var(--purple)
+    }
+
+    .time-bar .seg.buffer {
+      background: var(--orange)
+    }
+
+    .time-bar .seg.correction {
+      background: var(--red)
+    }
+
+    .bar-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      flex-wrap: wrap
+    }
+
+    .bar-legend span {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .bar-legend span::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      display: block
+    }
+
+    .bar-legend .lm::before {
+      background: var(--accent)
+    }
+
+    .bar-legend .lv::before {
+      background: var(--purple)
+    }
+
+    .bar-legend .lb::before {
+      background: var(--orange)
+    }
+
+    .bar-legend .lc::before {
+      background: var(--red)
+    }
+
+    /* Add row btn */
+    .add-row-zone {
+      padding: 12px;
+      text-align: center
+    }
+
+    .add-row-btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 24px;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .add-row-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim)
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 12px
+    }
+
+    /* Present / Lock mode */
+    .app.locked .config-bar,
+    .app.locked .project-bar,
+    .app.locked .conv-panel,
+    .app.locked .add-row-zone,
+    .app.locked .mobile-cards-add {
+      display: none !important
+    }
+
+    .app.locked .th-notes,
+    .app.locked .td-notes,
+    .app.locked .th-delete,
+    .app.locked .td-delete {
+      display: none
+    }
+
+    /* Copy toast */
+    #copyToast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: var(--surface2);
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: all .25s ease;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #copyToast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    /* Hour ⇄ Minute converter */
+    .conv-panel {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px
+    }
+
+    .conv-tool {
+      flex: 0 0 340px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px
+    }
+
+    .conv-ref {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px
+    }
+
+    .conv-panel label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      display: block;
+      margin-bottom: 12px
+    }
+
+    .conv-row {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .conv-field {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface3);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      transition: all .15s
+    }
+
+    .conv-field:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim)
+    }
+
+    .conv-field input {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      min-width: 0
+    }
+
+    .conv-field input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400
+    }
+
+    .conv-field .cf-unit {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap
+    }
+
+    .conv-eq {
+      font-size: 18px;
+      color: var(--accent);
+      font-weight: 700
+    }
+
+    .conv-out {
+      margin-top: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      text-align: center
+    }
+
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px
+    }
+
+    .ref-cell {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 4px;
+      text-align: center
+    }
+
+    .ref-cell b {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600
+    }
+
+    .ref-cell span {
+      font-size: 10px;
+      color: var(--text-muted)
+    }
+
+    .ref-cell.key {
+      border-color: var(--accent);
+      background: var(--accent-dim)
+    }
+
+    .ref-cell.key b {
+      color: var(--accent)
+    }
+
+    .cm {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 400
+    }
+
+    @media(max-width:768px) {
+      .conv-panel {
+        flex-direction: column;
+        gap: 10px
+      }
+
+      .conv-tool {
+        flex: 1
+      }
+
+      .conv-tool,
+      .conv-ref {
+        padding: 12px 14px
+      }
+
+      .ref-grid {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:1024px) {
+      .config-sliders {
+        grid-template-columns: repeat(3, 1fr)
+      }
+    }
+
+    @media(max-width:768px) {
+      body {
+        padding: 14px 10px
+      }
+
+      .app {
+        max-width: 100%
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        padding-bottom: 14px
+      }
+
+      .header h1 {
+        font-size: 18px
+      }
+
+      .header-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap
+      }
+
+      .header-actions .btn {
+        flex: 1;
+        justify-content: center;
+        font-size: 12px;
+        padding: 8px 12px
+      }
+
+      .project-bar {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px
+      }
+
+      .config-bar {
+        gap: 10px;
+        margin-bottom: 12px
+      }
+
+      .config-presets {
+        padding: 12px 14px
+      }
+
+      .config-sliders {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px
+      }
+
+      .config-card.config-slim {
+        padding: 10px 12px
+      }
+
+      .config-card.config-slim label {
+        font-size: 9px;
+        letter-spacing: .5px;
+        margin-bottom: 5px
+      }
+
+      .config-card.config-slim .value-display {
+        font-size: 14px;
+        min-width: 40px
+      }
+
+      .config-card.config-slim .value-unit {
+        font-size: 9px
+      }
+
+      .preset-chip {
+        font-size: 11px;
+        padding: 5px 11px
+      }
+
+      .desktop-table {
+        display: none
+      }
+
+      .mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px
+      }
+
+      .mobile-cards-add {
+        display: block
+      }
+
+      .m-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        position: relative
+      }
+
+      .m-card-head {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px
+      }
+
+      .m-card-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--text-muted);
+        background: var(--surface3);
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0
+      }
+
+      .m-card-head input {
+        flex: 1;
+        font-family: inherit;
+        font-size: 16px;
+        color: var(--text);
+        background: var(--surface3);
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        min-width: 0
+      }
+
+      .m-card-head input:focus {
+        outline: none;
+        border-color: var(--accent)
+      }
+
+      .m-card-head select {
+        font-family: inherit;
+        font-size: 16px;
+        color: var(--text);
+        background: var(--surface3);
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        -webkit-appearance: menulist;
+        appearance: menulist;
+        min-width: 90px;
+        flex-shrink: 0
+      }
+
+      .m-card-head .m-delete {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        border-radius: var(--radius-sm);
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 14px;
+        transition: all .15s
+      }
+
+      .m-card-head .m-delete:hover,
+      .m-card-head .m-delete:active {
+        background: var(--red-dim);
+        border-color: var(--red);
+        color: var(--red)
+      }
+
+      .m-card-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px
+      }
+
+      .m-card-field {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface2);
+        border-radius: 6px;
+        padding: 10px 12px;
+        cursor: text;
+        -webkit-tap-highlight-color: transparent;
+        transition: background .15s
+      }
+
+      .m-card-field:active,
+      .m-card-field:focus-within {
+        background: var(--surface3)
+      }
+
+      .m-card-field span {
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        pointer-events: none
+      }
+
+      .m-card-field input {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        color: var(--text);
+        background: transparent;
+        border: none;
+        text-align: right;
+        width: 60px;
+        outline: none;
+        -webkit-tap-highlight-color: transparent
+      }
+
+      .m-card-result {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px
+      }
+
+      .m-card-result .m-res {
+        flex: 1;
+        background: var(--surface2);
+        border-radius: 6px;
+        padding: 8px 10px;
+        text-align: center
+      }
+
+      .m-card-result .m-res span {
+        font-size: 9px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 2px
+      }
+
+      .m-card-result .m-res b {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: var(--text-dim)
+      }
+
+      .m-card-result .m-res.total b {
+        color: var(--accent);
+        font-size: 14px
+      }
+
+      .summary-strip {
+        flex-direction: column;
+        gap: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 14px
+      }
+
+      .ss-item,
+      .ss-total {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        min-width: auto;
+        padding: 12px 16px;
+        gap: 8px
+      }
+
+      .ss-item:last-of-type {
+        border-bottom: 1px solid var(--border)
+      }
+
+      .ss-item .ss-label,
+      .ss-total .ss-label {
+        margin-bottom: 0;
+        min-width: 80px
+      }
+
+      .ss-item .ss-value {
+        font-size: 18px;
+        text-align: right;
+        flex: 1
+      }
+
+      .ss-item .ss-sub {
+        margin-top: 0;
+        text-align: right;
+        min-width: 80px
+      }
+
+      .ss-total {
+        border-bottom: none;
+        background: var(--surface2)
+      }
+
+      .ss-total .ss-value {
+        font-size: 20px;
+        text-align: right;
+        flex: 1
+      }
+
+      .ss-total .ss-sub {
+        margin-top: 0;
+        text-align: right;
+        min-width: 100px
+      }
+
+      .breakdown {
+        padding: 14px;
+        margin-bottom: 14px
+      }
+
+      .add-row-btn {
+        font-size: 12px;
+        padding: 8px 18px
+      }
+
+      .btn-icon {
+        width: 28px;
+        height: 28px
+      }
+    }
+
+    @media(max-width:400px) {
+      .config-sliders {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .m-card-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    /* ── SPRING CC BRAND ──────────────────────────────────────────── */
+    :root {
+      --bg: #282828;
+      --surface: #1c1916;
+      --surface2: rgba(40, 40, 40, .9);
+      --surface3: #3d3d3d;
+      --border: rgba(185, 185, 177, .2);
+      --border-light: rgba(185, 185, 177, .38);
+      --text: #E5D2B8;
+      --text-dim: #E5D2B8;
+      --text-muted: rgba(229, 210, 184, .55);
+      --accent: #FF3700;
+      --accent-dim: rgba(255, 55, 0, .12);
+      --accent-glow: rgba(255, 55, 0, .25);
+      --green: #2DB87D;
+      --green-dim: rgba(45, 184, 125, .12);
+      --orange: #FF9535;
+      --orange-dim: rgba(255, 149, 53, .12);
+      --red: #D03030;
+      --red-dim: rgba(208, 48, 48, .12);
+      --purple: #D7E8F8;
+      --purple-dim: rgba(215, 232, 248, .12);
+    }
+
+    body {
+      background: linear-gradient(135deg, #1c1916 0%, #282828 60%, #3d1800 100%);
+      background-attachment: fixed
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 0 20px var(--accent-glow)
+    }
+
+    .badge-chip {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .preset-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .preset-chip.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .config-card .value-display {
+      color: var(--accent)
+    }
+
+    .prog-fill,
+    .progress-fill {
+      background: var(--accent)
+    }
+
+    /* Summary card distinct colors (Spring CC) */
+    .ss-item.blue .ss-value {
+      color: #5BC4D8;
+    }
+
+    /* Base Time → teal */
+    .ss-item.orange .ss-value {
+      color: var(--orange);
+    }
+
+    /* Buffer → amber */
+    .ss-item.red .ss-value {
+      color: var(--red);
+    }
+
+    /* Corrections → red */
+    .ss-item.purple .ss-value {
+      color: var(--purple);
+    }
+
+    /* Total Tasks → icy blue */
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+</head>
+
+<body>
+
+  <div class="app" id="appRoot">
+
+    <!-- Header -->
+    <div class="header">
+      <h1>⏱ <span id="titleText">Task Estimation</span> <span id="badgeText" class="badge-chip">CALC</span></h1>
+      <div class="header-actions">
+        <button id="btnReset" class="btn btn-ghost" onclick="resetAll()">↻ Đặt lại</button>
+        <span id="saveIndicator">✓ Đã lưu</span>
+        <button id="btnCopy" class="btn btn-ghost btn-sm" onclick="copySummary()">📋 Sao chép</button>
+        <button id="presentBtn" class="btn btn-ghost btn-sm btn-present" onclick="togglePresent()">👁 Trình bày</button>
+        <button id="btnExport" class="btn btn-primary" onclick="exportXLSX()">↓ Xuất Excel</button>
+        <button id="langToggle" class="lang-btn" onclick="toggleLang()">EN</button>
+      </div>
+    </div>
+
+    <!-- Project Info -->
+    <div class="project-bar" id="projectBar">
+      <div class="project-field">
+        <label id="lblProject">Dự án</label>
+        <input id="projectName" class="project-input" placeholder="Tên dự án..." oninput="saveState()">
+      </div>
+      <div class="project-field">
+        <label id="lblClient">Khách hàng</label>
+        <input id="clientName" class="project-input" placeholder="Tên khách hàng..." oninput="saveState()">
+      </div>
+    </div>
+
+    <!-- Presets + Sliders -->
+    <div class="config-bar">
+      <div class="config-card config-presets">
+        <label id="lblPresets">Presets nhanh</label>
+        <div class="preset-chips">
+          <button id="chipBanner" class="preset-chip" onclick="applyPreset('banner')">HTML5 Banner</button>
+          <button id="chipRichMedia" class="preset-chip" onclick="applyPreset('richmedia')">Rich Media</button>
+          <button id="chipEdm" class="preset-chip" onclick="applyPreset('edm')">EDM / Email</button>
+          <button id="chipLanding" class="preset-chip" onclick="applyPreset('landing')">Landing Page</button>
+          <button id="chipCustom" class="preset-chip" onclick="applyPreset('custom')">Custom</button>
+        </div>
+      </div>
+      <div class="config-sliders">
+        <div class="config-card config-slim">
+          <label id="lblBufferSlider">Buffer</label>
+          <div class="value-row">
+            <input type="range" id="bufferRange" min="0" max="50" value="0" oninput="updateBuffer()">
+            <div class="value-display" id="bufferDisplay">0<span class="value-unit">%</span></div>
+          </div>
+        </div>
+        <div class="config-card config-slim">
+          <label id="lblCorrRoundsSlider">Số vòng sửa</label>
+          <div class="value-row">
+            <input type="range" id="correctionRange" min="0" max="10" value="0" oninput="updateCorrection()">
+            <div class="value-display" id="correctionDisplay">0<span class="value-unit"> rnd</span></div>
+          </div>
+        </div>
+        <div class="config-card config-slim">
+          <label id="lblMinCorrSlider">Phút / Sửa</label>
+          <div class="value-row">
+            <input type="range" id="corrMinRange" min="0" max="60" value="0" step="5" oninput="updateCorrMin()">
+            <div class="value-display" id="corrMinDisplay">0<span class="value-unit"> min</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Converter -->
+    <div class="conv-panel" id="convPanel">
+      <div class="conv-tool">
+        <label id="lblConvTitle">⇄ Quy đổi Giờ ⇄ Phút</label>
+        <div class="conv-row">
+          <div class="conv-field">
+            <input id="convHours" type="text" inputmode="decimal" placeholder="0,45" oninput="convFromHours()" onkeydown="arrowHours(event)" onfocus="this.select()">
+            <span class="cf-unit" id="convHourUnit">giờ</span>
+          </div>
+          <span class="conv-eq">=</span>
+          <div class="conv-field">
+            <input id="convMins" type="text" inputmode="decimal" placeholder="27" oninput="convFromMins()" onkeydown="arrowMins(event)" onfocus="this.select()">
+            <span class="cf-unit" id="convMinUnit">phút</span>
+          </div>
+        </div>
+        <div class="conv-out" id="convOut">Nhập giờ hoặc phút để quy đổi</div>
+      </div>
+      <div class="conv-ref">
+        <label id="lblConvRef">Bảng tra nhanh (giờ → phút)</label>
+        <div class="ref-grid" id="refGrid"></div>
+      </div>
+    </div>
+
+    <!-- Task Table (desktop) -->
+    <div class="table-wrap desktop-table">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th id="thName">Tên Task</th>
+            <th id="thType">Loại</th>
+            <th class="center" id="thMasterQty">SL Master</th>
+            <th class="center" id="thMinMaster">Phút/Master</th>
+            <th class="center" id="thVersionQty">SL Version</th>
+            <th class="center" id="thMinVersion">Phút/Version</th>
+            <th class="th-notes" id="thNotes">Ghi chú</th>
+            <th class="center" id="thMasterH">Master (h)</th>
+            <th class="center" id="thVersionH">Version (h)</th>
+            <th class="center" id="thSubtotal">Tổng phụ (h)</th>
+            <th class="th-delete" style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="taskBody"></tbody>
+      </table>
+      <div class="add-row-zone">
+        <button class="add-row-btn" onclick="addTask()">+ Thêm Task</button>
+      </div>
+    </div>
+
+    <!-- Task Cards (mobile) -->
+    <div class="mobile-cards" id="mobileCards"></div>
+    <div class="mobile-cards-add">
+      <button class="add-row-btn" onclick="addTask()">+ Thêm Task</button>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-strip">
+      <div class="ss-item blue">
+        <div class="ss-label" id="ssBaseLabel">Thời gian gốc</div>
+        <div class="ss-value" id="sumBase">0.00h</div>
+        <div class="ss-sub" id="sumBaseDay">0.00 ngày</div>
+      </div>
+      <div class="ss-item orange">
+        <div class="ss-label" id="ssBufferLabel">Buffer</div>
+        <div class="ss-value" id="sumBuffer">0.00h</div>
+        <div class="ss-sub" id="sumBufferPct">0% so với gốc</div>
+      </div>
+      <div class="ss-item red">
+        <div class="ss-label" id="ssCorrLabel">Sửa đổi</div>
+        <div class="ss-value" id="sumCorr">0.00h</div>
+        <div class="ss-sub" id="sumCorrInfo">0 tasks × 0 vòng × 0 phút</div>
+      </div>
+      <div class="ss-item purple">
+        <div class="ss-label" id="ssTasksLabel">Tổng Tasks</div>
+        <div class="ss-value" id="sumTasks">0</div>
+        <div class="ss-sub" id="sumTasksInfo">0 master + 0 version</div>
+      </div>
+      <div class="ss-total">
+        <div class="ss-label" id="ssTotalLabel">Tổng Ước tính</div>
+        <div class="ss-value" id="sumTotal">0.00h</div>
+        <div class="ss-sub" id="sumTotalDay">0.00 ngày (8h/ngày)</div>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown">
+      <h3 id="breakdownTitle">📊 Phân bổ thời gian</h3>
+      <div class="time-bar">
+        <div class="seg master" style="width:0%"></div>
+        <div class="seg version" style="width:0%"></div>
+        <div class="seg buffer" style="width:0%"></div>
+        <div class="seg correction" style="width:0%"></div>
+      </div>
+      <div class="bar-legend">
+        <span class="lm"><span id="lblLegMaster">Master</span> <b id="legMaster">0h</b></span>
+        <span class="lv"><span id="lblLegVersion">Versioning</span> <b id="legVersion">0h</b></span>
+        <span class="lb"><span id="lblLegBuffer">Buffer</span> <b id="legBuffer">0h</b></span>
+        <span class="lc"><span id="lblLegCorr">Sửa đổi</span> <b id="legCorr">0h</b></span>
+      </div>
+    </div>
+
+    <div class="footer"><span id="footerText">Task Estimation Calculator — Built for speed ⚡</span></div>
+  </div>
+
+  <div id="copyToast">✓ Đã sao chép</div>
+
+  <script>
+    /* ── i18n ──────────────────────────────────────────────────────────
+       Đổi dòng dưới thành 'en' để đặt mặc định tiếng Anh
+    ─────────────────────────────────────────────────────────────────── */
+    const LANG_DEFAULT = 'vi';
+
+    const STRINGS = {
+      vi: {
+        titleText: 'Task Estimation', badge: 'CALC',
+        btnReset: '↻ Đặt lại', btnCopy: '📋 Sao chép',
+        btnPresent: '👁 Trình bày', btnPresentExit: '✕ Thoát',
+        btnExport: '↓ Xuất Excel', saved: '✓ Đã lưu',
+        lblProject: 'Dự án', lblClient: 'Khách hàng',
+        projectPlaceholder: 'Tên dự án...', clientPlaceholder: 'Tên khách hàng...',
+        lblPresets: 'Presets nhanh',
+        chipBanner: 'HTML5 Banner', chipRichMedia: 'Rich Media',
+        chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipCustom: 'Custom',
+        lblBuffer: 'Buffer', lblCorrRounds: 'Số vòng sửa', lblMinCorr: 'Phút / Sửa',
+        lblConvTitle: '⇄ Quy đổi Giờ ⇄ Phút',
+        convHourUnit: 'giờ', convMinUnit: 'phút',
+        convOutEmpty: 'Nhập giờ hoặc phút để quy đổi',
+        lblConvRef: 'Bảng tra nhanh (giờ → phút)',
+        thName: 'Tên Task', thType: 'Loại',
+        thMasterQty: 'SL Master', thMinMaster: 'Phút/Master',
+        thVersionQty: 'SL Version', thMinVersion: 'Phút/Version',
+        thNotes: 'Ghi chú', thMasterH: 'Master (h)',
+        thVersionH: 'Version (h)', thSubtotal: 'Tổng phụ (h)',
+        addTask: '+ Thêm Task',
+        taskPlaceholder: 'VD: Banner 300x250', notesPlaceholder: 'Ghi chú / phạm vi...',
+        lblBaseTime: 'Thời gian gốc', lblBuffer2: 'Buffer',
+        lblCorrections: 'Sửa đổi', lblTotalTasks: 'Tổng Tasks', lblTotalEst: 'Tổng Ước tính',
+        lblBreakdown: '📊 Phân bổ thời gian',
+        lblLegMaster: 'Master', lblLegVersion: 'Versioning',
+        lblLegBuffer: 'Buffer', lblLegCorr: 'Sửa đổi',
+        footer: 'Task Estimation Calculator — Built for speed ⚡',
+        copyToast: '✓ Đã sao chép', resetConfirm: 'Đặt lại tất cả?',
+        bufferPct: (p) => `${p}% so với gốc`,
+        corrInfo: (t, r, m) => `${t} tasks × ${r} vòng × ${m} phút`,
+        tasksInfo: (m, v) => `${m} master + ${v} version`,
+        totalDay: (d) => `${d} ngày (8h/ngày)`,
+        baseDay: (d) => `${d} ngày`,
+        convResult: (h, m, hm) => `${h} giờ  =  ${m} phút  ·  ${hm}`,
+        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', custom: 'Custom' },
+        mCardMasterQty: 'Master Qty', mCardMinMaster: 'Phút/Master',
+        mCardVersionQty: 'Version Qty', mCardMinVersion: 'Phút/Ver',
+        mCardMaster: 'Master', mCardVersion: 'Version', mCardSubtotal: 'Tổng phụ',
+      },
+      en: {
+        titleText: 'Task Estimation', badge: 'CALC',
+        btnReset: '↻ Reset', btnCopy: '📋 Copy',
+        btnPresent: '👁 Present', btnPresentExit: '✕ Exit',
+        btnExport: '↓ Export Excel', saved: '✓ Saved',
+        lblProject: 'Project', lblClient: 'Client',
+        projectPlaceholder: 'Project name...', clientPlaceholder: 'Client name...',
+        lblPresets: 'Quick Presets',
+        chipBanner: 'HTML5 Banner', chipRichMedia: 'Rich Media',
+        chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipCustom: 'Custom',
+        lblBuffer: 'Buffer', lblCorrRounds: 'Corr. Rounds', lblMinCorr: 'Min / Corr.',
+        lblConvTitle: '⇄ Hours ⇄ Minutes',
+        convHourUnit: 'hrs', convMinUnit: 'min',
+        convOutEmpty: 'Enter hours or minutes to convert',
+        lblConvRef: 'Quick reference (hours → minutes)',
+        thName: 'Task Name', thType: 'Type',
+        thMasterQty: 'Master Qty', thMinMaster: 'Min/Master',
+        thVersionQty: 'Version Qty', thMinVersion: 'Min/Version',
+        thNotes: 'Notes', thMasterH: 'Master (h)',
+        thVersionH: 'Version (h)', thSubtotal: 'Subtotal (h)',
+        addTask: '+ Add Task',
+        taskPlaceholder: 'e.g. Banner 300x250', notesPlaceholder: 'Notes / scope...',
+        lblBaseTime: 'Base Time', lblBuffer2: 'Buffer',
+        lblCorrections: 'Corrections', lblTotalTasks: 'Total Tasks', lblTotalEst: 'Total Estimate',
+        lblBreakdown: '📊 Time Breakdown',
+        lblLegMaster: 'Master', lblLegVersion: 'Versioning',
+        lblLegBuffer: 'Buffer', lblLegCorr: 'Corrections',
+        footer: 'Task Estimation Calculator — Built for speed ⚡',
+        copyToast: '✓ Copied to clipboard', resetConfirm: 'Reset everything?',
+        bufferPct: (p) => `${p}% of base`,
+        corrInfo: (t, r, m) => `${t} tasks × ${r} rnd × ${m} min`,
+        tasksInfo: (m, v) => `${m} master + ${v} version`,
+        totalDay: (d) => `${d} days (8h/day)`,
+        baseDay: (d) => `${d} days`,
+        convResult: (h, m, hm) => `${h.replace(',', '.')} hrs  =  ${m} min  ·  ${hm}`,
+        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', custom: 'Custom' },
+        mCardMasterQty: 'Master Qty', mCardMinMaster: 'Min/Master',
+        mCardVersionQty: 'Version Qty', mCardMinVersion: 'Min/Ver',
+        mCardMaster: 'Master', mCardVersion: 'Version', mCardSubtotal: 'Subtotal',
+      }
+    };
+
+    let currentLang = LANG_DEFAULT;
+
+    function s() { return STRINGS[currentLang]; }
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('taskEstLang', lang);
+      document.documentElement.lang = lang;
+      applyLang();
+      render(true);
+      recalc(true);
+    }
+
+    function toggleLang() {
+      setLang(currentLang === 'vi' ? 'en' : 'vi');
+    }
+
+    function applyLang() {
+      const st = s();
+      const $ = (id) => document.getElementById(id);
+      const set = (id, text) => { const el = $(id); if (el) el.textContent = text; };
+
+      // Lang toggle label shows the OTHER language (what you'll switch TO)
+      set('langToggle', currentLang === 'vi' ? 'EN' : 'VI');
+
+      // Header
+      set('titleText', st.titleText);
+      set('badgeText', st.badge);
+      $('btnReset').textContent = st.btnReset;
+      set('saveIndicator', st.saved);
+      $('btnCopy').textContent = st.btnCopy;
+      if (!isPresenting) $('presentBtn').textContent = st.btnPresent;
+      $('btnExport').textContent = st.btnExport;
+
+      // Project bar
+      set('lblProject', st.lblProject);
+      set('lblClient', st.lblClient);
+      $('projectName').placeholder = st.projectPlaceholder;
+      $('clientName').placeholder = st.clientPlaceholder;
+
+      // Presets
+      set('lblPresets', st.lblPresets);
+      set('chipBanner', st.chipBanner);
+      set('chipRichMedia', st.chipRichMedia);
+      set('chipEdm', st.chipEdm);
+      set('chipLanding', st.chipLanding);
+      set('chipCustom', st.chipCustom);
+
+      // Sliders
+      set('lblBufferSlider', st.lblBuffer);
+      set('lblCorrRoundsSlider', st.lblCorrRounds);
+      set('lblMinCorrSlider', st.lblMinCorr);
+
+      // Converter
+      set('lblConvTitle', st.lblConvTitle);
+      set('convHourUnit', st.convHourUnit);
+      set('convMinUnit', st.convMinUnit);
+      set('lblConvRef', st.lblConvRef);
+      // Reset conv output if it shows the empty-state string of either lang
+      const convOut = $('convOut');
+      if (convOut && (convOut.textContent === STRINGS.vi.convOutEmpty || convOut.textContent === STRINGS.en.convOutEmpty)) {
+        convOut.textContent = st.convOutEmpty;
+      }
+
+      // Table headers
+      set('thName', st.thName);
+      set('thType', st.thType);
+      set('thMasterQty', st.thMasterQty);
+      set('thMinMaster', st.thMinMaster);
+      set('thVersionQty', st.thVersionQty);
+      set('thMinVersion', st.thMinVersion);
+      set('thNotes', st.thNotes);
+      set('thMasterH', st.thMasterH);
+      set('thVersionH', st.thVersionH);
+      set('thSubtotal', st.thSubtotal);
+
+      // Add task buttons
+      document.querySelectorAll('.add-row-btn').forEach(btn => btn.textContent = st.addTask);
+
+      // Summary labels
+      set('ssBaseLabel', st.lblBaseTime);
+      set('ssBufferLabel', st.lblBuffer2);
+      set('ssCorrLabel', st.lblCorrections);
+      set('ssTasksLabel', st.lblTotalTasks);
+      set('ssTotalLabel', st.lblTotalEst);
+
+      // Breakdown
+      set('breakdownTitle', st.lblBreakdown);
+      set('lblLegMaster', st.lblLegMaster);
+      set('lblLegVersion', st.lblLegVersion);
+      set('lblLegBuffer', st.lblLegBuffer);
+      set('lblLegCorr', st.lblLegCorr);
+
+      // Footer & toast
+      set('footerText', st.footer);
+      set('copyToast', st.copyToast);
+    }
+
+    /* ── Presets ───────────────────────────────────────────────────── */
+    const PRESETS = {
+      banner: { minMaster: 90, minVersion: 35, corrMin: 15 },
+      richmedia: { minMaster: 180, minVersion: 60, corrMin: 30 },
+      edm: { minMaster: 120, minVersion: 30, corrMin: 20 },
+      landing: { minMaster: 480, minVersion: 120, corrMin: 45 },
+      custom: { minMaster: 0, minVersion: 0, corrMin: 15 }
+    };
+
+    let tasks = [];
+    let taskCounter = 0;
+    let currentPreset = null;
+    let isPresenting = false;
+
+    const STORAGE_KEY = 'taskEstimation_v1';
+
+    /* ── LocalStorage ──────────────────────────────────────────────── */
+    function saveState() {
+      const state = {
+        tasks, taskCounter, currentPreset,
+        buffer: document.getElementById('bufferRange').value,
+        corrRounds: document.getElementById('correctionRange').value,
+        corrMin: document.getElementById('corrMinRange').value,
+        projectName: document.getElementById('projectName').value,
+        clientName: document.getElementById('clientName').value,
+        lang: currentLang
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const ind = document.getElementById('saveIndicator');
+      if (ind) {
+        ind.style.opacity = '1';
+        clearTimeout(ind._t);
+        ind._t = setTimeout(() => { ind.style.opacity = '0'; }, 1500);
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) { applyLang(); addTask(); return; }
+        const st = JSON.parse(raw);
+        tasks = st.tasks || [];
+        taskCounter = st.taskCounter || 0;
+        currentPreset = st.currentPreset || null;
+
+        // Restore language (saved state wins over LANG_DEFAULT)
+        const savedLang = localStorage.getItem('taskEstLang') || st.lang || LANG_DEFAULT;
+        currentLang = savedLang;
+        document.documentElement.lang = currentLang;
+
+        if (currentPreset) {
+          document.querySelectorAll('.preset-chip').forEach(c => {
+            if (c.getAttribute('onclick')?.includes(`'${currentPreset}'`)) c.classList.add('active');
+          });
+        }
+        if (st.projectName) document.getElementById('projectName').value = st.projectName;
+        if (st.clientName) document.getElementById('clientName').value = st.clientName;
+
+        document.getElementById('bufferRange').value = st.buffer ?? 0; updateBuffer(true);
+        document.getElementById('correctionRange').value = st.corrRounds ?? 0; updateCorrection(true);
+        document.getElementById('corrMinRange').value = st.corrMin ?? 0; updateCorrMin(true);
+
+        applyLang();
+        if (tasks.length === 0) addTask();
+        else render(true);
+      } catch (e) {
+        console.warn('loadState failed', e);
+        applyLang();
+        addTask();
+      }
+    }
+
+    /* ── Tasks ─────────────────────────────────────────────────────── */
+    function addTask(preset) {
+      const p = preset || (currentPreset ? PRESETS[currentPreset] : null);
+      tasks.push({
+        id: ++taskCounter,
+        name: '',
+        type: currentPreset || 'custom',
+        masterQty: 0,
+        minMaster: p ? p.minMaster : 0,
+        versionQty: 0,
+        minVersion: p ? p.minVersion : 0,
+        notes: ''
+      });
+      render();
+    }
+
+    function removeTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      render();
+    }
+
+    function updateField(id, field, value) {
+      const t = tasks.find(t => t.id === id);
+      if (!t) return;
+      if (['masterQty', 'minMaster', 'versionQty', 'minVersion'].includes(field)) {
+        t[field] = parseFloat(value) || 0;
+      } else if (field === 'type') {
+        t.type = value;
+        if (PRESETS[value] && value !== 'custom') {
+          t.minMaster = PRESETS[value].minMaster;
+          t.minVersion = PRESETS[value].minVersion;
+        }
+      } else {
+        t[field] = value;
+      }
+      render();
+    }
+
+    function applyPreset(key) {
+      currentPreset = key;
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      if (PRESETS[key]) {
+        document.getElementById('corrMinRange').value = PRESETS[key].corrMin;
+        updateCorrMin();
+      }
+    }
+
+    /* ── Sliders ───────────────────────────────────────────────────── */
+    function updateBuffer(skipSave) {
+      const v = document.getElementById('bufferRange').value;
+      document.getElementById('bufferDisplay').innerHTML = v + '<span class="value-unit">%</span>';
+      recalc(skipSave);
+    }
+    function updateCorrection(skipSave) {
+      const v = document.getElementById('correctionRange').value;
+      document.getElementById('correctionDisplay').innerHTML = v + '<span class="value-unit"> rnd</span>';
+      recalc(skipSave);
+    }
+    function updateCorrMin(skipSave) {
+      const v = document.getElementById('corrMinRange').value;
+      document.getElementById('corrMinDisplay').innerHTML = v + '<span class="value-unit"> min</span>';
+      recalc(skipSave);
+    }
+
+    /* ── Render ────────────────────────────────────────────────────── */
+    function render(skipSave) {
+      const st = s();
+      const tbody = document.getElementById('taskBody');
+      const mcont = document.getElementById('mobileCards');
+      tbody.innerHTML = '';
+      mcont.innerHTML = '';
+
+      tasks.forEach((t, i) => {
+        const mh = (t.masterQty * t.minMaster) / 60;
+        const vh = (t.versionQty * t.minVersion) / 60;
+        const sub = mh + vh;
+
+        const presetOptions = Object.entries(PRESETS).map(([k]) =>
+          `<option value="${k}" ${t.type === k ? 'selected' : ''}>${st.presets[k] || k}</option>`
+        ).join('');
+
+        /* Desktop row */
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="row-num">${i + 1}</td>
+          <td><input class="t-input task-name" value="${esc(t.name)}" placeholder="${esc(st.taskPlaceholder)}" onchange="updateField(${t.id},'name',this.value)"></td>
+          <td><select class="t-select" onchange="updateField(${t.id},'type',this.value)">${presetOptions}</select></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.masterQty}"  onchange="updateField(${t.id},'masterQty',this.value)"  onkeydown="arrowNum(event,${t.id},'masterQty')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.minMaster}"  onchange="updateField(${t.id},'minMaster',this.value)"  onkeydown="arrowNum(event,${t.id},'minMaster')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.versionQty}" onchange="updateField(${t.id},'versionQty',this.value)" onkeydown="arrowNum(event,${t.id},'versionQty')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.minVersion}" onchange="updateField(${t.id},'minVersion',this.value)" onkeydown="arrowNum(event,${t.id},'minVersion')"></td>
+          <td class="td-notes"><input class="t-input notes" value="${esc(t.notes || '')}" placeholder="${esc(st.notesPlaceholder)}" onchange="updateField(${t.id},'notes',this.value)"></td>
+          <td class="computed">${mh.toFixed(2)}<span class="cm">${Math.round(mh * 60)} min</span></td>
+          <td class="computed">${vh.toFixed(2)}<span class="cm">${Math.round(vh * 60)} min</span></td>
+          <td class="computed highlight">${sub.toFixed(2)}<span class="cm">${Math.round(sub * 60)} min</span></td>
+          <td class="td-delete"><button class="btn-icon delete" onclick="removeTask(${t.id})" title="Remove">✕</button></td>
+        `;
+        tbody.appendChild(tr);
+
+        /* Mobile card */
+        const card = document.createElement('div');
+        card.className = 'm-card';
+        card.innerHTML = `
+          <div class="m-card-head">
+            <div class="m-card-num">${i + 1}</div>
+            <input value="${esc(t.name)}" placeholder="${esc(st.taskPlaceholder)}" onchange="updateField(${t.id},'name',this.value)">
+            <select onchange="updateField(${t.id},'type',this.value)">${presetOptions}</select>
+            <button class="m-delete" onclick="removeTask(${t.id})">✕</button>
+          </div>
+          <div class="m-card-grid">
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMasterQty}</span><input type="number" inputmode="numeric" min="0" value="${t.masterQty}"  onchange="updateField(${t.id},'masterQty',this.value)"  onkeydown="arrowNum(event,${t.id},'masterQty')"  onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMinMaster}</span><input type="number" inputmode="numeric" min="0" value="${t.minMaster}"  onchange="updateField(${t.id},'minMaster',this.value)"  onkeydown="arrowNum(event,${t.id},'minMaster')"  onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardVersionQty}</span><input type="number" inputmode="numeric" min="0" value="${t.versionQty}" onchange="updateField(${t.id},'versionQty',this.value)" onkeydown="arrowNum(event,${t.id},'versionQty')" onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMinVersion}</span><input type="number" inputmode="numeric" min="0" value="${t.minVersion}" onchange="updateField(${t.id},'minVersion',this.value)" onkeydown="arrowNum(event,${t.id},'minVersion')" onfocus="this.select()"></div>
+          </div>
+          <div class="m-card-result">
+            <div class="m-res"><span>${st.mCardMaster}</span><b>${mh.toFixed(2)}h</b><span class="cm">${Math.round(mh * 60)} min</span></div>
+            <div class="m-res"><span>${st.mCardVersion}</span><b>${vh.toFixed(2)}h</b><span class="cm">${Math.round(vh * 60)} min</span></div>
+            <div class="m-res total"><span>${st.mCardSubtotal}</span><b>${sub.toFixed(2)}h</b><span class="cm">${Math.round(sub * 60)} min</span></div>
+          </div>
+        `;
+        mcont.appendChild(card);
+      });
+
+      // Sync add-row-btn text
+      document.querySelectorAll('.add-row-btn').forEach(btn => btn.textContent = st.addTask);
+      recalc(skipSave);
+    }
+
+    /* ── Recalc ────────────────────────────────────────────────────── */
+    function recalc(skipSave) {
+      const st = s();
+      const buffer = parseInt(document.getElementById('bufferRange').value) / 100;
+      const corrRounds = parseInt(document.getElementById('correctionRange').value);
+      const corrMin = parseInt(document.getElementById('corrMinRange').value);
+
+      let totalMasterH = 0, totalVersionH = 0, totalMasterQty = 0, totalVersionQty = 0, totalTasks = 0;
+      tasks.forEach(t => {
+        totalMasterH += (t.masterQty * t.minMaster) / 60;
+        totalVersionH += (t.versionQty * t.minVersion) / 60;
+        totalMasterQty += t.masterQty;
+        totalVersionQty += t.versionQty;
+        totalTasks += t.masterQty + t.versionQty;
+      });
+
+      const baseH = totalMasterH + totalVersionH;
+      const bufferH = baseH * buffer;
+      const corrH = (totalTasks * corrRounds * corrMin) / 60;
+      const totalH = baseH + bufferH + corrH;
+      const totalDays = totalH / 8;
+
+      document.getElementById('sumBase').textContent = baseH.toFixed(2) + 'h';
+      document.getElementById('sumBaseDay').textContent = st.baseDay((baseH / 8).toFixed(2));
+      document.getElementById('sumBuffer').textContent = bufferH.toFixed(2) + 'h';
+      document.getElementById('sumBufferPct').textContent = st.bufferPct((buffer * 100).toFixed(0));
+      document.getElementById('sumCorr').textContent = corrH.toFixed(2) + 'h';
+      document.getElementById('sumCorrInfo').textContent = st.corrInfo(totalTasks, corrRounds, corrMin);
+      document.getElementById('sumTotal').textContent = totalH.toFixed(2) + 'h';
+      document.getElementById('sumTotalDay').textContent = st.totalDay(totalDays.toFixed(2));
+      document.getElementById('sumTasks').textContent = totalTasks;
+      document.getElementById('sumTasksInfo').textContent = st.tasksInfo(totalMasterQty, totalVersionQty);
+
+      const barTotal = totalMasterH + totalVersionH + bufferH + corrH || 1;
+      document.querySelector('.seg.master').style.width = (totalMasterH / barTotal * 100) + '%';
+      document.querySelector('.seg.version').style.width = (totalVersionH / barTotal * 100) + '%';
+      document.querySelector('.seg.buffer').style.width = (bufferH / barTotal * 100) + '%';
+      document.querySelector('.seg.correction').style.width = (corrH / barTotal * 100) + '%';
+
+      document.getElementById('legMaster').textContent = totalMasterH.toFixed(2) + 'h';
+      document.getElementById('legVersion').textContent = totalVersionH.toFixed(2) + 'h';
+      document.getElementById('legBuffer').textContent = bufferH.toFixed(2) + 'h';
+      document.getElementById('legCorr').textContent = corrH.toFixed(2) + 'h';
+
+      if (!skipSave) saveState();
+    }
+
+    /* ── Converter ─────────────────────────────────────────────────── */
+    const REF_VALUES = [0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.60, 0.70, 0.75, 0.80, 0.90, 1.00];
+    const REF_KEYS = [0.25, 0.50, 0.75, 1.00];
+
+    function parseNum(v) { return parseFloat(String(v).replace(',', '.').trim()) || 0; }
+    function fmtHM(totalMin) {
+      const m = Math.round(totalMin);
+      const h = Math.floor(m / 60);
+      const mm = m % 60;
+      return h > 0 ? `${h}h ${mm}m` : `${mm}m`;
+    }
+    function convFromHours() {
+      const raw = document.getElementById('convHours').value.trim();
+      const h = parseNum(raw);
+      const mins = h * 60;
+      document.getElementById('convMins').value = raw === '' ? '' : (Number.isInteger(mins) ? mins : mins.toFixed(1));
+      updateConvOut(h, mins);
+    }
+    function convFromMins() {
+      const raw = document.getElementById('convMins').value.trim();
+      const m = parseNum(raw);
+      const h = m / 60;
+      document.getElementById('convHours').value = raw === '' ? '' : +h.toFixed(2);
+      updateConvOut(h, m);
+    }
+    function updateConvOut(h, m) {
+      const out = document.getElementById('convOut');
+      const st = s();
+      if (!h && !m) { out.textContent = st.convOutEmpty; return; }
+      const hStr = (h % 1 === 0 ? String(h) : h.toFixed(2)).replace('.', ',');
+      out.textContent = st.convResult(hStr, Math.round(m), fmtHM(m));
+    }
+    function renderRefGrid() {
+      document.getElementById('refGrid').innerHTML = REF_VALUES.map(v => {
+        const mins = Math.round(v * 60);
+        const key = REF_KEYS.includes(v) ? ' key' : '';
+        return `<div class="ref-cell${key}"><b>${v.toFixed(2).replace('.', ',')}h</b><span>${mins} min</span></div>`;
+      }).join('');
+    }
+
+    /* ── Helpers ───────────────────────────────────────────────────── */
+    function esc(str) {
+      return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    function resetAll() {
+      if (!confirm(s().resetConfirm)) return;
+      tasks = []; taskCounter = 0; currentPreset = null;
+      document.getElementById('projectName').value = '';
+      document.getElementById('clientName').value = '';
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      document.getElementById('bufferRange').value = 0; updateBuffer();
+      document.getElementById('correctionRange').value = 0; updateCorrection();
+      document.getElementById('corrMinRange').value = 0; updateCorrMin();
+      render();
+    }
+
+    /* ── Copy Summary ──────────────────────────────────────────────── */
+    function copySummary() {
+      const proj = document.getElementById('projectName').value;
+      const client = document.getElementById('clientName').value;
+      const totalH = document.getElementById('sumTotal').textContent;
+      const totalD = document.getElementById('sumTotalDay').textContent;
+      const baseH = document.getElementById('sumBase').textContent;
+      const bufH = document.getElementById('sumBuffer').textContent;
+      const corrH = document.getElementById('sumCorr').textContent;
+      const buffer = document.getElementById('bufferRange').value;
+      const corrR = document.getElementById('correctionRange').value;
+      const corrM = document.getElementById('corrMinRange').value;
+      const tasks_ = document.getElementById('sumTasksInfo').textContent;
+      const date = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      const lines = [];
+      if (proj || client) lines.push(`📋 ${[proj, client].filter(Boolean).join(' — ')}`);
+      lines.push(`Date: ${date}  |  Tasks: ${tasks_}`);
+      lines.push(`Base: ${baseH}  |  Buffer (${buffer}%): ${bufH}  |  Corrections (${corrR}rnd × ${corrM}min): ${corrH}`);
+      lines.push('─'.repeat(46));
+      lines.push(`TOTAL: ${totalH}  (${totalD})`);
+
+      if (tasks.length > 0) {
+        lines.push('');
+        tasks.forEach((t, i) => {
+          const sub = ((t.masterQty * t.minMaster) + (t.versionQty * t.minVersion)) / 60;
+          const note = t.notes ? `  — ${t.notes}` : '';
+          lines.push(`${i + 1}. ${t.name || '(unnamed)'}${note}  →  ${sub.toFixed(2)}h`);
+        });
+      }
+
+      const text = lines.join('\n');
+      const showToast = () => {
+        const toast = document.getElementById('copyToast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      };
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(showToast).catch(() => fallbackCopy(text, showToast));
+      } else {
+        fallbackCopy(text, showToast);
+      }
+    }
+
+    function fallbackCopy(text, cb) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      cb();
+    }
+
+    /* ── Present mode ──────────────────────────────────────────────── */
+    function togglePresent() {
+      isPresenting = !isPresenting;
+      const app = document.getElementById('appRoot');
+      const btn = document.getElementById('presentBtn');
+      if (isPresenting) {
+        app.classList.add('locked');
+        btn.classList.add('active');
+        btn.textContent = s().btnPresentExit;
+      } else {
+        app.classList.remove('locked');
+        btn.classList.remove('active');
+        btn.textContent = s().btnPresent;
+      }
+    }
+
+    /* ── Export XLSX ───────────────────────────────────────────────── */
+    async function exportXLSX() {
+      const buffer = parseInt(document.getElementById('bufferRange').value);
+      const corrRounds = parseInt(document.getElementById('correctionRange').value);
+      const corrMin = parseInt(document.getElementById('corrMinRange').value);
+      const projName = document.getElementById('projectName').value || '';
+      const clientName = document.getElementById('clientName').value || '';
+
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('Estimation');
+
+      const cBg = 'FF282828', cSurface = 'FF1C1916', cSurface2 = 'FF353330';
+      const cBorder = 'FF444440', cText = 'FFE5D2B8', cDim = 'FFB9B9B1';
+      const cAccent = 'FFFF3700', cGreen = 'FF2DB87D', cOrange = 'FFFF3700';
+      const cRed = 'FFD03030', cPurple = 'FFD7E8F8', cWhite = 'FFFFFFFF';
+
+      const borderThin = { style: 'thin', color: { argb: cBorder } };
+      const borders = { top: borderThin, left: borderThin, bottom: borderThin, right: borderThin };
+
+      const fontHead = { name: 'Segoe UI', size: 11, bold: true, color: { argb: cWhite } };
+      const fontBody = { name: 'Segoe UI', size: 10, color: { argb: cText } };
+      const fontMono = { name: 'Consolas', size: 10, color: { argb: cDim } };
+      const fontMonoB = { name: 'Consolas', size: 10, bold: true, color: { argb: cAccent } };
+      const fontLabel = { name: 'Segoe UI', size: 10, bold: true, color: { argb: cDim } };
+      const fontGrand = { name: 'Consolas', size: 12, bold: true, color: { argb: cGreen } };
+      const fontNotes = { name: 'Segoe UI', size: 10, italic: true, color: { argb: cDim } };
+
+      ws.columns = [
+        { width: 5 }, { width: 28 }, { width: 15 }, { width: 12 }, { width: 13 },
+        { width: 12 }, { width: 13 }, { width: 22 }, { width: 12 }, { width: 12 }, { width: 13 }
+      ];
+
+      for (let r = 1; r <= 40; r++) {
+        const row = ws.getRow(r);
+        for (let c = 1; c <= 11; c++)
+          row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cBg } };
+      }
+
+      ws.mergeCells('A1:K1');
+      const titleParts = ['⏱  TASK ESTIMATION'];
+      if (projName) titleParts.push(projName.toUpperCase());
+      if (clientName) titleParts.push(clientName);
+      const titleCell = ws.getCell('A1');
+      titleCell.value = titleParts.join('  —  ');
+      titleCell.font = { name: 'Segoe UI', size: 14, bold: true, color: { argb: cAccent } };
+      titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cSurface } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'left' };
+      titleCell.border = borders;
+      ws.getRow(1).height = 34;
+
+      ws.mergeCells('A2:K2');
+      const cfgCell = ws.getCell('A2');
+      cfgCell.value = `Buffer: ${buffer}%  |  Corrections: ${corrRounds} round(s) × ${corrMin} min/task  |  Date: ${new Date().toLocaleDateString()}`;
+      cfgCell.font = { name: 'Segoe UI', size: 9, italic: true, color: { argb: cDim } };
+      cfgCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cSurface } };
+      cfgCell.alignment = { vertical: 'middle' };
+      cfgCell.border = borders;
+      ws.getRow(2).height = 22;
+      ws.getRow(3).height = 8;
+
+      const headers = ['#', 'Task Name', 'Type', 'Master Qty', 'Min/Master', 'Version Qty', 'Min/Version', 'Notes', 'Master (h)', 'Version (h)', 'Subtotal (h)'];
+      const hRow = ws.getRow(4);
+      hRow.height = 28;
+      headers.forEach((h, i) => {
+        const cell = hRow.getCell(i + 1);
+        cell.value = h;
+        cell.font = fontHead;
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cAccent } };
+        cell.alignment = { vertical: 'middle', horizontal: (i >= 3 && i !== 7) ? 'center' : 'left' };
+        cell.border = borders;
+      });
+
+      let baseTotal = 0;
+      const startRow = 5;
+      tasks.forEach((t, i) => {
+        const mh = +(t.masterQty * t.minMaster / 60).toFixed(2);
+        const vh = +(t.versionQty * t.minVersion / 60).toFixed(2);
+        const sub = +(mh + vh).toFixed(2);
+        baseTotal += sub;
+        const r = ws.getRow(startRow + i);
+        r.height = 24;
+        const vals = [i + 1, t.name || '—', PRESETS[t.type] ? s().presets[t.type] || t.type : t.type,
+        t.masterQty, t.minMaster, t.versionQty, t.minVersion, t.notes || '', mh, vh, sub];
+        const isEven = i % 2 === 0;
+        vals.forEach((v, ci) => {
+          const cell = r.getCell(ci + 1);
+          cell.value = v;
+          if (ci === 10) cell.font = fontMonoB;
+          else if (ci >= 8) cell.font = fontMono;
+          else if (ci === 7) cell.font = fontNotes;
+          else cell.font = fontBody;
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isEven ? cSurface : cSurface2 } };
+          cell.alignment = { vertical: 'middle', horizontal: (ci >= 3 && ci !== 7) ? 'center' : 'left' };
+          cell.border = borders;
+          if (ci >= 8) cell.numFmt = '0.00';
+        });
+      });
+
+      const sumStart = startRow + tasks.length + 1;
+      ws.getRow(sumStart - 1).height = 8;
+
+      const bufferH = baseTotal * buffer / 100;
+      const totalQty = tasks.reduce((s, t) => s + t.masterQty + t.versionQty, 0);
+      const corrH = (totalQty * corrRounds * corrMin) / 60;
+      const grand = baseTotal + bufferH + corrH;
+
+      const summaryData = [
+        { label: 'Base Total', value: +baseTotal.toFixed(2), color: cAccent },
+        { label: `Buffer (${buffer}%)`, value: +bufferH.toFixed(2), color: cOrange },
+        { label: `Corrections (${corrRounds}rnd × ${corrMin}min)`, value: +corrH.toFixed(2), color: cRed },
+        { label: 'GRAND TOTAL', value: +grand.toFixed(2), color: cGreen, grand: true },
+        { label: 'Total Days (8h/day)', value: +(grand / 8).toFixed(2), color: cPurple },
+        {
+          label: 'Total Task Units', value: totalQty, color: cDim,
+          info: `${tasks.reduce((s, t) => s + t.masterQty, 0)} master + ${tasks.reduce((s, t) => s + t.versionQty, 0)} version`
+        },
+      ];
+
+      ws.mergeCells(sumStart, 1, sumStart, 11);
+      const sumHead = ws.getCell(sumStart, 1);
+      sumHead.value = '📊  SUMMARY';
+      sumHead.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: cAccent } };
+      sumHead.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cSurface } };
+      sumHead.border = borders;
+      ws.getRow(sumStart).height = 28;
+
+      summaryData.forEach((item, i) => {
+        const r = ws.getRow(sumStart + 1 + i);
+        r.height = item.grand ? 30 : 24;
+        ws.mergeCells(sumStart + 1 + i, 1, sumStart + 1 + i, 10);
+        const lc = r.getCell(1);
+        lc.value = item.label;
+        lc.font = item.grand ? { name: 'Segoe UI', size: 11, bold: true, color: { argb: cWhite } } : fontLabel;
+        lc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: item.grand ? cSurface2 : cSurface } };
+        lc.alignment = { vertical: 'middle', horizontal: 'right' };
+        lc.border = borders;
+        const vc = r.getCell(11);
+        vc.value = item.value;
+        vc.numFmt = item.label.includes('Units') ? '0' : '0.00';
+        vc.font = item.grand ? fontGrand : { name: 'Consolas', size: 11, bold: true, color: { argb: item.color } };
+        vc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: item.grand ? cSurface2 : cSurface } };
+        vc.alignment = { vertical: 'middle', horizontal: 'center' };
+        vc.border = borders;
+      });
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const safe = (projName || 'estimation').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      a.download = `${safe}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+    }
+
+    /* ── Arrow key stepping (number inputs in table) ──────────────────
+       ↑↓          → ±1
+       Shift+↑↓    → ±5
+    ─────────────────────────────────────────────────────────────────── */
+    function arrowNum(e, taskId, field) {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      const step = e.shiftKey ? 5 : 1;
+      const dir  = e.key === 'ArrowUp' ? 1 : -1;
+      const cur  = parseFloat(e.target.value) || 0;
+      const next = Math.max(0, cur + dir * step);
+      e.target.value = next;
+      updateField(taskId, field, next);
+      // render() xóa DOM → restore focus về đúng input sau khi re-render
+      const FIELD_ORDER = ['masterQty', 'minMaster', 'versionQty', 'minVersion'];
+      const fi = FIELD_ORDER.indexOf(field);
+      const ti = tasks.findIndex(t => t.id === taskId);
+      if (fi === -1 || ti === -1) return;
+      const row = document.getElementById('taskBody').querySelectorAll('tr')[ti];
+      if (row) {
+        const inp = row.querySelectorAll('input.t-input.num')[fi];
+        if (inp) { inp.focus(); inp.select(); }
+      }
+    }
+
+    /* ── Arrow key stepping (converter) ───────────────────────────────
+       ↑↓          → ±0.01h  /  ±1 min
+       Shift+↑↓    → ±0.25h  /  ±15 min
+    ─────────────────────────────────────────────────────────────────── */
+    function arrowHours(e) {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      const step = e.shiftKey ? 0.25 : 0.01;
+      const dir  = e.key === 'ArrowUp' ? 1 : -1;
+      const cur  = parseNum(document.getElementById('convHours').value) || 0;
+      const next = Math.max(0, parseFloat((cur + dir * step).toFixed(2)));
+      document.getElementById('convHours').value = next.toFixed(2).replace('.', ',');
+      convFromHours();
+    }
+
+    function arrowMins(e) {
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      const step = e.shiftKey ? 15 : 1;
+      const dir  = e.key === 'ArrowUp' ? 1 : -1;
+      const cur  = parseNum(document.getElementById('convMins').value) || 0;
+      const next = Math.max(0, cur + dir * step);
+      document.getElementById('convMins').value = next;
+      convFromMins();
+    }
+
+    // Init
+    renderRefGrid();
+    loadState();
+  </script>
+</body>
+
+</html>

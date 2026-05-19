@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Task Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <style>
+        /* ── SPRING CC BRAND TOKENS ──────────────────────────────── */
+        :root {
+            --bg: #282828;
+            --surface: #1c1916;
+            --panel: #1c1916;
+            --border: rgba(185,185,177,0.2);
+            --border-hi: #FF3700;
+            --text: #E5D2B8;
+            --muted: #B9B9B1;
+            --dim: #3a3733;
+            --accent: #FF3700;
+            --accent-glow: rgba(255,55,0,0.18);
+            --green: #2DB87D;
+            --green-bg: rgba(45,184,125,0.12);
+            --red: #D03030;
+            --red-bg: rgba(208,48,48,0.10);
+            --amber: #f0a84c;
+            --amber-bg: rgba(240,168,76,0.10);
+            --radius: 6px;
+            --radius-lg: 10px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #1c1916 0%, #282828 60%, #3d1800 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        /* ───── LAYOUT ───── */
+        .app-shell {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* ───── TOPBAR ───── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 24px;
+            height: 56px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 200;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.02em;
+            color: var(--text);
+            white-space: nowrap;
+            text-decoration: none;
+        }
+        .app-logo-icon {
+            width: 26px; height: 26px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+        }
+
+        .topbar-sep {
+            width: 1px; height: 22px;
+            background: var(--border); flex-shrink:0;
+        }
+
+        .account-section {
+            display: flex; align-items: center; gap: 10px; flex: 1;
+        }
+
+        .account-label {
+            font-size: 12px; color: var(--muted); white-space: nowrap;
+        }
+
+        .account-input {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            padding: 7px 12px;
+            width: 200px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .account-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .account-input::placeholder { color: var(--muted); }
+
+        .connection-status {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 11px;
+            border-radius: 99px;
+            font-size: 12px; font-weight: 500;
+            font-family: 'DM Mono', monospace;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+        .connection-status .dot {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+        }
+        .connection-status.connected  { background: var(--green-bg); color: var(--green); border-color: rgba(61,207,130,0.2); }
+        .connection-status.connected .dot { background: var(--green); }
+        .connection-status.disconnected { background: var(--red-bg); color: var(--red); border-color: rgba(240,85,85,0.2); }
+        .connection-status.disconnected .dot { background: var(--red); }
+        .connection-status.loading  { background: var(--amber-bg); color: var(--amber); border-color: rgba(240,168,76,0.2); }
+        .connection-status.loading .dot { background: var(--amber); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .topbar-end {
+            display: flex; align-items: center; gap: 8px; margin-left: auto;
+        }
+
+        .save-status {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 99px;
+            border: 1px solid transparent;
+        }
+        .save-status.saved  { color: var(--green); background: var(--green-bg); border-color: rgba(61,207,130,0.2); }
+        .save-status.saving { color: var(--amber); background: var(--amber-bg); border-color: rgba(240,168,76,0.2); }
+
+        /* ───── TOOLBAR ───── */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 24px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* ───── BUTTONS ───── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .btn:hover {
+            background: var(--dim);
+            border-color: var(--border-hi);
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: #cc2b00; border-color: #cc2b00; }
+
+        .btn-success {
+            background: rgba(61,207,130,0.12);
+            border-color: rgba(61,207,130,0.3);
+            color: var(--green);
+        }
+        .btn-success:hover { background: rgba(61,207,130,0.2); }
+
+        .btn-danger {
+            background: rgba(240,85,85,0.10);
+            border-color: rgba(240,85,85,0.25);
+            color: var(--red);
+        }
+        .btn-danger:hover { background: rgba(240,85,85,0.2); }
+
+        /* ───── EXPORT DROPDOWN ───── */
+        .export-dropdown { position: relative; }
+        .export-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            background: var(--panel);
+            border: 1px solid var(--border-hi);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+            z-index: 1000;
+            min-width: 170px;
+            overflow: hidden;
+        }
+        .export-menu.show { display: block; }
+        .export-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text);
+            transition: background 0.15s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .export-option:hover { background: var(--dim); }
+        .export-option + .export-option { border-top: 1px solid var(--border); }
+        .export-option.sep { border-top: 1px solid var(--border-hi) !important; }
+
+        /* ───── TABLE AREA ───── */
+        .table-wrap {
+            flex: 1;
+            overflow: auto;
+            padding: 20px 24px 32px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        thead tr { background: var(--panel); }
+        thead th {
+            padding: 11px 14px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            user-select: none;
+        }
+        thead th[data-column="task"] { text-align: left; }
+
+        .resize-handle {
+            position: absolute; top: 0; right: 0;
+            width: 3px; height: 100%;
+            cursor: col-resize;
+            background: transparent;
+            transition: background 0.2s;
+        }
+        .resize-handle:hover, .resize-handle.resizing { background: var(--accent); }
+        th:hover .resize-handle { background: var(--border-hi); }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.12s;
+        }
+        tbody tr:hover { background: rgba(255,255,255,0.025); }
+        tbody tr.done-row {
+            opacity: 0.5;
+        }
+        tbody tr.done-row td { text-decoration-color: var(--muted); }
+
+        td {
+            padding: 9px 12px;
+            vertical-align: middle;
+        }
+
+        /* ───── TABLE INPUTS ───── */
+        td input[type="text"],
+        td input[type="number"] {
+            width: 100%;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            padding: 6px 8px;
+            outline: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        td input[type="text"]:focus,
+        td input[type="number"]:focus {
+            border-color: var(--accent);
+            background: var(--panel);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        td input[type="text"]::placeholder { color: var(--muted); font-style: italic; }
+
+        td input[type="checkbox"] {
+            appearance: none;
+            width: 17px; height: 17px;
+            border: 2px solid var(--border-hi);
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: block; margin: auto;
+            position: relative;
+        }
+        td input[type="checkbox"]:checked {
+            background: var(--green);
+            border-color: var(--green);
+        }
+        td input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 4px;
+            width: 5px; height: 8px;
+            border: 2px solid #0c0c10;
+            border-top: none; border-left: none;
+            transform: rotate(45deg);
+        }
+
+        /* ───── COL WIDTHS ───── */
+        .job-number  { width: 72px; }
+        .task-name   { min-width: 200px; }
+        .estimate-col,
+        .filled-col,
+        .remaining-col { width: 110px; }
+        .done-col    { width: 70px; text-align: center; }
+        .actions-col { width: 54px; text-align: center; }
+
+        .estimate-col td input,
+        .filled-col td input { text-align: center; }
+
+        /* ───── PROGRESS ───── */
+        .progress-wrap { display: flex; flex-direction: column; gap: 4px; }
+        .progress-bar {
+            height: 4px;
+            background: var(--dim);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        .progress-fill.complete { background: var(--green); }
+        .progress-numbers {
+            display: flex; justify-content: space-between;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px; color: var(--muted);
+        }
+        .remaining-val {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        /* ───── DELETE BTN ───── */
+        .delete-row {
+            width: 26px; height: 26px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            margin: auto;
+            transition: all 0.15s;
+        }
+        .delete-row:hover {
+            background: var(--red-bg);
+            border-color: rgba(240,85,85,0.3);
+            color: var(--red);
+        }
+
+        /* ───── CALCULATOR MODAL ───── */
+        #calculatorBox {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background: var(--panel);
+            border: 1px solid var(--border-hi);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+            width: 520px;
+            max-width: 94vw;
+            padding: 0;
+            overflow: hidden;
+        }
+        .calc-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .calc-title {
+            font-weight: 700; font-size: 14px; letter-spacing: 0.02em;
+        }
+        .calc-close {
+            background: none; border: none; color: var(--muted);
+            cursor: pointer; font-size: 18px; line-height: 1;
+            padding: 2px 6px; border-radius: 4px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .calc-close:hover { background: var(--dim); color: var(--text); }
+
+        .calc-body { padding: 20px; }
+
+        .calc-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calc-table th {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .calc-table th:first-child { text-align: left; }
+        .calc-table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            text-align: center;
+        }
+        .calc-table td:first-child { text-align: left; color: var(--muted); font-size: 12px; }
+        .calc-table input[type="number"] {
+            width: 100%; background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            padding: 6px 10px;
+            text-align: center; outline: none;
+            transition: border-color 0.15s;
+        }
+        .calc-table input[type="number"]:focus { border-color: var(--accent); }
+        .calc-table input[readonly] { color: var(--muted); cursor: default; }
+        .calc-total-row { background: rgba(255,55,0,0.06); }
+        .calc-total-row td { font-weight: 600; color: var(--accent) !important; }
+
+        .calc-summary {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: flex; gap: 24px;
+            font-family: 'DM Mono', monospace;
+        }
+        .calc-summary-item { display: flex; flex-direction: column; gap: 3px; }
+        .calc-summary-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+        .calc-summary-value { font-size: 22px; font-weight: 500; color: var(--text); }
+        .calc-summary-unit { font-size: 11px; color: var(--muted); }
+
+        /* overlay backdrop */
+        #calcOverlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(3px);
+            z-index: 9998;
+        }
+
+        /* ───── HAMBURGER ───── */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 4px; cursor: pointer;
+            padding: 4px 6px;
+            border-radius: var(--radius);
+        }
+        .hamburger div {
+            width: 20px; height: 2px;
+            background: var(--muted);
+            border-radius: 1px;
+        }
+
+        /* ───── SCROLLBAR ───── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+
+        /* ───── RESPONSIVE ───── */
+        @media (max-width: 1080px) {
+            .topbar { padding: 0 16px; }
+            .toolbar { padding: 10px 16px; }
+            .table-wrap { padding: 16px 16px 24px; }
+        }
+
+        @media (max-width: 768px) {
+            .topbar { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 10px; }
+            .toolbar { display: none; }
+            .toolbar.show { display: flex; }
+            .hamburger { display: flex; }
+            .account-section { flex-wrap: wrap; }
+            .account-input { width: 150px; }
+            .task-name { min-width: 130px; }
+            #calculatorBox { width: 95vw; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <a href="#" class="app-logo">
+            <div class="app-logo-icon">⬡</div>
+            TaskFlow
+        </a>
+        <div class="topbar-sep"></div>
+        <div class="account-section">
+            <span class="account-label">Account</span>
+            <input type="text" id="accountName" class="account-input"
+                   placeholder="Enter account name…"
+                   onchange="changeAccount()" maxlength="50">
+            <button class="btn btn-primary" onclick="createAccount()">Create</button>
+        </div>
+        <div class="connection-status loading" id="connectionStatus">
+            <span class="dot"></span>
+            <span>Connecting…</span>
+        </div>
+        <div class="topbar-end">
+            <div class="save-status saved" id="saveStatus">Ready</div>
+        </div>
+    </header>
+
+    <!-- HAMBURGER (mobile) -->
+    <div class="hamburger" onclick="toggleMenu()" style="padding:8px 16px;">
+        <div></div><div></div><div></div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar" id="menuControls">
+        <button class="btn btn-primary" onclick="addRow()" id="addBtn">
+            + Add Task
+        </button>
+        <button class="btn" onclick="toggleCalculator()">
+            🧮 Calculator
+        </button>
+        <button class="btn" onclick="saveToCloud()" id="saveBtn">
+            ☁️ Save Cloud
+        </button>
+        <button class="btn" onclick="loadFromCloud()" id="loadBtn">
+            ↓ Load Cloud
+        </button>
+        <div class="export-dropdown">
+            <button class="btn btn-success" onclick="toggleExportMenu()">↑ Export</button>
+            <div class="export-menu" id="exportMenu">
+                <div class="export-option" onclick="exportToJSON()">📄 JSON</div>
+                <div class="export-option" onclick="exportToExcel()">📈 Excel</div>
+                <div class="export-option" onclick="exportToCSV()">📋 CSV</div>
+                <div class="export-option sep" onclick="exportLocalData()">💾 Local Backup</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+        <table id="taskTable">
+            <thead>
+                <tr>
+                    <th class="job-number" data-column="job">#<div class="resize-handle"></div></th>
+                    <th class="task-name" data-column="task">Task Name<div class="resize-handle"></div></th>
+                    <th class="estimate-col" data-column="estimate">Estimate (h)<div class="resize-handle"></div></th>
+                    <th class="filled-col" data-column="filled">Filled (h)<div class="resize-handle"></div></th>
+                    <th class="remaining-col" data-column="remaining">Remaining<div class="resize-handle"></div></th>
+                    <th class="done-col" data-column="done">Done<div class="resize-handle"></div></th>
+                    <th class="actions-col">—</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody"></tbody>
+        </table>
+    </div>
+
+</div><!-- /app-shell -->
+
+<!-- CALCULATOR OVERLAY -->
+<div id="calcOverlay" onclick="toggleCalculator()"></div>
+
+<!-- CALCULATOR MODAL -->
+<div id="calculatorBox">
+    <div class="calc-header">
+        <span class="calc-title">🧮 Time Calculator</span>
+        <button class="calc-close" onclick="toggleCalculator()">✕</button>
+    </div>
+    <div class="calc-body">
+        <table class="calc-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Master</th>
+                    <th>Versioning</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Quantity</td>
+                    <td><input type="number" id="qtyMaster" value="0"></td>
+                    <td><input type="number" id="qtyVersion" value="0"></td>
+                </tr>
+                <tr>
+                    <td>Time (min)</td>
+                    <td><input type="number" id="timeMinMaster" value="0"></td>
+                    <td><input type="number" id="timeMinVersion" value="0"></td>
+                </tr>
+                <tr>
+                    <td>Time (hrs)</td>
+                    <td><input type="number" id="timeHrMaster" readonly></td>
+                    <td><input type="number" id="timeHrVersion" readonly></td>
+                </tr>
+                <tr class="calc-total-row">
+                    <td>Total (min)</td>
+                    <td><span id="totalMaster">0</span></td>
+                    <td><span id="totalVersion">0</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="calc-summary">
+            <div class="calc-summary-item">
+                <span class="calc-summary-label">Total Hours</span>
+                <span class="calc-summary-value" id="totalHour">0.00</span>
+                <span class="calc-summary-unit">hrs</span>
+            </div>
+            <div class="calc-summary-item">
+                <span class="calc-summary-label">Total Days</span>
+                <span class="calc-summary-value" id="totalDay">0.00</span>
+                <span class="calc-summary-unit">days @ 8h</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+<script>
+    function toggleMenu() {
+        document.getElementById('menuControls').classList.toggle('show');
+    }
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAAp2F-8zpv8svX3cdshHVvzDWyDzkWPuM",
+        authDomain: "task-manager-personal-f543e.firebaseapp.com",
+        projectId: "task-manager-personal-f543e",
+        storageBucket: "task-manager-personal-f543e.firebasestorage.app",
+        messagingSenderId: "439010018138",
+        appId: "1:439010018138:web:e497a23cae97bc77e52963"
+    };
+
+    let db;
+    let isCloudEnabled = false;
+
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        isCloudEnabled = true;
+        updateConnectionStatus('connected', '✅ Cloud connected');
+    } catch (error) {
+        console.warn('Firebase initialization failed, using localStorage only:', error);
+        updateConnectionStatus('disconnected', '⌛ Cloud unavailable - Using local storage');
+    }
+
+    let taskData = [];
+    let autoSaveTimeout;
+    let taskIdCounter = 1;
+    let isResizing = false;
+    let currentResizeColumn = null;
+    let startX = 0;
+    let startWidth = 0;
+    let currentAccount = '';
+
+    function updateConnectionStatus(status, message) {
+        const statusEl = document.getElementById('connectionStatus');
+        statusEl.className = `connection-status ${status}`;
+        // rebuild with dot
+        statusEl.innerHTML = `<span class="dot"></span><span>${message.replace(/^[^\s]+\s/, '')}</span>`;
+        // restore full message for cloud connected text
+        if (status === 'connected') statusEl.querySelector('span:last-child').textContent = 'Cloud connected';
+        if (status === 'disconnected') statusEl.querySelector('span:last-child').textContent = 'Local only';
+        if (status === 'loading') statusEl.querySelector('span:last-child').textContent = 'Connecting…';
+
+        const cloudButtons = ['saveBtn', 'loadBtn'];
+        cloudButtons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.disabled = !isCloudEnabled;
+        });
+    }
+
+    function createAccount() {
+        const accountName = document.getElementById('accountName').value.trim();
+        if (!accountName) { alert('Please enter an account name!'); return; }
+        if (accountName.length < 3) { alert('Account name must be at least 3 characters long!'); return; }
+        changeAccount();
+    }
+
+    function changeAccount() {
+        const accountName = document.getElementById('accountName').value.trim();
+        if (accountName && accountName !== currentAccount && accountName.length >= 3) {
+            currentAccount = accountName;
+            localStorage.setItem('taskManagerAccount', accountName);
+            taskData = [];
+            taskIdCounter = 1;
+            if (isCloudEnabled) { loadFromCloud(); } else { loadDataLocally(); }
+            if (taskData.length === 0) addRow();
+            renderTable();
+        }
+    }
+
+    async function saveToCloud() {
+        if (!isCloudEnabled || !currentAccount) {
+            alert('Please create an account and ensure cloud connection is available!');
+            return;
+        }
+        try {
+            showSaveStatus('cloudsaved');
+            const dataToSave = {
+                tasks: taskData,
+                counter: taskIdCounter,
+                lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                accountName: currentAccount,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection('taskAccounts').doc(currentAccount).set(dataToSave);
+            showSaveStatus('saved');
+        } catch (error) {
+            console.error('Error saving to cloud:', error);
+            showSaveStatus('error');
+            alert('Error saving to cloud. Data saved locally instead.');
+            saveDataLocally();
+        }
+    }
+
+    async function loadFromCloud() {
+        if (!isCloudEnabled || !currentAccount) { loadDataLocally(); return; }
+        try {
+            showSaveStatus('loading');
+            const doc = await db.collection('taskAccounts').doc(currentAccount).get();
+            if (doc.exists) {
+                const data = doc.data();
+                taskData = data.tasks || [];
+                taskIdCounter = data.counter || 1;
+                renderTable();
+                showSaveStatus('loaded');
+            } else {
+                taskData = []; taskIdCounter = 1;
+                renderTable(); showSaveStatus('saved');
+            }
+        } catch (error) {
+            console.error('Error loading from cloud:', error);
+            showSaveStatus('error');
+            loadDataLocally();
+        }
+    }
+
+    function saveDataLocally() {
+        try {
+            const dataToSave = { tasks: taskData, counter: taskIdCounter, savedAt: new Date().toISOString(), accountName: currentAccount };
+            localStorage.setItem(`taskManagerData_${currentAccount}`, JSON.stringify(dataToSave));
+        } catch (e) { console.error('Error saving locally:', e); }
+    }
+
+    function loadDataLocally() {
+        if (!currentAccount) return;
+        try {
+            const savedData = localStorage.getItem(`taskManagerData_${currentAccount}`);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                taskData = data.tasks || [];
+                taskIdCounter = data.counter || 1;
+                renderTable();
+            }
+        } catch (e) { taskData = []; taskIdCounter = 1; }
+    }
+
+    function autoSaveLocally() {
+        if (!currentAccount) return;
+        clearTimeout(autoSaveTimeout);
+        showSaveStatus('saving');
+        autoSaveTimeout = setTimeout(() => { saveDataLocally(); showSaveStatus('saved'); }, 1000);
+    }
+
+    function showSaveStatus(status) {
+        const statusEl = document.getElementById('saveStatus');
+        statusEl.className = 'save-status';
+        switch (status) {
+            case 'saved':     statusEl.classList.add('saved');  statusEl.textContent = '✓ Saved'; break;
+            case 'saving':    statusEl.classList.add('saving'); statusEl.textContent = '⟳ Saving…'; break;
+            case 'loading':   statusEl.classList.add('saving'); statusEl.textContent = '⟳ Loading…'; break;
+            case 'loaded':    statusEl.classList.add('saved');  statusEl.textContent = '☁ Loaded'; break;
+            case 'cloudsaved':statusEl.classList.add('saved');  statusEl.textContent = '☁ Cloud saved'; break;
+            case 'error':
+                statusEl.style.background = 'var(--red-bg)';
+                statusEl.style.color = 'var(--red)';
+                statusEl.textContent = '⚠ Error'; break;
+        }
+    }
+
+    function toggleExportMenu() {
+        document.getElementById('exportMenu').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdown = document.querySelector('.export-dropdown');
+        if (!dropdown.contains(event.target)) {
+            document.getElementById('exportMenu').classList.remove('show');
+        }
+    });
+
+    function exportToJSON() {
+        const exportData = {
+            accountName: currentAccount,
+            tasks: taskData,
+            exportDate: new Date().toISOString(),
+            totalTasks: taskData.length,
+            completedTasks: taskData.filter(t => t.done).length,
+            totalEstimateHours: taskData.reduce((s, t) => s + (t.estimate || 0), 0),
+            totalFilledHours: taskData.reduce((s, t) => s + (t.filled || 0), 0)
+        };
+        const dataBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `tasks_${currentAccount}_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        document.getElementById('exportMenu').classList.remove('show');
+    }
+
+    function exportToExcel() {
+        const headers = ['Job #', 'Task Name', 'Estimate (h)', 'Filled (h)', 'Remaining (h)', 'Progress (%)', 'Status'];
+        const csvContent = [
+            headers.join(','),
+            ...taskData.map(task => {
+                const remaining = Math.max(0, (task.estimate || 0) - (task.filled || 0));
+                const progress = task.estimate > 0 ? Math.min(100, ((task.filled || 0) / task.estimate) * 100) : 0;
+                return [task.jobNumber || '', `"${(task.taskName || '').replace(/"/g, '""')}"`,
+                    task.estimate || 0, task.filled || 0,
+                    remaining.toFixed(1), progress.toFixed(1),
+                    task.done ? 'Completed' : 'In Progress'].join(',');
+            })
+        ].join('\n');
+        const BOM = '\uFEFF';
+        const dataBlob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `tasks_${currentAccount}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        link.click();
+        document.getElementById('exportMenu').classList.remove('show');
+    }
+
+    function exportToCSV() {
+        const headers = ['Job #', 'Task Name', 'Estimate (h)', 'Filled (h)', 'Remaining (h)', 'Progress (%)', 'Status'];
+        const csvContent = [
+            headers.join(','),
+            ...taskData.map(task => {
+                const remaining = Math.max(0, (task.estimate || 0) - (task.filled || 0));
+                const progress = task.estimate > 0 ? Math.min(100, ((task.filled || 0) / task.estimate) * 100) : 0;
+                return [task.jobNumber || '', `"${(task.taskName || '').replace(/"/g, '""')}"`,
+                    task.estimate || 0, task.filled || 0,
+                    remaining.toFixed(1), progress.toFixed(1),
+                    task.done ? 'Completed' : 'In Progress'].join(',');
+            })
+        ].join('\n');
+        const dataBlob = new Blob([csvContent], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `tasks_${currentAccount}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        document.getElementById('exportMenu').classList.remove('show');
+    }
+
+    function exportLocalData() {
+        if (!currentAccount) { alert('Please create an account first!'); return; }
+        const exportData = { accountName: currentAccount, tasks: taskData, counter: taskIdCounter, exportDate: new Date().toISOString(), exportType: 'local_backup' };
+        const dataBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `local_backup_${currentAccount}_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        document.getElementById('exportMenu').classList.remove('show');
+    }
+
+    // Column resize
+    function initializeColumnResize() {
+        document.querySelectorAll('.resize-handle').forEach(handle => {
+            handle.addEventListener('mousedown', startResize);
+        });
+    }
+
+    function startResize(e) {
+        e.preventDefault();
+        isResizing = true;
+        currentResizeColumn = e.target.closest('th');
+        startX = e.clientX;
+        startWidth = currentResizeColumn.offsetWidth;
+        currentResizeColumn.querySelector('.resize-handle').classList.add('resizing');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', stopResize);
+    }
+
+    function doResize(e) {
+        if (!isResizing) return;
+        const newWidth = Math.max(50, startWidth + (e.clientX - startX));
+        currentResizeColumn.style.width = newWidth + 'px';
+        currentResizeColumn.style.minWidth = newWidth + 'px';
+    }
+
+    function stopResize() {
+        if (!isResizing) return;
+        isResizing = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        if (currentResizeColumn) {
+            currentResizeColumn.querySelector('.resize-handle').classList.remove('resizing');
+            currentResizeColumn = null;
+        }
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', stopResize);
+    }
+
+    // Init
+    window.addEventListener('load', function() {
+        const savedAccount = localStorage.getItem('taskManagerAccount');
+        if (savedAccount) {
+            document.getElementById('accountName').value = savedAccount;
+            currentAccount = savedAccount;
+            if (isCloudEnabled) { loadFromCloud(); } else { loadDataLocally(); }
+        }
+        if (taskData.length === 0 && currentAccount) addRow();
+        initializeColumnResize();
+    });
+
+    function addRow() {
+        if (!currentAccount) { alert('Please create an account first!'); return; }
+        taskData.unshift({ id: taskIdCounter++, jobNumber: taskIdCounter - 1, taskName: '', estimate: 0, filled: 0, done: false });
+        renderTable();
+        autoSaveLocally();
+    }
+
+    function deleteRow(id) {
+        taskData = taskData.filter(t => t.id !== id);
+        renderTable();
+        autoSaveLocally();
+    }
+
+    function updateTask(id, field, value) {
+        const task = taskData.find(t => t.id === id);
+        if (task) {
+            if (field === 'done') task[field] = value;
+            else if (field === 'estimate' || field === 'filled') task[field] = parseFloat(value) || 0;
+            else task[field] = value;
+            renderTable();
+            autoSaveLocally();
+        }
+    }
+
+    function calculateRemaining(estimate, filled) { return Math.max(0, estimate - filled); }
+    function calculateProgress(estimate, filled) {
+        if (estimate === 0) return 0;
+        return Math.min(100, (filled / estimate) * 100);
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('taskTableBody');
+        tbody.innerHTML = '';
+        taskData.forEach((task, index) => {
+            task.jobNumber = index + 1;
+            const remaining = calculateRemaining(task.estimate, task.filled);
+            const progress = calculateProgress(task.estimate, task.filled);
+            const isComplete = progress >= 100;
+
+            const row = document.createElement('tr');
+            if (task.done) row.classList.add('done-row');
+
+            row.innerHTML = `
+                <td class="job-number">
+                    <input type="text" value="${task.jobNumber}"
+                           onchange="updateTask(${task.id}, 'jobNumber', this.value)"
+                           placeholder="#" maxlength="10" style="text-align:center;">
+                </td>
+                <td class="task-name">
+                    <input type="text" value="${task.taskName}"
+                           onchange="updateTask(${task.id}, 'taskName', this.value)"
+                           placeholder="Task description…">
+                </td>
+                <td class="estimate-col">
+                    <input type="number" value="${task.estimate}"
+                           onchange="updateTask(${task.id}, 'estimate', this.value)"
+                           min="0" step="0.5" style="text-align:center;">
+                </td>
+                <td class="filled-col">
+                    <input type="number" value="${task.filled}"
+                           onchange="updateTask(${task.id}, 'filled', this.value)"
+                           min="0" step="0.5" style="text-align:center;">
+                </td>
+                <td class="remaining-col">
+                    <div class="progress-wrap">
+                        <span class="remaining-val">${remaining.toFixed(1)}h</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${isComplete ? 'complete' : ''}" style="width:${progress}%"></div>
+                        </div>
+                        <div class="progress-numbers">
+                            <span>${progress.toFixed(0)}%</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="done-col">
+                    <input type="checkbox" ${task.done ? 'checked' : ''}
+                           onchange="updateTask(${task.id}, 'done', this.checked)">
+                </td>
+                <td class="actions-col">
+                    <button class="delete-row" onclick="deleteRow(${task.id})" title="Delete task">✕</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function toggleCalculator() {
+        const box = document.getElementById('calculatorBox');
+        const overlay = document.getElementById('calcOverlay');
+        const isHidden = box.style.display !== 'block';
+        box.style.display = isHidden ? 'block' : 'none';
+        overlay.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) calculateTime();
+    }
+
+    function calculateTime() {
+        const qMaster    = +document.getElementById("qtyMaster").value;
+        const qVersion   = +document.getElementById("qtyVersion").value;
+        const tMinMaster = +document.getElementById("timeMinMaster").value;
+        const tMinVersion= +document.getElementById("timeMinVersion").value;
+        document.getElementById("timeHrMaster").value  = (tMinMaster  / 60).toFixed(2);
+        document.getElementById("timeHrVersion").value = (tMinVersion / 60).toFixed(2);
+        const totalMaster  = qMaster  * tMinMaster;
+        const totalVersion = qVersion * tMinVersion;
+        document.getElementById("totalMaster").textContent  = totalMaster;
+        document.getElementById("totalVersion").textContent = totalVersion;
+        const totalHour = (totalMaster + totalVersion) / 60;
+        document.getElementById("totalHour").textContent = totalHour.toFixed(2);
+        document.getElementById("totalDay").textContent  = (totalHour / 8).toFixed(2);
+    }
+
+    document.addEventListener("input", (e) => {
+        if (["qtyMaster","qtyVersion","timeMinMaster","timeMinVersion"].includes(e.target.id)) {
+            calculateTime();
+        }
+    });
+</script>
+</body>
+</html>

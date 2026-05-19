@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banner Tracker</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ── DESIGN TOKENS ─────────────────────────────────────────────
+       Backgrounds & surfaces
+       --bg           page background
+       --surface      topbar / sidebar
+       --surface2     cards, table headers, inputs
+       --surface3     total row, deep wells
+
+       Borders
+       --border       subtle dividers
+       --border2      stronger outlines
+
+       Text
+       --text         primary
+       --dim          secondary, de-emphasised
+       --muted        labels, placeholders
+
+       Brand
+       --accent       primary highlight (amber)
+       --accent-d     accent @ 12% opacity  (bg tint)
+       --accent-d2    accent @ 22% opacity  (pressed)
+
+       Semantic status colours   (avoid raw color names as variable names)
+       --clr-ok       positive / complete  (green)
+       --clr-ok-dim   positive bg tint
+       --clr-err      negative / overdue   (red)
+       --clr-info     neutral info         (blue)
+       --clr-info-dim info bg tint
+
+       Typography
+       --mono         JetBrains Mono
+       --sans         DM Sans
+
+       Misc
+       --r            default border-radius
+       --sidebar-w    sidebar width
+    ────────────────────────────────────────────────────────────── */
+    :root {
+      /* ── Spring CC Surfaces ── */
+      --bg:      #FAFAF7;
+      --surface: #282828;
+      --surface2:#F0EAE0;
+      --surface3:#E5D2B8;
+      --border:  rgba(185,185,177,0.28);
+      --border2: rgba(185,185,177,0.55);
+
+      /* ── Spring CC Text ── */
+      --text:  #282828;
+      --dim:   #555550;
+      --muted: #B9B9B1;
+
+      /* ── Spring CC Brand ── */
+      --accent:   #FF3700;
+      --accent-d: rgba(255,55,0,0.08);
+      --accent-d2:rgba(255,55,0,0.16);
+
+      /* ── Semantic Status ── */
+      --clr-ok:      #2DB87D;
+      --clr-ok-dim:  rgba(45,184,125,0.10);
+      --clr-err:     #D03030;
+      --clr-info:    #3B82D4;
+      --clr-info-dim:rgba(59,130,212,0.10);
+
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --r:    6px;
+      --sidebar-w: 200px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-size: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 18px;
+      height: 50px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 200;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 2.5px;
+      color: var(--accent);
+      text-transform: uppercase;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border2);
+      flex-shrink: 0;
+      margin: 0 14px;
+    }
+
+    .project-name {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 3px 6px;
+      min-width: 160px;
+      max-width: 260px;
+      border-bottom: 1px solid transparent;
+      transition: border-color .2s;
+    }
+
+    .project-name:focus {
+      outline: none;
+      border-bottom-color: var(--accent);
+    }
+
+    /* Cloud + account zone */
+    .cloud-zone {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 10px;
+    }
+
+    .account-input {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 3px 6px;
+      width: 110px;
+      border-bottom: 1px solid var(--border2);
+      transition: border-color .2s;
+    }
+
+    .account-input:focus {
+      outline: none;
+      border-bottom-color: var(--accent);
+    }
+
+    .account-input::placeholder {
+      color: var(--muted);
+    }
+
+    .btn-connect {
+      padding: 4px 10px;
+      border-radius: var(--r);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .btn-connect:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .cloud-status {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .cloud-status.disconnected {
+      color: var(--muted);
+    }
+
+    .cloud-status.connecting {
+      color: var(--accent);
+      animation: blink 1s infinite;
+    }
+
+    .cloud-status.connected {
+      color: var(--clr-ok);
+    }
+
+    .cloud-status.error {
+      color: var(--clr-err);
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .4;
+      }
+    }
+
+    /* Job zone */
+    .job-zone {
+      display: none;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .job-zone.visible {
+      display: flex;
+    }
+
+    .job-select {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: var(--r);
+      width: 170px;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+
+    .job-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .job-select option {
+      background: var(--surface2);
+    }
+
+    .btn-job {
+      padding: 4px 9px;
+      border-radius: var(--r);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .btn-job:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-job-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 2px 5px;
+      transition: color .15s;
+    }
+
+    .btn-job-del:hover {
+      color: var(--clr-err);
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .save-dot {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .save-dot.idle {
+      color: var(--muted);
+    }
+
+    .save-dot.saving {
+      color: var(--accent);
+    }
+
+    .save-dot.saved {
+      color: var(--clr-ok);
+    }
+
+    /* ── BODY LAYOUT ── */
+    .body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 2px;
+    }
+
+    .sb-section {
+      padding: 14px 13px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sb-title {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* stat cards */
+    .sc {
+      padding: 9px 10px;
+      background: var(--surface2);
+      border-radius: 5px;
+      border-left: 2px solid transparent;
+      margin-bottom: 5px;
+    }
+
+    .sc:last-child {
+      margin-bottom: 0;
+    }
+
+    .sc.c-dim {
+      border-left-color: var(--dim);
+    }
+
+    .sc.c-amber {
+      border-left-color: var(--accent);
+    }
+
+    .sc.c-ok {
+      border-left-color: var(--clr-ok);
+    }
+
+    .sc.c-err {
+      border-left-color: var(--clr-err);
+    }
+
+    .sc.c-info {
+      border-left-color: var(--clr-info);
+    }
+
+    .sc-lbl {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .stat-val {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-val.white {
+      color: var(--text);
+    }
+
+    .stat-val.accent {
+      color: var(--accent);
+    }
+
+    .stat-val.ok {
+      color: var(--clr-ok);
+    }
+
+    .stat-val.err {
+      color: var(--clr-err);
+    }
+
+    .stat-val.info {
+      color: var(--clr-info);
+    }
+
+    .sc-sub {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* progress */
+    .prog-card {
+      background: var(--surface2);
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 5px;
+    }
+
+    .prog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .prog-lbl {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .prog-pct {
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .prog-track {
+      height: 5px;
+      background: var(--surface3);
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid var(--border2);
+    }
+
+    .prog-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), #f97316);
+      transition: width .5s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .prog-sub {
+      margin-top: 6px;
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+    }
+
+    /* sidebar buttons */
+    .sb-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .sb-btn-row {
+      display: flex;
+      gap: 5px;
+    }
+
+    .sb-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex: 1;
+      padding: 6px 8px;
+      border-radius: var(--r);
+      border: 1px solid var(--border2);
+      background: var(--surface3);
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .sb-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sb-btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .sb-btn:disabled:hover {
+      border-color: var(--border2);
+      color: var(--dim);
+    }
+
+    .sb-btn.full {
+      flex: none;
+      width: 100%;
+    }
+
+    /* Export dropdown */
+    .sb-dropdown {
+      position: relative;
+    }
+
+    .sb-dropdown-menu {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      z-index: 300;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, .5);
+      overflow: hidden;
+    }
+
+    .sb-dropdown-menu.open {
+      display: block;
+    }
+
+    .sb-dd-item {
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--mono);
+      transition: background .12s;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sb-dd-item:last-child {
+      border-bottom: none;
+    }
+
+    .sb-dd-item:hover {
+      background: var(--accent-d);
+      color: var(--accent);
+    }
+
+    .sb-dd-sep {
+      height: 1px;
+      background: var(--border2);
+      margin: 3px 0;
+    }
+
+    /* ── MAIN PANEL ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .main-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: var(--r);
+      border: 1px solid var(--border2);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      line-height: 1.4;
+    }
+
+    .btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn.primary {
+      background: var(--accent-d);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn.primary:hover {
+      background: var(--accent-d2);
+    }
+
+    /* ── TABLE WRAPPER ── */
+    .table-wrap {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 16px 32px;
+      background: var(--bg);
+    }
+
+    /* ── TABLE ── */
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      min-width: 100%;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: none;
+    }
+
+    /* HEADER */
+    thead th {
+      background: var(--surface2);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .th-lang-cell {
+      background: var(--surface3) !important;
+      min-width: 90px;
+      position: sticky;
+      left: 0;
+      z-index: 40;
+      padding: 10px 14px;
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      border-right: 2px solid var(--border2) !important;
+      cursor: pointer;
+      user-select: none;
+      transition: color .15s;
+    }
+
+    .th-lang-cell:hover {
+      color: var(--text);
+    }
+
+    .th-lang-cell .sort-arrow {
+      display: inline-block;
+      margin-left: 5px;
+      font-size: 9px;
+      opacity: 0.5;
+      transition: opacity .15s;
+    }
+
+    .th-lang-cell:hover .sort-arrow,
+    .th-lang-cell.active .sort-arrow {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    .th-prod {
+      min-width: 100px;
+      text-align: center;
+      position: relative;
+    }
+
+    .th-prod-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 7px 10px;
+    }
+
+    .prod-input {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      width: 100%;
+      min-width: 70px;
+      cursor: pointer;
+      transition: color .15s;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.4;
+      resize: none;
+      overflow: hidden;
+    }
+
+    .prod-input:focus {
+      outline: none;
+      color: var(--accent);
+      border-bottom: 1px solid var(--accent);
+    }
+
+    .th-stat-label {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-family: var(--mono);
+      font-weight: 500;
+      padding: 2px 0;
+    }
+
+    .col-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 9px;
+      padding: 2px 4px;
+      opacity: 0;
+      transition: all .15s;
+    }
+
+    .th-prod:hover .col-del {
+      opacity: 1;
+      color: var(--clr-err);
+    }
+
+    .th-stat-cell {
+      min-width: 76px;
+      text-align: center;
+      padding: 10px 12px;
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .th-stat-cell.quality {
+      color: var(--dim);
+    }
+
+    .th-stat-cell.accent {
+      color: var(--accent);
+    }
+
+    .th-stat-cell.info {
+      color: var(--clr-info);
+    }
+
+    .th-stat-cell.ok {
+      color: var(--clr-ok);
+    }
+
+    .th-stat-cell.err {
+      color: var(--clr-err);
+    }
+
+    /* BODY ROWS */
+    .tr-lang {
+      transition: background .1s;
+    }
+
+    .tr-lang:hover .td-qty-cell {
+      background: rgba(255, 255, 255, .012);
+    }
+
+    .tr-lang:hover .td-stat-cell {
+      background: rgba(255, 255, 255, .012);
+    }
+
+    .tr-lang:hover .td-minb-cell {
+      background: rgba(255, 255, 255, .012);
+    }
+
+    .tr-lang:hover .td-lang-cell {
+      background: var(--surface3);
+    }
+
+    .td-lang-cell {
+      width: 200px;
+      background: var(--surface2);
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      padding: 7px 12px;
+      border-right: 2px solid var(--border2) !important;
+    }
+
+    .lang-cell-inner {
+      display: flex;
+      align-items: center;
+    }
+
+    .lang-input {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      width: 120px;
+      transition: color .15s;
+    }
+
+    .lang-input:focus {
+      outline: none;
+      color: var(--accent);
+    }
+
+    .row-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 8px;
+      padding: 1px;
+      line-height: 1;
+      opacity: 0;
+      transition: all .15s;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .tr-lang:hover .row-del {
+      opacity: 1;
+    }
+
+    .row-del:hover {
+      color: var(--clr-err);
+    }
+
+    /* Min/B editable column */
+    .td-minb-cell {
+      background: var(--bg);
+      text-align: center;
+    }
+
+    .minb-inp {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      width: 100%;
+      padding: 9px 8px;
+      transition: all .12s;
+      cursor: pointer;
+    }
+
+    .minb-inp:hover {
+      background: var(--accent-d);
+    }
+
+    .minb-inp:focus {
+      outline: none;
+      background: var(--accent-d2);
+      font-weight: 700;
+    }
+
+    .minb-inp::-webkit-outer-spin-button,
+    .minb-inp::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .minb-inp {
+      -moz-appearance: textfield;
+    }
+
+    .td-qty-cell {
+      text-align: center;
+      background: var(--bg);
+    }
+
+    .qty-inp {
+      background: transparent;
+      border: none;
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align: center;
+      width: 100%;
+      padding: 9px 10px;
+      transition: all .12s;
+      cursor: pointer;
+    }
+
+    .qty-inp:hover {
+      background: rgba(255, 255, 255, .025);
+      color: var(--text);
+    }
+
+    .qty-inp:focus {
+      outline: none;
+      background: var(--accent-d);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .qty-inp::placeholder {
+      color: var(--border2);
+    }
+
+    .qty-inp::-webkit-outer-spin-button,
+    .qty-inp::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .qty-inp {
+      -moz-appearance: textfield;
+    }
+
+    .td-stat-cell {
+      text-align: center;
+      padding: 9px 10px;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--bg);
+    }
+
+    .td-stat-cell.quality {
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .td-stat-cell.accent {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .td-stat-cell.info {
+      color: var(--clr-info);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .td-stat-cell.muted {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .td-stat-cell.ok {
+      color: var(--clr-ok);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .td-stat-cell.err {
+      color: var(--clr-err);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .td-stat-cell.over {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* fill cell */
+    .td-fill-cell {
+      background: var(--bg);
+      text-align: center;
+    }
+
+    .fill-inp {
+      background: transparent;
+      border: none;
+      color: var(--clr-ok);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      width: 100%;
+      padding: 9px 8px;
+      transition: all .12s;
+      cursor: pointer;
+    }
+
+    .fill-inp:hover {
+      background: var(--clr-ok-dim);
+    }
+
+    .fill-inp:focus {
+      outline: none;
+      background: var(--clr-ok-dim);
+      color: var(--clr-ok);
+      font-weight: 700;
+    }
+
+    .fill-inp::placeholder {
+      color: var(--border2);
+      font-weight: 400;
+    }
+
+    .fill-inp::-webkit-outer-spin-button,
+    .fill-inp::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .fill-inp {
+      -moz-appearance: textfield;
+    }
+
+    /* TOTAL ROW */
+    .tr-total td {
+      background: var(--surface3);
+      border-top: 2px solid var(--border2);
+    }
+
+    .td-total-label {
+      position: sticky;
+      left: 0;
+      background: var(--surface3);
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-right: 2px solid var(--border2) !important;
+    }
+
+    .td-total-qty {
+      text-align: center;
+      padding: 9px 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .td-total-stat {
+      text-align: center;
+      padding: 9px 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .td-total-stat.quality {
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .td-total-stat.accent {
+      color: var(--accent);
+      font-size: 15px;
+    }
+
+    .td-total-stat.info {
+      color: var(--clr-info);
+    }
+
+    .td-total-stat.muted {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+    }
+
+    .td-total-stat.ok {
+      color: var(--clr-ok);
+    }
+
+    .td-total-stat.err {
+      color: var(--clr-err);
+    }
+
+    .td-total-stat.over {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* ── MODAL ── */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0, 0, 0, .65);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-bg.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 26px 30px;
+      min-width: 320px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, .6);
+    }
+
+    .modal h3 {
+      font-size: 12px;
+      font-family: var(--mono);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+
+    .modal-field {
+      margin-bottom: 14px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 9px;
+      font-family: var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .modal-input {
+      width: 100%;
+      background: var(--surface3);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 9px 12px;
+      transition: border-color .2s;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 999;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: var(--r);
+      padding: 10px 16px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--clr-ok);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .5);
+      transform: translateY(60px);
+      opacity: 0;
+      transition: all .28s cubic-bezier(.4, 0, .2, 1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* ── SCROLLBARS ── */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--dim);
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: var(--surface2);
+    }
+
+    .table-wrap::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    .table-wrap::-webkit-scrollbar-track {
+      background: var(--surface3);
+      border-radius: 0;
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 6px;
+      border: 3px solid var(--surface3);
+    }
+
+    .table-wrap::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+      border-color: var(--surface3);
+    }
+
+    .table-wrap::-webkit-scrollbar-corner {
+      background: var(--surface3);
+    }
+
+    /* ── SPRING CC BRAND OVERRIDES ──────────────────────────────────── */
+
+    /* Body: Spring CC Dark Depth gradient */
+    body {
+      background: linear-gradient(135deg, #1c1916 0%, #282828 55%, #3d1800 100%);
+      background-attachment: fixed;
+    }
+
+    /* Topbar: Off Black shell — children need white/light text */
+    .topbar {
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+    .logo { color: var(--accent); }
+    .sep  { background: rgba(255,255,255,0.15); }
+
+    .project-name {
+      color: #FFFFFF;
+      border-bottom-color: rgba(255,255,255,0.2);
+    }
+    .project-name::placeholder { color: rgba(255,255,255,0.32); }
+    .project-name:focus { border-bottom-color: var(--accent); }
+
+    .account-input {
+      color: #FFFFFF;
+      border-bottom-color: rgba(255,255,255,0.2);
+    }
+    .account-input::placeholder { color: rgba(255,255,255,0.32); }
+    .account-input:focus { border-bottom-color: var(--accent); }
+
+    .btn-connect {
+      background: transparent;
+      border-color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.65);
+    }
+    .btn-connect:hover { border-color: var(--accent); color: var(--accent); }
+
+    .cloud-status.disconnected { color: rgba(255,255,255,0.28); }
+    .cloud-status.connecting   { color: var(--accent); }
+    .cloud-status.connected    { color: var(--clr-ok); }
+    .cloud-status.error        { color: var(--clr-err); }
+
+    .job-select {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+      color: #FFFFFF;
+    }
+    .job-select:focus { border-color: var(--accent); }
+    .job-select option { background: var(--surface); color: #FFFFFF; }
+
+    .btn-job {
+      background: transparent;
+      border-color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.65);
+    }
+    .btn-job:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-job-del { color: rgba(255,255,255,0.35); }
+
+    .save-dot.idle   { color: rgba(255,255,255,0.28); }
+    .save-dot.saving { color: var(--accent); }
+    .save-dot.saved  { color: var(--clr-ok); }
+
+    /* Sidebar: light beige (--surface is now Off Black, override) */
+    .sidebar { background: var(--surface2); background: linear-gradient(225deg,rgba(28, 25, 22, 1) 0%, rgba(40, 40, 40, 1) 50%, rgba(61, 24, 0, 1) 100%);}
+    .sc      { background: #FFFFFF; }
+    .prog-card { background: #FFFFFF; }
+
+    /* Sidebar buttons */
+    .sb-btn { background: #FFFFFF; border-color: var(--border2); color: var(--dim); }
+    .sb-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .sb-btn:disabled:hover { border-color: var(--border2); color: var(--dim); }
+    .sb-dropdown-menu {
+      background: #FFFFFF;
+      border-color: var(--border2);
+      box-shadow: 0 -8px 24px rgba(40,40,40,0.12);
+    }
+    .sb-dd-item {
+      font-family: var(--sans);
+      color: var(--text);
+      border-bottom-color: var(--border);
+    }
+    .sb-dd-item:hover { background: var(--accent-d); color: var(--accent); }
+
+    /* Main toolbar */
+    .main-toolbar { background: #FFFFFF; border-bottom: 1px solid var(--border); background: linear-gradient(45deg,rgba(28, 25, 22, 1) 0%, rgba(40, 40, 40, 1) 50%, rgba(61, 24, 0, 1) 100%);}
+    .btn { background: #FFFFFF; border-color: var(--border2); color: var(--dim); }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
+    .btn.primary:hover { background: #CC2D00; border-color: #CC2D00; }
+
+    /* Table: light surfaces */
+    .table-wrap { background: #FFFFFF; background: linear-gradient(145deg,rgba(28, 25, 22, 1) 0%, rgba(40, 40, 40, 1) 50%, rgba(61, 24, 0, 1) 100%);}
+    thead th    { background: var(--surface3); }
+    .th-lang-cell {
+      background: var(--surface3) !important;
+      color: var(--muted);
+      border-right-color: var(--border2) !important;
+    }
+    .th-lang-cell:hover { color: var(--text); }
+    .th-stat-cell { color: var(--muted); }
+    .th-stat-cell.quality { color: var(--dim); }
+
+    .td-lang-cell {
+      background: var(--surface2);
+      border-right-color: var(--border2) !important;
+    }
+    .td-stat-cell { color: var(--muted); background: #FFFFFF; }
+    .td-qty-cell  { background: #FFFFFF; }
+    .td-minb-cell { background: #FFFFFF; }
+    .td-fill-cell { background: #FFFFFF; }
+
+    /* Row hover: subtle Spring CC orange tint on light */
+    .tr-lang:hover .td-qty-cell,
+    .tr-lang:hover .td-stat-cell,
+    .tr-lang:hover .td-minb-cell { background: rgba(255,55,0,0.03); }
+    .tr-lang:hover .td-lang-cell  { background: var(--surface3); }
+
+    /* Table inputs */
+    .qty-inp:hover { background: rgba(40,40,40,0.04); color: var(--text); }
+    .qty-inp:focus { background: var(--accent-d); color: var(--accent); }
+
+    /* Total row */
+    .tr-total td    { background: var(--surface3); border-top: 2px solid var(--border2); }
+    .td-total-label { background: var(--surface3); color: var(--muted); border-right-color: var(--border2) !important; }
+    .td-total-qty   { color: var(--muted); }
+
+    /* Progress fill: solid Spring CC orange, no amber gradient */
+    .prog-fill { background: var(--accent); }
+
+    /* Modal */
+    .modal-bg { background: rgba(40,40,40,0.55); }
+    .modal {
+      background: #FFFFFF;
+      border-color: var(--border2);
+      box-shadow: 0 16px 48px rgba(40,40,40,0.20);
+    }
+    .modal-input {
+      background: var(--surface2);
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    /* Toast: Off Black for contrast against light content */
+    .toast {
+      background: var(--surface);
+      border-color: rgba(255,255,255,0.12);
+      color: var(--clr-ok);
+      box-shadow: 0 8px 28px rgba(40,40,40,0.30);
+    }
+
+    /* Scrollbars: warm light theme */
+    ::-webkit-scrollbar-track  { background: var(--surface2); }
+    ::-webkit-scrollbar-thumb  { background: var(--border2); }
+    ::-webkit-scrollbar-corner { background: var(--surface2); }
+    .table-wrap::-webkit-scrollbar-track  { background: var(--surface3); }
+    .table-wrap::-webkit-scrollbar-thumb  { background: rgba(185,185,177,0.5); border-color: var(--surface3); }
+    .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--accent); border-color: var(--surface3); }
+    .table-wrap::-webkit-scrollbar-corner { background: var(--surface3); }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">▸ BannerTrack</div>
+    <div class="sep"></div>
+    <input id="projectName" class="project-name" type="text" placeholder="Project name…">
+    <div class="sep"></div>
+    <div class="cloud-zone">
+      <input id="accountName" class="account-input" type="text" placeholder="Account…"
+        title="Enter account name to sync">
+      <button class="btn-connect" id="connectBtn" onclick="connectAccount()">Connect</button>
+      <div class="cloud-status disconnected" id="cloudStatus">○ offline</div>
+    </div>
+    <div class="sep" id="jobSep" style="display:none"></div>
+    <div class="job-zone" id="jobArea">
+      <select class="job-select" id="jobSelect" onchange="switchJob(this.value)">
+        <option value="">— select job —</option>
+      </select>
+      <button class="btn-job" onclick="newJob()">+ Job</button>
+      <button class="btn-job-del" id="delJobBtn" title="Delete current job" onclick="deleteJob()"
+        style="display:none">✕</button>
+    </div>
+    <div class="topbar-right">
+      <span class="save-dot idle" id="saveIndicator">● IDLE</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- STATS -->
+      <div class="sb-section">
+        <div class="sb-title">Overview</div>
+        <div class="sc c-dim">
+          <div class="sc-lbl">Quality</div>
+          <div class="stat-val white" id="sQuality">0</div>
+          <div class="sc-sub">banners total</div>
+        </div>
+        <div class="sc c-amber">
+          <div class="sc-lbl">Hours</div>
+          <div class="stat-val accent" id="sHours">0.00</div>
+          <div class="sc-sub" id="sDays">0.00 days</div>
+        </div>
+        <div class="sc c-ok">
+          <div class="sc-lbl">Logged</div>
+          <div class="stat-val ok" id="sFill">0.00</div>
+          <div class="sc-sub">hrs filled</div>
+        </div>
+        <div class="sc c-err" id="sRemainCard">
+          <div class="sc-lbl" id="sRemainLbl">Remaining</div>
+          <div class="stat-val err" id="sRemain">0.00</div>
+          <div class="sc-sub" id="sRemainSub">hrs left</div>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="sb-section">
+        <div class="sb-title">Progress</div>
+        <div class="prog-card">
+          <div class="prog-header">
+            <span class="prog-lbl">Completion</span>
+            <span class="prog-pct" id="sPct">0%</span>
+          </div>
+          <div class="prog-track">
+            <div class="prog-fill" id="progFill" style="width:0%"></div>
+          </div>
+          <div class="prog-sub" id="progSub">No hours logged yet</div>
+        </div>
+      </div>
+
+      <!-- CLOUD / EXPORT -->
+      <div class="sb-section">
+        <div class="sb-title">Cloud & Export</div>
+        <div class="sb-btns">
+          <div class="sb-btn-row">
+            <button class="sb-btn" id="saveCloudBtn" onclick="saveToCloud()" disabled title="Connect an account first">☁
+              Save</button>
+            <button class="sb-btn" id="loadCloudBtn" onclick="loadFromCloud()" disabled
+              title="Connect an account first">↓ Load</button>
+          </div>
+          <div class="sb-dropdown">
+            <button class="sb-btn full" id="exportBtn" onclick="toggleDD()">Export ▾</button>
+            <div class="sb-dropdown-menu" id="exportMenu">
+              <div class="sb-dd-item" onclick="exportCSV()">📋 Export CSV</div>
+              <div class="sb-dd-item" onclick="exportJSON()">📄 Export JSON</div>
+              <div class="sb-dd-sep"></div>
+              <div class="sb-dd-item" onclick="importJSON()">📥 Import JSON</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /sidebar -->
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="main-toolbar">
+        <button class="btn primary" onclick="openAddLang()">+ Language</button>
+        <button class="btn primary" onclick="openAddProduct()">+ Product</button>
+      </div>
+      <div class="table-wrap">
+        <table id="mainTable">
+          <thead id="tHead"></thead>
+          <tbody id="tBody"></tbody>
+          <tfoot id="tFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- MODAL: Add Language -->
+  <div class="modal-bg" id="modalLang">
+    <div class="modal">
+      <h3>Add Language</h3>
+      <div class="modal-field">
+        <label>Language Code (e.g. FR, DE, JP)</label>
+        <input id="langCodeInput" class="modal-input" type="text" maxlength="20" placeholder="AT"
+          style="text-transform:uppercase;">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('modalLang')">Cancel</button>
+        <button class="btn primary" onclick="confirmAddLang()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Product -->
+  <div class="modal-bg" id="modalProduct">
+    <div class="modal">
+      <h3>Add Product</h3>
+      <div class="modal-field">
+        <label>Product Name (e.g. Kitchen, Laundry)</label>
+        <input id="productNameInput" class="modal-input" type="text" maxlength="20" placeholder="Kitchen">
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal('modalProduct')">Cancel</button>
+        <button class="btn primary" onclick="confirmAddProduct()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)">
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── UTILS ──────────────────────────────────────────────────────
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+    function autoResizeTA(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
+
+    // ── STATE ──────────────────────────────────────────────────────
+    let S = {
+      projectName: '',
+      minsPerLang: {},   // { 'AT': 45, 'DE': 30, … }  replaces global minsPerBanner
+      fillByLang: {},   // { 'AT': 5.5, … }
+      languages: [],
+      products: [],
+      matrix: {}
+    };
+    let sortLangDir = null; // null | 'asc' | 'desc'
+
+    // ── PER-LANG MINS HELPER ───────────────────────────────────────
+    // Returns mins/banner for a language; falls back to 40 if not yet set
+    function langMins(lang) {
+      const v = S.minsPerLang && S.minsPerLang[lang];
+      return (v && v > 0) ? v : 40;
+    }
+
+    // ── AGGREGATES ────────────────────────────────────────────────
+    function totalFill() { return S.languages.reduce((s, l) => s + (S.fillByLang[l] || 0), 0); }
+    function totalHours() { return S.languages.reduce((s, l) => s + (rowQ(l) * langMins(l)) / 60, 0); }
+
+    // ── REMAIN/OVERRUN HELPER ──────────────────────────────────────
+    function remInfo(h, fl, hasData) {
+      if (!hasData) return { text: '—', rowCls: '', totalCls: '' };
+      if (fl === 0 && h === 0) return { text: '—', rowCls: '', totalCls: '' };
+      if (fl > h) {
+        return { text: '+' + (fl - h).toFixed(2) + ' over', rowCls: 'over', totalCls: 'over' };
+      }
+      if (fl >= h) {
+        return { text: '✓ done', rowCls: 'ok', totalCls: 'ok' };
+      }
+      return { text: (h - fl).toFixed(2), rowCls: 'err', totalCls: 'err' };
+    }
+
+    // ── MATRIX HELPERS ────────────────────────────────────────────
+    function qty(lang, prod) { return (S.matrix[lang] || {})[prod] || 0; }
+    function setQty(lang, prod, v) { if (!S.matrix[lang]) S.matrix[lang] = {}; S.matrix[lang][prod] = isNaN(v) || v < 0 ? 0 : v; }
+    function rowQ(lang) { return S.products.reduce((s, p) => s + qty(lang, p), 0); }
+    function colQ(prod) { return S.languages.reduce((s, l) => s + qty(l, prod), 0); }
+    function totalQ() { return S.languages.reduce((s, l) => s + rowQ(l), 0); }
+
+    // ── RENDER ────────────────────────────────────────────────────
+    function render() {
+      if (S.languages.length === 0 || S.products.length === 0) {
+        document.getElementById('tHead').innerHTML = '';
+        document.getElementById('tBody').innerHTML = `
+          <tr><td colspan="99" style="text-align:center;padding:60px 24px;">
+            <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);line-height:2.2;">
+              ${S.products.length === 0 ? '→ Add a <strong style="color:var(--accent)">Product</strong> to get started' : ''}
+              ${S.languages.length === 0 ? '<br>→ Add a <strong style="color:var(--accent)">Language</strong> to get started' : ''}
+            </div>
+          </td></tr>`;
+        document.getElementById('tFoot').innerHTML = '';
+        updateStats();
+        return;
+      }
+      renderHead();
+      renderBody();
+      renderFoot();
+      updateStats();
+    }
+
+    function sortByLang() {
+      if (sortLangDir === null || sortLangDir === 'desc') {
+        S.languages.sort((a, b) => a.localeCompare(b));
+        sortLangDir = 'asc';
+      } else {
+        S.languages.sort((a, b) => b.localeCompare(a));
+        sortLangDir = 'desc';
+      }
+      render();
+    }
+
+    function renderHead() {
+      const arrow = sortLangDir === 'asc' ? '▲' : sortLangDir === 'desc' ? '▼' : '⇅';
+      const activeClass = sortLangDir ? ' active' : '';
+      let h = `<tr>
+        <th class="th-lang-cell${activeClass}" onclick="sortByLang()">Language<span class="sort-arrow">${arrow}</span></th>`;
+      h += `<th class="th-stat-cell accent">Min/B</th>`;
+      h += `<th class="th-stat-cell quality">Quality</th>`;
+      h += `<th class="th-stat-cell accent">Hours</th>`;
+      h += `<th class="th-stat-cell info">Days</th>`;
+      h += `<th class="th-stat-cell ok">Fill Hrs</th>`;
+      h += `<th class="th-stat-cell err">Remain</th>`;
+      S.products.forEach((p, i) => {
+        h += `<th class="th-prod">
+          <div class="th-prod-inner">
+            <textarea class="prod-input" rows="1"
+              onchange="renameProd(${i},this.value)"
+              oninput="autoResizeTA(this)"
+              title="Click to rename">${esc(p)}</textarea>
+            <button class="col-del" onclick="deleteProd(${i})" title="Remove product">✕</button>
+          </div></th>`;
+      });
+      h += `</tr>`;
+      document.getElementById('tHead').innerHTML = h;
+      document.querySelectorAll('.prod-input').forEach(autoResizeTA);
+    }
+
+    function renderBody() {
+      let b = '';
+      S.languages.forEach((lang, li) => {
+        const q = rowQ(lang);
+        const mb = langMins(lang);
+        const h = (q * mb) / 60;
+        const d = h / 8;
+        const fl = S.fillByLang[lang] || 0;
+        const ri = remInfo(h, fl, q > 0);
+
+        b += `<tr class="tr-lang" data-li="${li}">
+          <td class="td-lang-cell">
+            <div class="lang-cell-inner">
+              <input class="lang-input" value="${esc(lang)}"
+                onchange="renameLang(${li},this.value)"
+                maxlength="20" title="Rename">
+              <button class="row-del" onclick="deleteLang(${li})" title="Remove">✕</button>
+            </div>
+          </td>`;
+        b += `<td class="td-minb-cell">
+          <input class="minb-inp" type="number" value="${mb}"
+            min="1" step="1"
+            data-lang="${esc(lang)}"
+            oninput="onMinBInput(this)">
+        </td>`;
+        b += `<td class="td-stat-cell quality" id="rq-${li}">${q || '—'}</td>`;
+        b += `<td class="td-stat-cell accent"  id="rh-${li}">${q ? h.toFixed(2) : '—'}</td>`;
+        b += `<td class="td-stat-cell info"    id="rd-${li}">${q ? d.toFixed(2) : '—'}</td>`;
+        b += `<td class="td-fill-cell">
+          <input class="fill-inp" type="text" inputmode="decimal" value="${fl || ''}"
+            placeholder="0"
+            data-lang="${esc(lang)}"
+            oninput="onFillInput(this)">
+        </td>`;
+        b += `<td class="td-stat-cell ${ri.rowCls}" id="rrem-${li}">${ri.text}</td>`;
+        S.products.forEach((prod, pi) => {
+          const v = qty(lang, prod);
+          b += `<td class="td-qty-cell">
+            <input class="qty-inp" type="number" value="${v || ''}"
+              min="0" placeholder="—"
+              data-lang="${esc(lang)}" data-prod="${esc(prod)}"
+              oninput="onQtyInput(this)">
+          </td>`;
+        });
+        b += `</tr>`;
+      });
+      document.getElementById('tBody').innerHTML = b;
+    }
+
+    function renderFoot() {
+      const tq = totalQ();
+      const th = totalHours();
+      const td = th / 8;
+      const tf = totalFill();
+      const tri = remInfo(th, tf, tq > 0);
+
+      let f = `<tr class="tr-total">
+        <td class="td-total-label">TOTAL</td>`;
+      f += `<td class="td-total-stat muted">—</td>`;
+      f += `<td class="td-total-stat quality" id="ft-quality">${tq.toLocaleString()}</td>`;
+      f += `<td class="td-total-stat accent"  id="ft-hours">${th.toFixed(2)}</td>`;
+      f += `<td class="td-total-stat info"    id="ft-days">${td.toFixed(2)}</td>`;
+      f += `<td class="td-total-stat ok"      id="ft-fill">${tf.toFixed(2)}</td>`;
+      f += `<td class="td-total-stat ${tri.totalCls}" id="ft-remain">${tri.text}</td>`;
+      S.products.forEach((p, i) => {
+        const cq = colQ(p);
+        f += `<td class="td-total-qty" id="cq-${i}">${cq || '—'}</td>`;
+      });
+      f += `</tr>`;
+      document.getElementById('tFoot').innerHTML = f;
+    }
+
+    // ── INLINE UPDATE: QTY ────────────────────────────────────────
+    function onQtyInput(inp) {
+      const lang = inp.dataset.lang;
+      const prod = inp.dataset.prod;
+      setQty(lang, prod, parseInt(inp.value) || 0);
+
+      const li = S.languages.indexOf(lang);
+      const q = rowQ(lang);
+      const h = (q * langMins(lang)) / 60;
+      const d = h / 8;
+      const fl = S.fillByLang[lang] || 0;
+      const ri = remInfo(h, fl, q > 0);
+
+      document.getElementById(`rq-${li}`).textContent = q || '—';
+      document.getElementById(`rh-${li}`).textContent = q ? h.toFixed(2) : '—';
+      document.getElementById(`rd-${li}`).textContent = q ? d.toFixed(2) : '—';
+      const remEl = document.getElementById(`rrem-${li}`);
+      remEl.textContent = ri.text;
+      remEl.className = `td-stat-cell ${ri.rowCls}`;
+
+      const pi = S.products.indexOf(prod);
+      const cqEl = document.getElementById(`cq-${pi}`);
+      if (cqEl) cqEl.textContent = colQ(prod) || '—';
+
+      _patchFoot();
+      updateStats();
+      schedSave();
+    }
+
+    // ── INLINE UPDATE: MIN/B ──────────────────────────────────────
+    function onMinBInput(inp) {
+      const lang = inp.dataset.lang;
+      const v = parseInt(inp.value) || 40;
+      if (!S.minsPerLang) S.minsPerLang = {};
+      S.minsPerLang[lang] = v < 1 ? 1 : v;
+
+      const li = S.languages.indexOf(lang);
+      const q = rowQ(lang);
+      const h = (q * langMins(lang)) / 60;
+      const d = h / 8;
+      const fl = S.fillByLang[lang] || 0;
+      const ri = remInfo(h, fl, q > 0);
+
+      document.getElementById(`rh-${li}`).textContent = q ? h.toFixed(2) : '—';
+      document.getElementById(`rd-${li}`).textContent = q ? d.toFixed(2) : '—';
+      const remEl = document.getElementById(`rrem-${li}`);
+      remEl.textContent = ri.text;
+      remEl.className = `td-stat-cell ${ri.rowCls}`;
+
+      _patchFoot();
+      updateStats();
+      schedSave();
+    }
+
+    // ── INLINE UPDATE: FILL ───────────────────────────────────────
+    function onFillInput(inp) {
+      // Normalize: comma → dot, strip invalid chars, keep only one dot
+      let raw = inp.value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+      const dotParts = raw.split('.');
+      if (dotParts.length > 2) raw = dotParts[0] + '.' + dotParts.slice(1).join('');
+      if (raw !== inp.value) inp.value = raw;
+
+      const lang = inp.dataset.lang;
+      const v = parseFloat(raw) || 0;
+      if (!S.fillByLang) S.fillByLang = {};
+      S.fillByLang[lang] = v < 0 ? 0 : v;
+
+      const li = S.languages.indexOf(lang);
+      const q = rowQ(lang);
+      const h = (q * langMins(lang)) / 60;
+      const ri = remInfo(h, v, q > 0);
+      const remEl = document.getElementById(`rrem-${li}`);
+      remEl.textContent = ri.text;
+      remEl.className = `td-stat-cell ${ri.rowCls}`;
+
+      _patchFoot();
+      updateStats();
+      schedSave();
+    }
+
+    // Shared footer patch (used by all inline handlers)
+    function _patchFoot() {
+      const tq = totalQ();
+      const th = totalHours();
+      const td = th / 8;
+      const tf = totalFill();
+      const tri = remInfo(th, tf, tq > 0);
+
+      document.getElementById('ft-quality').textContent = tq.toLocaleString();
+      document.getElementById('ft-hours').textContent = th.toFixed(2);
+      document.getElementById('ft-days').textContent = td.toFixed(2);
+      document.getElementById('ft-fill').textContent = tf.toFixed(2);
+      const ftRem = document.getElementById('ft-remain');
+      ftRem.textContent = tri.text;
+      ftRem.className = `td-total-stat ${tri.totalCls}`;
+    }
+
+    // ── SIDEBAR STATS ─────────────────────────────────────────────
+    function updateStats() {
+      const tq = totalQ();
+      const th = totalHours();
+      const td = th / 8;
+      const tf = totalFill();
+      const pct = th > 0 ? Math.min(100, (tf / th) * 100) : 0;
+      const isOver = tf > th && th > 0;
+
+      document.getElementById('sQuality').textContent = tq.toLocaleString();
+      document.getElementById('sHours').textContent = th.toFixed(2);
+      document.getElementById('sDays').textContent = td.toFixed(2) + ' days';
+      document.getElementById('sFill').textContent = tf.toFixed(2);
+
+      const remValEl = document.getElementById('sRemain');
+      const remLblEl = document.getElementById('sRemainLbl');
+      const remSubEl = document.getElementById('sRemainSub');
+      const remCardEl = document.getElementById('sRemainCard');
+
+      if (isOver) {
+        const over = tf - th;
+        remValEl.textContent = '+' + over.toFixed(2);
+        remValEl.className = 'stat-val accent';
+        if (remLblEl) remLblEl.textContent = 'Overrun';
+        if (remSubEl) remSubEl.textContent = 'hrs over estimate';
+        if (remCardEl) remCardEl.className = 'sc c-amber';
+      } else {
+        const rem = Math.max(0, th - tf);
+        remValEl.textContent = rem.toFixed(2);
+        remValEl.className = rem <= 0 ? 'stat-val ok' : 'stat-val err';
+        if (remLblEl) remLblEl.textContent = 'Remaining';
+        if (remSubEl) remSubEl.textContent = 'hrs left';
+        if (remCardEl) remCardEl.className = rem <= 0 ? 'sc c-ok' : 'sc c-err';
+      }
+
+      document.getElementById('sPct').textContent = pct.toFixed(1) + '%';
+      document.getElementById('progFill').style.width = pct + '%';
+      document.getElementById('progSub').textContent =
+        tf > 0 ? `${tf.toFixed(1)} / ${th.toFixed(1)} hrs logged` : 'No hours logged yet';
+    }
+
+    // ── RENAME / DELETE ───────────────────────────────────────────
+    function renameProd(i, newName) {
+      const old = S.products[i];
+      const nw = newName.trim().toUpperCase();
+      if (!nw) { toast('Name cannot be empty'); return; }
+      if (S.products.includes(nw) && nw !== old) { toast('Product already exists'); return; }
+      S.products[i] = nw;
+      S.languages.forEach(l => {
+        if (!S.matrix[l]) return;
+        if (old in S.matrix[l]) {
+          S.matrix[l][nw] = S.matrix[l][old];
+          if (nw !== old) delete S.matrix[l][old];
+        }
+      });
+      schedSave();
+    }
+
+    function renameLang(i, newName) {
+      const old = S.languages[i];
+      const nw = newName.trim().toUpperCase();
+      if (!nw) { toast('Code cannot be empty'); return; }
+      if (S.languages.includes(nw) && nw !== old) { toast('Language already exists'); return; }
+      S.languages[i] = nw;
+      // migrate matrix
+      if (S.matrix[old]) { S.matrix[nw] = S.matrix[old]; if (nw !== old) delete S.matrix[old]; }
+      // migrate minsPerLang
+      if (!S.minsPerLang) S.minsPerLang = {};
+      if (S.minsPerLang[old] !== undefined) {
+        S.minsPerLang[nw] = S.minsPerLang[old];
+        if (nw !== old) delete S.minsPerLang[old];
+      }
+      // migrate fillByLang
+      if (S.fillByLang[old] !== undefined) {
+        S.fillByLang[nw] = S.fillByLang[old];
+        if (nw !== old) delete S.fillByLang[old];
+      }
+      schedSave();
+    }
+
+    function deleteProd(i) {
+      if (S.products.length <= 1) { toast('Need at least 1 product'); return; }
+      const name = S.products[i];
+      if (!confirm(`Remove product "${name}"? This deletes all its data.`)) return;
+      S.products.splice(i, 1);
+      S.languages.forEach(l => { if (S.matrix[l]) delete S.matrix[l][name]; });
+      render(); toast(`Removed: ${name}`);
+    }
+
+    function deleteLang(i) {
+      if (S.languages.length <= 1) { toast('Need at least 1 language'); return; }
+      const name = S.languages[i];
+      if (!confirm(`Remove language "${name}"? This deletes all its data.`)) return;
+      S.languages.splice(i, 1);
+      delete S.matrix[name];
+      if (S.minsPerLang) delete S.minsPerLang[name];
+      if (S.fillByLang) delete S.fillByLang[name];
+      render(); toast(`Removed: ${name}`);
+    }
+
+    // ── ADD LANGUAGE / PRODUCT ────────────────────────────────────
+    function openAddLang() {
+      document.getElementById('langCodeInput').value = '';
+      openModal('modalLang');
+      setTimeout(() => document.getElementById('langCodeInput').focus(), 80);
+    }
+    function confirmAddLang() {
+      const code = document.getElementById('langCodeInput').value.trim().toUpperCase();
+      if (!code) { toast('Enter a language code'); return; }
+      if (S.languages.includes(code)) { toast(`"${code}" already exists`); return; }
+      S.languages.push(code);
+      // minsPerLang intentionally NOT pre-set → langMins() returns 40 as default
+      closeModal('modalLang');
+      render(); toast(`Added: ${code}`);
+    }
+
+    function openAddProduct() {
+      document.getElementById('productNameInput').value = '';
+      openModal('modalProduct');
+      setTimeout(() => document.getElementById('productNameInput').focus(), 80);
+    }
+    function confirmAddProduct() {
+      const name = document.getElementById('productNameInput').value.trim().toUpperCase();
+      if (!name) { toast('Enter a product name'); return; }
+      if (S.products.includes(name)) { toast(`"${name}" already exists`); return; }
+      S.products.push(name);
+      closeModal('modalProduct');
+      render(); toast(`Added: ${name}`);
+    }
+
+    // ── MODAL ─────────────────────────────────────────────────────
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.querySelectorAll('.modal-bg').forEach(el => {
+      el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open'));
+      if (e.key === 'Enter') {
+        if (document.getElementById('modalLang').classList.contains('open')) confirmAddLang();
+        if (document.getElementById('modalProduct').classList.contains('open')) confirmAddProduct();
+      }
+    });
+
+    // ── EXPORT / IMPORT ───────────────────────────────────────────
+    function toggleDD() { document.getElementById('exportMenu').classList.toggle('open'); }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.sb-dropdown')) document.getElementById('exportMenu').classList.remove('open');
+    });
+
+    function exportCSV() {
+      const rows = [['Language', 'Min/B', ...S.products, 'Quality', 'Hours', 'Days', 'Fill Hrs', 'Remain']];
+      S.languages.forEach(lang => {
+        const q = rowQ(lang);
+        const mb = langMins(lang);
+        const h = (q * mb) / 60;
+        const d = h / 8;
+        const fl = S.fillByLang[lang] || 0;
+        const rm = Math.max(0, h - fl);
+        rows.push([lang, mb, ...S.products.map(p => qty(lang, p)), q, h.toFixed(2), d.toFixed(2), fl.toFixed(2), rm.toFixed(2)]);
+      });
+      const tq = totalQ(), th = totalHours(), td = th / 8;
+      const tf = totalFill(), tr = Math.max(0, th - tf);
+      rows.push(['TOTAL', '—', ...S.products.map(p => colQ(p)), tq, th.toFixed(2), td.toFixed(2), tf.toFixed(2), tr.toFixed(2)]);
+      const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+      dlFile(csv, `${S.projectName}_${today()}.csv`, 'text/csv');
+      document.getElementById('exportMenu').classList.remove('open');
+    }
+
+    function exportJSON() {
+      dlFile(JSON.stringify(S, null, 2), `${S.projectName}_${today()}.json`, 'application/json');
+      document.getElementById('exportMenu').classList.remove('open');
+    }
+
+    function importJSON() {
+      document.getElementById('importInput').click();
+      document.getElementById('exportMenu').classList.remove('open');
+    }
+
+    function handleImport(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (!data.languages || !data.products || !data.matrix) throw new Error('Invalid format');
+          S = data;
+          // ── migration: old single minsPerBanner → minsPerLang ──
+          if (!S.minsPerLang) {
+            S.minsPerLang = {};
+            if (S.minsPerBanner) {
+              S.languages.forEach(l => { S.minsPerLang[l] = S.minsPerBanner; });
+            }
+            delete S.minsPerBanner;
+          }
+          if (!S.fillByLang) S.fillByLang = {};
+          document.getElementById('projectName').value = S.projectName || '';
+          render(); autoSave(); toast('Imported successfully');
+        } catch (err) { toast('Import failed: ' + err.message); }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function dlFile(content, name, type) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([content], { type }));
+      a.download = name; a.click();
+      toast('Exported: ' + name);
+    }
+    function today() { return new Date().toISOString().split('T')[0]; }
+
+    // ── LOCALSTORAGE ──────────────────────────────────────────────
+    let saveTimer;
+    function schedSave() {
+      const ind = document.getElementById('saveIndicator');
+      ind.textContent = '● SAVING…'; ind.className = 'save-dot saving';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(autoSave, 900);
+    }
+    function autoSave() {
+      S.projectName = document.getElementById('projectName').value;
+      // minsPerLang is maintained directly in S via onMinBInput — no input to read here
+      try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); } catch (e) { }
+      const ind = document.getElementById('saveIndicator');
+      ind.textContent = '● SAVED'; ind.className = 'save-dot saved';
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem('bannerTracker_v2');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          S = parsed;
+          // ── migration: old single minsPerBanner → minsPerLang ──
+          if (!S.minsPerLang) {
+            S.minsPerLang = {};
+            if (S.minsPerBanner) {
+              S.languages.forEach(l => { S.minsPerLang[l] = S.minsPerBanner; });
+            }
+            delete S.minsPerBanner;
+          }
+          if (!S.fillByLang) S.fillByLang = {};
+          document.getElementById('projectName').value = S.projectName || '';
+          return true;
+        }
+      } catch (e) { }
+      return false;
+    }
+
+    // ── TOAST ─────────────────────────────────────────────────────
+    let toastTimer;
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ── PROJECT NAME ──────────────────────────────────────────────
+    document.getElementById('projectName').addEventListener('input', schedSave);
+
+    // ── INIT ──────────────────────────────────────────────────────
+    loadState();
+    render();
+  </script>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+  <script>
+    // ── FIREBASE INIT ─────────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyACVKURgtQcohTiN5oOFCTDalh11IU20h0",
+      authDomain: "banner-tracker.firebaseapp.com",
+      projectId: "banner-tracker",
+      storageBucket: "banner-tracker.firebasestorage.app",
+      messagingSenderId: "703693065783",
+      appId: "1:703696065783:web:401c45a8cc95898fceb9b2",
+      measurementId: "G-227HW6GFQY"
+    };
+
+    let db = null;
+    let cloudEnabled = false;
+    let currentAccount = '';
+    let currentJob = '';
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      cloudEnabled = true;
+    } catch (e) { console.warn('Firebase init failed:', e); }
+
+    // ── HELPERS ───────────────────────────────────────────────────
+    function jobsCol() { return db.collection('bannerTracker').doc(currentAccount).collection('jobs'); }
+    function jobDoc(id) { return jobsCol().doc(id); }
+    function slugify(s) { return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+    function freshState(name) {
+      return { projectName: name || '', minsPerLang: {}, fillByLang: {}, languages: [], products: [], matrix: {} };
+    }
+    function migrateState(data) {
+      // Convert old minsPerBanner → minsPerLang
+      if (!data.minsPerLang) {
+        data.minsPerLang = {};
+        if (data.minsPerBanner) {
+          (data.languages || []).forEach(l => { data.minsPerLang[l] = data.minsPerBanner; });
+        }
+        delete data.minsPerBanner;
+      }
+      if (!data.fillByLang) data.fillByLang = {};
+      return data;
+    }
+
+    // ── CLOUD STATUS ──────────────────────────────────────────────
+    function setCloudStatus(state) {
+      const el = document.getElementById('cloudStatus');
+      el.className = 'cloud-status ' + state;
+      el.textContent = {
+        disconnected: '○ offline',
+        connecting: '◌ connecting…',
+        connected: '● ' + currentAccount,
+        error: '✕ error'
+      }[state] || state;
+    }
+    function setSaveLoad(on) {
+      document.getElementById('saveCloudBtn').disabled = !on;
+      document.getElementById('loadCloudBtn').disabled = !on;
+    }
+
+    // ── ACCOUNT CONNECT ───────────────────────────────────────────
+    function connectAccount() {
+      const name = document.getElementById('accountName').value.trim();
+      if (!name) { toast('Enter an account name first'); return; }
+      if (name.length < 2) { toast('Account name min 2 characters'); return; }
+      _activateAccount(name);
+    }
+
+    async function _activateAccount(name) {
+      if (!cloudEnabled) { toast('Firebase unavailable'); return; }
+      currentAccount = name;
+      localStorage.setItem('bannerTracker_account', name);
+      setCloudStatus('connecting');
+      try {
+        await db.collection('bannerTracker').doc(name)
+          .set({ _createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        setCloudStatus('connected');
+        toast('Connected: ' + name);
+        await loadJobList();
+      } catch (e) {
+        setCloudStatus('error');
+        toast('Connection failed');
+        console.error(e);
+      }
+    }
+
+    // ── JOB LIST ──────────────────────────────────────────────────
+    // Populates the dropdown and pre-selects the last used job,
+    // but does NOT auto-load cloud data — local state is preserved.
+    async function loadJobList() {
+      const snap = await jobsCol().orderBy('_updatedAt', 'desc').get().catch(() => null);
+      const sel = document.getElementById('jobSelect');
+      sel.innerHTML = '<option value="">— select job —</option>';
+      if (snap) snap.forEach(doc => {
+        const opt = document.createElement('option');
+        opt.value = doc.id;
+        opt.textContent = doc.data().projectName || doc.id;
+        sel.appendChild(opt);
+      });
+      document.getElementById('jobSep').style.display = '';
+      document.getElementById('jobArea').classList.add('visible');
+      setSaveLoad(false);
+
+      // Pre-select last job (does NOT load cloud data)
+      const lastJob = localStorage.getItem('bannerTracker_job_' + currentAccount);
+      if (lastJob && sel.querySelector(`option[value="${lastJob}"]`)) {
+        sel.value = lastJob;
+        currentJob = lastJob;
+        document.getElementById('delJobBtn').style.display = '';
+        setSaveLoad(true);
+        // ← no loadFromCloud here: user decides when to pull
+      }
+    }
+
+    // ── SWITCH JOB ────────────────────────────────────────────────
+    // Only updates the active job reference and button states.
+    // No auto-load: local changes are not overwritten.
+    function switchJob(jobId) {
+      if (!jobId) {
+        currentJob = '';
+        setSaveLoad(false);
+        document.getElementById('delJobBtn').style.display = 'none';
+        return;
+      }
+      currentJob = jobId;
+      localStorage.setItem('bannerTracker_job_' + currentAccount, jobId);
+      document.getElementById('delJobBtn').style.display = '';
+      setSaveLoad(true);
+    }
+
+    // ── NEW JOB ───────────────────────────────────────────────────
+    async function newJob() {
+      if (!currentAccount) { toast('Connect an account first'); return; }
+      const name = prompt('Job name (e.g. Miele Outdoor Cooking):');
+      if (!name || !name.trim()) return;
+      const id = slugify(name) || ('job-' + Date.now());
+      const ns = freshState(name.trim());
+      try {
+        await jobDoc(id).set({ ...ns, _updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        const sel = document.getElementById('jobSelect');
+        if (!sel.querySelector(`option[value="${id}"]`)) {
+          const opt = document.createElement('option');
+          opt.value = id; opt.textContent = name.trim();
+          sel.appendChild(opt);
+        }
+        sel.value = id;
+        currentJob = id;
+        localStorage.setItem('bannerTracker_job_' + currentAccount, id);
+        S = ns;
+        document.getElementById('projectName').value = S.projectName;
+        document.getElementById('delJobBtn').style.display = '';
+        setSaveLoad(true);
+        render();
+        toast('✚ New job: ' + name.trim());
+      } catch (e) { toast('Failed to create job: ' + e.message); }
+    }
+
+    // ── DELETE JOB ────────────────────────────────────────────────
+    async function deleteJob() {
+      if (!currentJob) return;
+      const sel = document.getElementById('jobSelect');
+      const label = sel.options[sel.selectedIndex]?.textContent || currentJob;
+      if (!confirm(`Delete job "${label}"?\nThis cannot be undone.`)) return;
+      try {
+        await jobDoc(currentJob).delete();
+        sel.querySelector(`option[value="${currentJob}"]`)?.remove();
+        currentJob = '';
+        sel.value = '';
+        document.getElementById('delJobBtn').style.display = 'none';
+        setSaveLoad(false);
+        S = freshState('');
+        document.getElementById('projectName').value = '';
+        render();
+        toast('Job deleted');
+      } catch (e) { toast('Delete failed: ' + e.message); }
+    }
+
+    // ── SAVE TO CLOUD ─────────────────────────────────────────────
+    async function saveToCloud() {
+      if (!cloudEnabled || !currentAccount) { toast('Not connected'); return; }
+      if (!currentJob) { toast('Select or create a job first'); return; }
+      S.projectName = document.getElementById('projectName').value;
+      const ind = document.getElementById('saveIndicator');
+      ind.textContent = '● SAVING…'; ind.className = 'save-dot saving';
+      try {
+        const sel = document.getElementById('jobSelect');
+        const opt = sel.querySelector(`option[value="${currentJob}"]`);
+        if (opt && S.projectName) opt.textContent = S.projectName;
+        await jobDoc(currentJob).set({
+          ...S,
+          _updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        ind.textContent = '● CLOUD SAVED'; ind.className = 'save-dot saved';
+        toast('☁ Saved — ' + (S.projectName || currentJob));
+      } catch (e) {
+        ind.textContent = '● ERROR'; ind.className = 'save-dot idle';
+        toast('Save failed: ' + e.message);
+      }
+    }
+
+    // ── LOAD FROM CLOUD ───────────────────────────────────────────
+    async function loadFromCloud() {
+      if (!cloudEnabled || !currentAccount) { toast('Not connected'); return; }
+      if (!currentJob) { toast('Select a job first'); return; }
+      const ind = document.getElementById('saveIndicator');
+      ind.textContent = '● LOADING…'; ind.className = 'save-dot saving';
+      try {
+        const doc = await jobDoc(currentJob).get();
+        if (!doc.exists) {
+          toast('No cloud data for this job yet');
+          ind.textContent = '● IDLE'; ind.className = 'save-dot idle';
+          return;
+        }
+        const data = migrateState(doc.data());
+        S.projectName = data.projectName || '';
+        S.minsPerLang = data.minsPerLang || {};
+        S.fillByLang = data.fillByLang || {};
+        S.languages = data.languages || [];
+        S.products = data.products || [];
+        S.matrix = data.matrix || {};
+        document.getElementById('projectName').value = S.projectName;
+        try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); } catch (e) { }
+        render();
+        ind.textContent = '● LOADED'; ind.className = 'save-dot saved';
+        toast('↓ Loaded — ' + (S.projectName || currentJob));
+      } catch (e) {
+        ind.textContent = '● ERROR'; ind.className = 'save-dot idle';
+        toast('Load failed: ' + e.message);
+      }
+    }
+
+    // ── AUTO-CONNECT ON INIT ──────────────────────────────────────
+    // Reconnects saved account and fetches job list.
+    // Local state (from localStorage) is NOT overwritten on connect.
+    (function () {
+      const saved = localStorage.getItem('bannerTracker_account');
+      if (saved) {
+        document.getElementById('accountName').value = saved;
+        _activateAccount(saved);
+      }
+    })();
+
+    document.getElementById('accountName').addEventListener('keydown', e => {
+      if (e.key === 'Enter') connectAccount();
+    });
+  </script>
+</body>
+
+</html>
