@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tùng · Hub</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ── RESET ──────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+      background: #0a0908;
+      /* fallback canvas colour */
+    }
+
+    body {
+      height: 100%;
+      background: transparent;
+      /* transparent so fixed video at z-index:-2 shows through */
+      color: #E5D2B8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* ── LIQUID GLASS SYSTEM ─────────────────────────────────
+       Ported directly from Aetheris_Voyage
+    ──────────────────────────────────────────────────────── */
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+          rgba(255, 255, 255, 0.45) 0%,
+          rgba(255, 255, 255, 0.15) 20%,
+          rgba(255, 255, 255, 0) 40%,
+          rgba(255, 255, 255, 0) 60%,
+          rgba(255, 255, 255, 0.15) 80%,
+          rgba(255, 255, 255, 0.45) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .liquid-glass-strong {
+      background: rgba(255, 255, 255, 0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(50px);
+      -webkit-backdrop-filter: blur(50px);
+      border: none;
+      box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass-strong::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.4px;
+      background: linear-gradient(180deg,
+          rgba(255, 255, 255, 0.5) 0%,
+          rgba(255, 255, 255, 0.2) 20%,
+          rgba(255, 255, 255, 0) 40%,
+          rgba(255, 255, 255, 0) 60%,
+          rgba(255, 255, 255, 0.2) 80%,
+          rgba(255, 255, 255, 0.5) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .liquid-glass-nest {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .liquid-glass-nest::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.2px;
+      background: linear-gradient(180deg,
+          rgba(255, 255, 255, 0.4) 0%,
+          rgba(255, 255, 255, 0.12) 30%,
+          rgba(255, 255, 255, 0) 50%,
+          rgba(255, 255, 255, 0.12) 70%,
+          rgba(255, 255, 255, 0.4) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* ── ANIMATIONS ──────────────────────────────────────────
+       Ported from Aetheris
+    ──────────────────────────────────────────────────────── */
+    @keyframes fadeUpIn {
+      from {
+        opacity: 0;
+        filter: blur(10px);
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        filter: blur(0px);
+        transform: translateY(0);
+      }
+    }
+
+    .anim-0 {
+      animation: fadeUpIn .7s ease-out .1s both;
+    }
+
+    .anim-1 {
+      animation: fadeUpIn .7s ease-out .3s both;
+    }
+
+    .anim-2 {
+      animation: fadeUpIn .7s ease-out .6s both;
+    }
+
+    .anim-3 {
+      animation: fadeUpIn .7s ease-out .9s both;
+    }
+
+    .anim-4 {
+      animation: fadeUpIn .7s ease-out 1.1s both;
+    }
+
+    .anim-5 {
+      animation: fadeUpIn .7s ease-out 1.3s both;
+    }
+
+    .blur-word {
+      display: inline-block;
+      margin-right: .18em;
+      will-change: transform, filter, opacity;
+      opacity: 0;
+      filter: blur(10px);
+      transform: translateY(40px);
+      transition: opacity .7s ease-out, filter .7s ease-out, transform .7s ease-out;
+    }
+
+    .blur-word.visible {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── SHELL ───────────────────────────────────────────────
+       Home panel = full screen; iframes load behind
+    ──────────────────────────────────────────────────────── */
+    .shell {
+      height: 100vh;
+      position: relative;
+    }
+
+    /* ── HOME PANEL ────────────────────────────────────────── */
+    .home-panel {
+      position: absolute;
+      inset: 0;
+      opacity: 1;
+      pointer-events: all;
+      transition: opacity .25s ease;
+      overflow-y: auto;
+      background: transparent;
+    }
+
+    .home-panel::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .home-panel.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── IFRAME PANELS ─────────────────────────────────────── */
+    .frame-wrap {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+
+    .frame-wrap.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .frame-wrap iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .frame-loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: #0a0908;
+      z-index: 10;
+      transition: opacity .3s ease;
+    }
+
+    .frame-loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-icon {
+      width: 32px;
+      height: 32px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      border-top-color: #FF3700;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .loader-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: rgba(185, 185, 177, 0.6);
+      letter-spacing: .08em;
+    }
+
+    /* ── HERO SECTION ────────────────────────────────────────
+       Full viewport height, bg animation + content centered
+    ──────────────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Animation stage behind everything */
+    #hero-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    #hero-stage canvas,
+    #hero-stage svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Warm gradient overlay */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 50% at 10% 90%, rgba(255, 55, 0, .22) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 55% at 90% 10%, rgba(255, 55, 0, .07) 0%, transparent 60%),
+        linear-gradient(to bottom, rgba(10, 9, 8, .15) 0%, rgba(10, 9, 8, .5) 60%, rgba(10, 9, 8, .85) 100%);
+    }
+
+    /* Video background — fixed, behind everything */
+    .bg-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      opacity: 0.38;
+    }
+
+    /* Orange ambient glow overlay — needed for glass blur to render well */
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255, 55, 0, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%, rgba(255, 55, 0, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(80, 40, 0, 0.12) 0%, transparent 70%);
+    }
+
+    /* ── FLOATING NAV ────────────────────────────────────────
+       Aetheris pill navbar adapted for Hub
+    ──────────────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 16px;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .nav>* {
+      pointer-events: all;
+    }
+
+    /* Nav transition — hide/show handled via inline style in JS */
+    .nav {
+      transition: opacity .25s ease, transform .25s ease !important;
+    }
+
+    /* Logo pill */
+    .nav-logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-inner {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: #FF3700;
+      line-height: 1;
+      text-shadow: 0 0 14px rgba(255, 55, 0, 0.5);
+      user-select: none;
+    }
+
+    /* Center pill — tabs */
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      border-radius: 9999px;
+      padding: 5px 6px;
+    }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border: none;
+      background: transparent;
+      color: rgba(229, 210, 184, 0.7);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: color .18s, background .18s;
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+      color: #E5D2B8;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-tab.active {
+      color: #E5D2B8;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-tab-icon {
+      font-size: 13px;
+      line-height: 1;
+    }
+
+    /* Right pill — env badge */
+    .nav-end {
+      border-radius: 9999px;
+      padding: 6px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(185, 185, 177, 0.6);
+      letter-spacing: .06em;
+    }
+
+    /* BG toggle */
+    .bg-toggle {
+      position: absolute;
+      bottom: 24px;
+      right: 32px;
+      z-index: 10;
+      display: flex;
+      gap: 3px;
+      border-radius: 9999px;
+      padding: 4px 5px;
+      background: rgba(0, 0, 0, .35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .bg-toggle button {
+      padding: 4px 12px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, .35);
+      border-radius: 9999px;
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transition: all .18s;
+      outline: none;
+    }
+
+    .bg-toggle button:hover {
+      color: rgba(255, 255, 255, .7);
+    }
+
+    .bg-toggle button.active {
+      background: rgba(255, 255, 255, .1);
+      color: rgba(255, 255, 255, .8);
+    }
+
+    /* ── HERO CONTENT ────────────────────────────────────────
+       Centered like Aetheris hero
+    ──────────────────────────────────────────────────────── */
+    .hero-body {
+      position: relative;
+      z-index: 5;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 40px;
+    }
+
+    /* Badge */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 9999px;
+      padding: 4px 14px 4px 4px;
+      margin-bottom: 28px;
+    }
+
+    .hero-badge-chip {
+      background: #FF3700;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: .04em;
+    }
+
+    .hero-badge-text {
+      font-size: 13px;
+      color: rgba(229, 210, 184, 0.85);
+      font-weight: 400;
+    }
+
+    /* Headline — blur-word animated */
+    .hero-headline {
+      max-width: 700px;
+      margin-bottom: 20px;
+    }
+
+    .hero-headline h1 {
+      font-size: clamp(52px, 9vw, 108px);
+      font-weight: 700;
+      line-height: .88;
+      letter-spacing: -.04em;
+      color: #E5D2B8;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: .05em;
+    }
+
+    .hero-accent {
+      color: #FF3700;
+    }
+
+    /* Sub */
+    .hero-sub {
+      max-width: 400px;
+      font-size: 15px;
+      font-weight: 300;
+      color: rgba(229, 210, 184, 0.7);
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    /* CTAs */
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 80px;
+    }
+
+    .btn-glass {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 9999px;
+      padding: 10px 22px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #E5D2B8;
+      cursor: pointer;
+      transition: opacity .18s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-glass:hover {
+      opacity: .85;
+    }
+
+    .btn-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(229, 210, 184, 0.75);
+      cursor: pointer;
+      transition: color .18s;
+      background: none;
+      border: none;
+    }
+
+    .btn-text:hover {
+      color: #E5D2B8;
+    }
+
+    /* Stat cards slider */
+    .stats-slider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-stats {
+      display: flex;
+      align-items: stretch;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      cursor: grab;
+      padding: 6px 0 4px;
+    }
+
+    .hero-stats:active {
+      cursor: grabbing;
+    }
+
+    .hero-stats::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .stat-card {
+      scroll-snap-align: start;
+    }
+
+    .stat-card {
+      border-radius: 20px;
+      padding: 20px;
+      width: 190px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .22s, opacity .22s;
+      text-decoration: none;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .stat-card-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .stat-card-value {
+      margin-top: auto;
+      padding-top: 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -.03em;
+      color: #E5D2B8;
+    }
+
+    .stat-card-label {
+      font-size: 12px;
+      color: rgba(229, 210, 184, 0.6);
+      font-weight: 400;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .stat-card-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #FF3700;
+      background: rgba(255, 55, 0, .1);
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 55, 0, .2);
+      margin-top: 10px;
+      display: inline-block;
+    }
+
+    /* Slider dots */
+    .stats-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(229, 210, 184, 0.2);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: background .2s, transform .2s, width .2s;
+      flex-shrink: 0;
+    }
+
+    .stats-dot.active {
+      background: #FF3700;
+      transform: scale(1.25);
+      width: 16px;
+      border-radius: 3px;
+    }
+
+    /* Hero footer — partner strip */
+    .hero-footer {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 0 32px 32px;
+    }
+
+    .hero-footer-label {
+      border-radius: 9999px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(229, 210, 184, 0.6);
+      letter-spacing: .03em;
+    }
+
+    .hero-footer-tools {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .hero-footer-name {
+      font-family: 'DM Sans', sans-serif;
+      font-style: italic;
+      font-size: 22px;
+      font-weight: 700;
+      color: rgba(229, 210, 184, 0.35);
+      letter-spacing: -.02em;
+      transition: color .2s;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .hero-footer-name:hover {
+      color: rgba(229, 210, 184, 0.65);
+    }
+
+    /* ── TOOLS SECTION ───────────────────────────────────────
+       Aetheris-style Capabilities section
+    ──────────────────────────────────────────────────────── */
+    .tools-section {
+      position: relative;
+      min-height: 100vh;
+      background: transparent;
+      /* no overflow:hidden — would create stacking context that clips video */
+    }
+
+    /* Ambient orange glow only — no dark overlay so video shows through */
+    .tools-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 50% at 90% 90%, rgba(255, 55, 0, .16) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 10% 10%, rgba(255, 55, 0, .08) 0%, transparent 60%);
+    }
+
+    .tools-inner {
+      position: relative;
+      z-index: 1;
+      padding: 80px 48px 72px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Section header */
+    .section-kicker {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(229, 210, 184, 0.55);
+      margin-bottom: 18px;
+      letter-spacing: .04em;
+    }
+
+    .section-heading {
+      font-size: clamp(48px, 7vw, 88px);
+      font-weight: 700;
+      line-height: .88;
+      letter-spacing: -.04em;
+      color: #E5D2B8;
+      margin-bottom: auto;
+    }
+
+    .section-heading em {
+      font-style: italic;
+      color: #FF3700;
+    }
+
+    /* Tool cards grid — Aetheris Capabilities style */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 56px;
+    }
+
+    .tool-card {
+      border-radius: 20px;
+      padding: 24px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform .25s, box-shadow .25s;
+      text-decoration: none;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-6px);
+    }
+
+    /* Top row of card */
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 5px;
+      max-width: 65%;
+    }
+
+    .card-tag-pill {
+      border-radius: 9999px;
+      padding: 4px 10px;
+      font-size: 10px;
+      color: rgba(229, 210, 184, 0.8);
+      white-space: nowrap;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: .04em;
+    }
+
+    /* Card bottom */
+    .card-spacer {
+      flex: 1;
+    }
+
+    .card-bottom {
+      margin-top: 24px;
+    }
+
+    .card-name {
+      font-size: clamp(28px, 3.5vw, 40px);
+      font-weight: 700;
+      font-style: italic;
+      line-height: .9;
+      letter-spacing: -.03em;
+      color: #E5D2B8;
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: rgba(229, 210, 184, 0.65);
+      line-height: 1.6;
+      max-width: 28ch;
+    }
+
+    /* Arrow */
+    .card-arrow {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: rgba(229, 210, 184, 0.3);
+      font-size: 18px;
+      transition: transform .2s, color .2s;
+    }
+
+    .tool-card:hover .card-arrow {
+      transform: translate(3px, -3px);
+      color: #FF3700;
+    }
+
+    /* Section footer */
+    .tools-footer {
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 20px;
+    }
+
+    .footer-copy {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: rgba(185, 185, 177, 0.4);
+      letter-spacing: .04em;
+    }
+
+    .footer-dot {
+      color: #FF3700;
+      margin: 0 5px;
+    }
+
+    /* ── ON-VIEW animation ─────────────────────────────────── */
+    .on-view {
+      opacity: 0;
+      filter: blur(10px);
+      transform: translateY(20px);
+      transition: opacity .7s ease-out, filter .7s ease-out, transform .7s ease-out;
+    }
+
+    .on-view.visible {
+      opacity: 1;
+      filter: none;
+      transform: translateY(0);
+    }
+
+    ::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+
+    /* Tablet ≤ 1024px */
+    @media (max-width: 1024px) {
+      .tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .tools-inner {
+        padding: 80px 32px 60px;
+      }
+    }
+
+    /* Mobile ≤ 640px */
+    @media (max-width: 640px) {
+
+      /* Nav: shrink padding, icon-only for tool tabs */
+      .nav {
+        padding: 0 10px;
+      }
+
+      .nav-logo {
+        width: 36px;
+        height: 36px;
+      }
+
+      .nav-logo-inner {
+        font-size: 14px;
+      }
+
+      .nav-tabs {
+        gap: 1px;
+        padding: 4px 4px;
+      }
+
+      /* Tool tabs: icon only — hide text label via font-size:0, restore icon */
+      .nav-tab[data-tool] {
+        font-size: 0;
+        padding: 6px 9px;
+        gap: 0;
+      }
+
+      .nav-tab[data-tool] .nav-tab-icon {
+        font-size: 14px;
+      }
+
+      /* Home tab keeps text */
+      .nav-tab[data-panel="home"] {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .nav-end {
+        padding: 5px 9px;
+        font-size: 10px;
+      }
+
+      /* Hero: allow vertical overflow so cards aren't clipped */
+      .hero {
+        overflow-x: hidden;
+        overflow-y: visible;
+      }
+
+      .hero-body {
+        padding: 90px 20px 40px;
+        justify-content: flex-start;
+      }
+
+      .hero-headline h1 {
+        font-size: clamp(40px, 12vw, 64px);
+        letter-spacing: -.03em;
+      }
+
+      .hero-sub {
+        font-size: 14px;
+        max-width: 100%;
+      }
+
+      .hero-ctas {
+        gap: 12px;
+        margin-bottom: 32px;
+      }
+
+      .btn-glass {
+        justify-content: center;
+        min-width: 200px;
+      }
+
+      /* Stat cards slider — 1.15 cards visible, hint of next */
+      .stats-slider {
+        width: 100%;
+      }
+
+      .hero-stats {
+        gap: 10px;
+        width: 100%;
+      }
+
+      .stat-card {
+        width: calc(87vw - 40px);
+        flex-shrink: 0;
+        padding: 16px;
+        border-radius: 16px;
+        scroll-snap-align: start;
+      }
+
+      .stat-card-value {
+        font-size: 26px;
+        padding-top: 16px;
+      }
+
+      /* Hero footer */
+      .hero-footer {
+        padding: 0 20px 28px;
+      }
+
+      .hero-footer-tools {
+        gap: 18px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .hero-footer-name {
+        font-size: 16px;
+      }
+
+      /* Tools section */
+      .tools-inner {
+        padding: 60px 20px 48px;
+      }
+
+      .section-heading {
+        font-size: clamp(38px, 11vw, 60px);
+      }
+
+      .tools-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 40px;
+      }
+
+      .tool-card {
+        min-height: 240px;
+        padding: 20px;
+      }
+
+      .card-name {
+        font-size: clamp(24px, 7vw, 32px);
+      }
+
+      /* Footer */
+      .tools-footer {
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+      }
+
+      /* Tool back button — tighter on mobile */
+      .tool-back {
+        top: 10px;
+        left: 12px;
+        padding: 7px 14px 7px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* ── TOOL BACK BUTTON ───────────────────────────────────────
+       Shown only when a tool iframe is active — replaces the
+       full nav so user can always get back to Home.
+    ──────────────────────────────────────────────────────────── */
+    .tool-back {
+      display: none;
+      position: fixed;
+      top: 14px;
+      left: 20px;
+      z-index: 200;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px 8px 12px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(32px) saturate(160%);
+      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #E5D2B8;
+      border: none;
+      text-decoration: none;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity .25s ease, transform .25s ease, background .15s;
+    }
+
+    .tool-back.visible {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tool-back:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FF3700;
+    }
+
+    .tool-back::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(160deg,
+          rgba(255, 255, 255, 0.38) 0%,
+          rgba(255, 255, 255, 0.08) 40%,
+          rgba(255, 255, 255, 0) 60%,
+          rgba(255, 255, 255, 0.28) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .tool-back svg {
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── TOOL BACK BUTTON ──────────────────────────────────────────── -->
+  <button class="tool-back" id="toolBack" onclick="switchToHome()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M19 12H5M12 5l-7 7 7 7" />
+    </svg>
+    Hub
+  </button>
+
+  <!-- ── VIDEO BACKGROUND ─────────────────────────────────────────── -->
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source
+      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4"
+      type="video/mp4">
+  </video>
+  <div class="bg-glow"></div>
+
+  <div class="shell">
+
+    <!-- ══════════════════════════════════════════════════════
+       FLOATING NAV — Aetheris pill style
+  ═══════════════════════════════════════════════════════ -->
+    <nav class="nav anim-0">
+
+      <!-- Logo pill -->
+      <div class="nav-logo liquid-glass" onclick="switchToHome()" title="Home">
+        <span class="nav-logo-inner">⬡</span>
+      </div>
+
+      <!-- Center tabs pill -->
+      <div class="nav-tabs liquid-glass" id="tabs">
+        <button class="nav-tab active" data-panel="home" onclick="switchTab(this)">
+          Home
+        </button>
+        <button class="nav-tab" data-tool="Banner_Tracker" onclick="switchTab(this)">
+          <span class="nav-tab-icon">📊</span> Banner
+        </button>
+        <button class="nav-tab" data-tool="Tasks_Tracking" onclick="switchTab(this)">
+          <span class="nav-tab-icon">✅</span> Tasks
+        </button>
+        <button class="nav-tab" data-tool="Tasks_Estimation" onclick="switchTab(this)">
+          <span class="nav-tab-icon">🧮</span> Estimate
+        </button>
+        <button class="nav-tab" data-tool="Data_mapper" onclick="switchTab(this)">
+          <span class="nav-tab-icon">🗂️</span> Mapper
+        </button>
+        <button class="nav-tab" data-tool="HTML5_guide" onclick="switchTab(this)">
+          <span class="nav-tab-icon">📐</span> Guide
+        </button>
+      </div>
+
+      <!-- Env badge -->
+      <div class="nav-end liquid-glass">
+        <span id="envBadge"
+          style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(185,185,177,0.6)">localhost</span>
+      </div>
+
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════
+       HOME PANEL
+  ═══════════════════════════════════════════════════════ -->
+    <div class="home-panel" id="homePanel">
+
+      <!-- ── HERO SECTION ──────────────────────────────────── -->
+      <section class="hero">
+
+        <div id="hero-stage"></div>
+        <div class="hero-overlay"></div>
+        <!-- hero-noise removed: replaced by video background -->
+
+        <!-- Hero content — centered like Aetheris -->
+        <div class="hero-body">
+
+          <!-- Badge -->
+          <div class="hero-badge liquid-glass anim-1">
+            <span class="hero-badge-chip">Personal</span>
+            <span class="hero-badge-text">Tools for production & tracking</span>
+          </div>
+
+          <!-- Headline — blur-word animated -->
+          <div class="hero-headline">
+            <h1 id="heroHeadline"></h1>
+          </div>
+
+          <!-- Sub -->
+          <p class="hero-sub anim-3">
+            Banner tracking, task management and time estimation —
+            all in one dark glass workspace. No tab juggling.
+          </p>
+
+          <!-- CTAs -->
+          <div class="hero-ctas anim-4">
+            <button class="btn-glass liquid-glass-strong" onclick="scrollToTools()">
+              View all tools
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Stat cards slider -->
+          <div class="stats-slider anim-5">
+            <div class="hero-stats">
+              <div class="stat-card liquid-glass" onclick="openTool('Banner_Tracker')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">📊</div>
+                <div class="stat-card-value">Banners</div>
+                <div class="stat-card-label">Production status, fill hours &amp; overrun tracking</div>
+                <span class="stat-card-tag">Firebase</span>
+              </div>
+              <div class="stat-card liquid-glass" onclick="openTool('Tasks_Tracking')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">✅</div>
+                <div class="stat-card-value">Tasks</div>
+                <div class="stat-card-label">Estimate vs filled hours with cloud sync</div>
+                <span class="stat-card-tag">Firebase + Local</span>
+              </div>
+              <div class="stat-card liquid-glass" onclick="openTool('Tasks_Estimation')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">🧮</div>
+                <div class="stat-card-value">Estimate</div>
+                <div class="stat-card-label">Master/version hours calculated instantly</div>
+                <span class="stat-card-tag">Local</span>
+              </div>
+              <div class="stat-card liquid-glass" onclick="openTool('Data_mapper')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">🗂️</div>
+                <div class="stat-card-value">Mapper</div>
+                <div class="stat-card-label">CSV / Excel column mapping &amp; data transform</div>
+                <span class="stat-card-tag">Local</span>
+              </div>
+              <div class="stat-card liquid-glass" onclick="openTool('HTML5_guide')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">📐</div>
+                <div class="stat-card-value">Guide</div>
+                <div class="stat-card-label">HTML5 banner creation guide — Animate CC</div>
+                <span class="stat-card-tag">Docs</span>
+              </div>
+            </div><!-- /hero-stats -->
+            <div class="stats-dots">
+              <button class="stats-dot active" data-idx="0"></button>
+              <button class="stats-dot" data-idx="1"></button>
+              <button class="stats-dot" data-idx="2"></button>
+              <button class="stats-dot" data-idx="3"></button>
+              <button class="stats-dot" data-idx="4"></button>
+            </div>
+          </div><!-- /stats-slider -->
+
+        </div><!-- /hero-body -->
+
+        <!-- Partner strip -->
+        <div class="hero-footer anim-5">
+          <div class="hero-footer-label liquid-glass">
+            Tùng's personal creative hub — built for speed
+          </div>
+          <div class="hero-footer-tools">
+            <span class="hero-footer-name" onclick="openTool('Banner_Tracker')">BannerTrack</span>
+            <span class="hero-footer-name" onclick="openTool('Tasks_Tracking')">TaskFlow</span>
+            <span class="hero-footer-name" onclick="openTool('Tasks_Estimation')">Estimator</span>
+            <span class="hero-footer-name" onclick="openTool('Data_mapper')">DataMapper</span>
+            <span class="hero-footer-name" onclick="openTool('HTML5_guide')">HTML5Guide</span>
+          </div>
+        </div>
+
+        <!-- BG toggle -->
+        <div class="bg-toggle">
+          <button id="btn-geo" onclick="switchBg('geo')" class="active">Geo</button>
+          <button id="btn-flow" onclick="switchBg('flow')">Flow</button>
+        </div>
+
+      </section><!-- /hero -->
+
+      <!-- ── TOOLS SECTION ─────────────────────────────────── -->
+      <section class="tools-section" id="toolsSection">
+        <div class="tools-bg"></div>
+        <div class="tools-inner">
+
+          <p class="section-kicker on-view">// Tools</p>
+          <h2 class="section-heading on-view">
+            Work<br /><em>centralised.</em>
+          </h2>
+
+          <div class="tools-grid">
+
+            <div class="tool-card liquid-glass on-view" onclick="openTool('Banner_Tracker')"
+              style="transition-delay:.1s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">📊</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">Firebase sync</span>
+                  <span class="card-tag-pill liquid-glass">Multi-product</span>
+                  <span class="card-tag-pill liquid-glass">Fill tracking</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">Banner<br />Tracker</div>
+                <div class="card-desc">Production status, fill hours, overrun states and delivery across all campaigns.
+                </div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
+            <div class="tool-card liquid-glass on-view" onclick="openTool('Tasks_Tracking')"
+              style="transition-delay:.22s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">✅</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">Progress bars</span>
+                  <span class="card-tag-pill liquid-glass">Cloud sync</span>
+                  <span class="card-tag-pill liquid-glass">Per account</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">Task<br />Tracking</div>
+                <div class="card-desc">Estimate vs filled hours, visual progress and cloud sync per account.</div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
+            <div class="tool-card liquid-glass on-view" onclick="openTool('Tasks_Estimation')"
+              style="transition-delay:.34s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">🧮</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">Instant calc</span>
+                  <span class="card-tag-pill liquid-glass">Master/version</span>
+                  <span class="card-tag-pill liquid-glass">Local</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">Time<br />Estimator</div>
+                <div class="card-desc">Master/version quantities, time per unit, total hours — calculated instantly.
+                </div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
+            <div class="tool-card liquid-glass on-view" onclick="openTool('Data_mapper')"
+              style="transition-delay:.46s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">🗂️</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">CSV / Excel</span>
+                  <span class="card-tag-pill liquid-glass">Column map</span>
+                  <span class="card-tag-pill liquid-glass">Local</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">Data<br />Mapper</div>
+                <div class="card-desc">Map and transform CSV/Excel columns — clean data output in one step.</div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
+            <div class="tool-card liquid-glass on-view" onclick="openTool('HTML5_guide')"
+              style="transition-delay:.58s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">📐</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">Animate CC</span>
+                  <span class="card-tag-pill liquid-glass">Production</span>
+                  <span class="card-tag-pill liquid-glass">Docs</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">HTML5<br />Guide</div>
+                <div class="card-desc">Step-by-step HTML5 banner creation guide for Adobe Animate CC export.</div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
+          </div><!-- /tools-grid -->
+
+          <footer class="tools-footer">
+            <span class="footer-copy">
+              Tùng<span class="footer-dot">·</span>Hub<span class="footer-dot">·</span><span id="footerYear"></span>
+            </span>
+            <span class="footer-copy" id="footerHost"></span>
+          </footer>
+
+        </div><!-- /tools-inner -->
+      </section><!-- /tools-section -->
+
+    </div><!-- /home-panel -->
+
+  </div><!-- /shell -->
+
+  <!-- ══════════════════════════════════════════════════════
+     GSAP + JS
+═══════════════════════════════════════════════════════ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+
+    /* ── BLUR-WORD HEADLINE ─────────────────────────────────── */
+    function buildBlurHeadline() {
+      const el = document.getElementById('heroHeadline');
+      const words = ['My', 'work,', 'centralised.'];
+      words.forEach((w, i) => {
+        const span = document.createElement('span');
+        span.className = 'blur-word';
+        span.textContent = w;
+        if (w === 'centralised.') span.style.color = '#FF3700';
+        span.style.transitionDelay = `${0.3 + i * 0.15}s`;
+        el.appendChild(span);
+        if (i < words.length - 1) {
+          const space = document.createElement('span');
+          space.style.display = 'inline-block';
+          space.style.width = '.22em';
+          el.appendChild(space);
+        }
+      });
+      // Trigger after short delay
+      setTimeout(() => {
+        el.querySelectorAll('.blur-word').forEach(s => s.classList.add('visible'));
+      }, 100);
+    }
+
+    /* ── ON-VIEW OBSERVER ───────────────────────────────────── */
+    function initOnView() {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.on-view').forEach(el => io.observe(el));
+    }
+
+    /* ── HUB NAVIGATION ─────────────────────────────────────── */
+    const TOOLS = {
+      Banner_Tracker: { file: 'Banner_Tracker.html', label: 'Banner Tracker' },
+      Tasks_Tracking: { file: 'Tasks_Tracking.html', label: 'Task Tracking' },
+      Tasks_Estimation: { file: 'Tasks_Estimation.html', label: 'Task Estimation' },
+      Data_mapper: { file: 'Data_mapper.html', label: 'Data Mapper' },
+      HTML5_guide: { file: 'HTML5_banner_guideline/index.html', label: 'HTML5 Guide' },
+    };
+
+    const frames = {};
+    let currentTab = 'home';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildBlurHeadline();
+      initOnView();
+      initStatSlider();
+      updateEnvBadge();
+      document.getElementById('footerYear').textContent = new Date().getFullYear();
+      document.getElementById('footerHost').textContent = location.hostname || 'local';
+      initBg();
+    });
+
+    /* ── STAT CARDS SLIDER ──────────────────────────────────── */
+    function initStatSlider() {
+      const track = document.querySelector('.hero-stats');
+      const dots = document.querySelectorAll('.stats-dot');
+      if (!track || !dots.length) return;
+
+      // Update active dot based on scroll position
+      function updateDots() {
+        const cards = track.querySelectorAll('.stat-card');
+        let best = 0, minDist = Infinity;
+        cards.forEach((card, i) => {
+          const dist = Math.abs(card.offsetLeft - track.scrollLeft);
+          if (dist < minDist) { minDist = dist; best = i; }
+        });
+        dots.forEach((d, i) => d.classList.toggle('active', i === best));
+      }
+
+      // Dot click → scroll to card
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+          const cards = track.querySelectorAll('.stat-card');
+          if (cards[i]) track.scrollTo({ left: cards[i].offsetLeft, behavior: 'smooth' });
+        });
+      });
+
+      track.addEventListener('scroll', updateDots, { passive: true });
+
+      // Mouse drag support for desktop
+      let isDown = false, startX = 0, scrollLeft = 0;
+      track.addEventListener('mousedown', e => { isDown = true; startX = e.pageX - track.offsetLeft; scrollLeft = track.scrollLeft; track.style.userSelect = 'none'; });
+      track.addEventListener('mouseleave', () => { isDown = false; });
+      track.addEventListener('mouseup', () => { isDown = false; track.style.userSelect = ''; });
+      track.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        track.scrollLeft = scrollLeft - (e.pageX - track.offsetLeft - startX) * 1.5;
+      });
+    }
+
+    function switchTab(btn) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      btn.dataset.panel === 'home' ? showHome() : loadTool(btn.dataset.tool);
+    }
+
+    function openTool(key) {
+      document.querySelectorAll('.nav-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tool === key);
+      });
+      loadTool(key);
+    }
+
+    function showHome() {
+      if (currentTab !== 'home' && frames[currentTab]) frames[currentTab].wrap.classList.remove('visible');
+      document.getElementById('homePanel').classList.remove('hidden');
+      // Restore nav — clear display:none first, then animate back in
+      const nav = document.querySelector('.nav');
+      nav.style.display = '';
+      // Force reflow so transition fires
+      nav.offsetHeight; // eslint-disable-line no-unused-expressions
+      nav.style.opacity = '1';
+      nav.style.transform = 'translateY(0)';
+      nav.style.pointerEvents = '';
+      document.getElementById('toolBack').classList.remove('visible');
+      currentTab = 'home';
+    }
+
+    function switchToHome() {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.panel === 'home'));
+      showHome();
+    }
+
+    function scrollToTools() {
+      document.getElementById('toolsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function loadTool(key) {
+      document.getElementById('homePanel').classList.add('hidden');
+      // Kill CSS animation fill-mode first (anim-0 fill:both overrides inline style)
+      const nav = document.querySelector('.nav');
+      nav.classList.remove('anim-0');
+      nav.style.animation = 'none';
+      nav.style.opacity = '0';
+      nav.style.transform = 'translateY(-14px)';
+      nav.style.pointerEvents = 'none';
+      // Fully remove from paint tree after transition
+      setTimeout(() => { if (currentTab !== 'home') nav.style.display = 'none'; }, 280);
+      document.getElementById('toolBack').classList.add('visible');
+      if (currentTab && currentTab !== 'home' && frames[currentTab]) frames[currentTab].wrap.classList.remove('visible');
+      currentTab = key;
+      if (frames[key]) { frames[key].wrap.classList.add('visible'); return; }
+
+      const wrap = document.createElement('div');
+      wrap.className = 'frame-wrap visible';
+
+      const loader = document.createElement('div');
+      loader.className = 'frame-loader';
+      loader.innerHTML = `<div class="loader-icon"></div><div class="loader-label">Loading ${TOOLS[key].label}…</div>`;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = TOOLS[key].file;
+      iframe.title = TOOLS[key].label;
+      iframe.setAttribute('allow', 'same-origin');
+      iframe.addEventListener('load', () => {
+        loader.classList.add('hidden');
+        setTimeout(() => loader.remove(), 350);
+      });
+
+      wrap.appendChild(loader);
+      wrap.appendChild(iframe);
+      frames[key] = { wrap, iframe };
+      document.querySelector('.shell').appendChild(wrap);
+    }
+
+    function updateEnvBadge() {
+      const badge = document.getElementById('envBadge');
+      const host = location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') { badge.textContent = 'localhost'; badge.style.color = '#2DB87D'; }
+      else if (host.includes('github.io')) { badge.textContent = 'github.io'; badge.style.color = '#f0a84c'; }
+      else if (host.includes('netlify')) { badge.textContent = 'netlify'; badge.style.color = '#f0a84c'; }
+      else { badge.textContent = host || 'local'; }
+    }
+
+
+    /* ── BACKGROUND ANIMATION ENGINE ───────────────────────── */
+    const heroStage = document.getElementById('hero-stage');
+    let activeBg = null, bgRafId = null, bgResizeFn = null;
+
+    function clearBg() {
+      gsap.killTweensOf(heroStage.querySelectorAll('*'));
+      if (bgRafId) { cancelAnimationFrame(bgRafId); bgRafId = null; }
+      if (bgResizeFn) { window.removeEventListener('resize', bgResizeFn); bgResizeFn = null; }
+      heroStage.innerHTML = '';
+    }
+
+    function switchBg(name) {
+      if (name === activeBg) return;
+      clearBg(); activeBg = name;
+      document.getElementById('btn-geo').classList.toggle('active', name === 'geo');
+      document.getElementById('btn-flow').classList.toggle('active', name === 'flow');
+      name === 'geo' ? bgGeoMorph() : bgFlowField();
+    }
+
+    function initBg() { switchBg('geo'); }
+
+
+    /* ── GEO MORPH ──────────────────────────────────────────── */
+    function bgGeoMorph() {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 1440 900');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+      heroStage.appendChild(svg);
+
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `<pattern id="pgrid" width="64" height="64" patternUnits="userSpaceOnUse">
+    <path d="M 64 0 L 0 0 0 64" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+  </pattern>`;
+      svg.appendChild(defs);
+
+      const gridBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      gridBg.setAttribute('width', '100%'); gridBg.setAttribute('height', '100%'); gridBg.setAttribute('fill', 'url(#pgrid)');
+      svg.appendChild(gridBg);
+
+      const shapes = [
+        { tag: 'polygon', attrs: { points: '180,80 340,340 20,340' }, fill: 'rgba(139,92,246,.15)', cx: 180, cy: 240 },
+        { tag: 'rect', attrs: { x: 580, y: 180, width: 220, height: 220 }, fill: 'rgba(59,130,246,.12)', cx: 690, cy: 290 },
+        { tag: 'polygon', attrs: { points: '1180,40 1380,310 980,310' }, fill: 'rgba(20,184,166,.13)', cx: 1180, cy: 220 },
+        { tag: 'rect', attrs: { x: 80, y: 590, width: 160, height: 160 }, fill: 'rgba(255,55,0,.10)', cx: 160, cy: 670 },
+        { tag: 'polygon', attrs: { points: '870,610 1060,820 680,820' }, fill: 'rgba(236,72,153,.12)', cx: 870, cy: 750 },
+        { tag: 'rect', attrs: { x: 1220, y: 620, width: 130, height: 130 }, fill: 'none', stroke: 'rgba(139,92,246,.2)', sw: 2, cx: 1285, cy: 685 },
+        { tag: 'polygon', attrs: { points: '700,380 760,480 640,480' }, fill: 'none', stroke: 'rgba(6,182,212,.18)', sw: 1.5, cx: 700, cy: 447 },
+        { tag: 'rect', attrs: { x: 360, y: 500, width: 80, height: 80 }, fill: 'none', stroke: 'rgba(255,55,0,.18)', sw: 1.5, cx: 400, cy: 540 },
+      ];
+
+      shapes.forEach((s, i) => {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', s.tag);
+        Object.entries(s.attrs).forEach(([k, v]) => el.setAttribute(k, v));
+        el.setAttribute('fill', s.fill || 'none');
+        if (s.stroke) { el.setAttribute('stroke', s.stroke); el.setAttribute('stroke-width', s.sw); }
+        svg.appendChild(el);
+        gsap.set(el, { transformOrigin: `${s.cx}px ${s.cy}px` });
+        gsap.to(el, {
+          rotation: (i % 2 === 0 ? 1 : -1) * (15 + i * 7),
+          scale: .8 + Math.random() * .35,
+          x: (Math.random() - .5) * 70,
+          y: (Math.random() - .5) * 50,
+          opacity: .3 + Math.random() * .7,
+          duration: 7 + i * 1.1,
+          yoyo: true, repeat: -1,
+          ease: 'sine.inOut', delay: i * .45,
+        });
+      });
+    }
+
+
+    /* ── FLOW FIELD ─────────────────────────────────────────── */
+    function bgFlowField() {
+      const hero = document.querySelector('.hero');
+      const canvas = document.createElement('canvas');
+      heroStage.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      let W = canvas.width = hero.offsetWidth;
+      let H = canvas.height = hero.offsetHeight;
+
+      bgResizeFn = () => { W = canvas.width = hero.offsetWidth; H = canvas.height = hero.offsetHeight; };
+      window.addEventListener('resize', bgResizeFn);
+
+      const palette = [[139, 92, 246], [59, 130, 246], [20, 184, 166], [236, 72, 153], [255, 55, 0], [16, 185, 129]];
+      const particles = Array.from({ length: 900 }, (_, i) => ({
+        x: Math.random() * W, y: Math.random() * H, vx: 0, vy: 0,
+        speed: .8 + Math.random() * 1.4,
+        life: Math.random() * Math.PI, lifeSpd: .005 + Math.random() * .012,
+        size: .5 + Math.random() * 1.2, color: palette[i % palette.length],
+      }));
+
+      let t = 0;
+      function field(x, y, t) {
+        const nx = x / W, ny = y / H;
+        return Math.sin(nx * 3.2 + t * .35) * Math.PI + Math.cos(ny * 2.1 - t * .25) * Math.PI * .8 + Math.sin((nx + ny) * 2.6 + t * .18) * Math.PI * .5;
+      }
+      function reset(p) { p.x = Math.random() * W; p.y = Math.random() * H; p.vx = 0; p.vy = 0; p.life = 0; p.lifeSpd = .005 + Math.random() * .012; }
+
+      function draw() {
+        ctx.fillStyle = 'rgba(10,9,8,.13)'; ctx.fillRect(0, 0, W, H);
+        t += .005;
+        particles.forEach(p => {
+          const angle = field(p.x, p.y, t);
+          p.vx += Math.cos(angle) * .14; p.vy += Math.sin(angle) * .14;
+          const spd = Math.hypot(p.vx, p.vy);
+          if (spd > p.speed) { p.vx = p.vx / spd * p.speed; p.vy = p.vy / spd * p.speed; }
+          p.x += p.vx; p.y += p.vy; p.life += p.lifeSpd;
+          if (p.x < -5 || p.x > W + 5 || p.y < -5 || p.y > H + 5 || p.life > Math.PI) { reset(p); return; }
+          const alpha = Math.max(0, Math.min(.7, Math.sin(p.life) * .7));
+          const [r, g, b] = p.color;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`; ctx.fill();
+        });
+        bgRafId = requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+  </script>
+</body>
+
+</html>

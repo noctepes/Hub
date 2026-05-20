@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML5 Banner Creation Guide - Adobe Animate CC</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="1.5;3;1.5" dur="2s" repeatCount="indefinite"/></circle><circle cx="50" cy="60" r="2.5" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="2.5;4.5;2.5" dur="4s" repeatCount="indefinite"/></circle></svg>');
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .language-switch {
+            position: absolute;
+            top: 1rem;
+            right: 2rem;
+            z-index: 2;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .lang-btn:hover,
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        nav {
+            background: #34495e;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .nav-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 1rem;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link:hover {
+            background: #2c3e50;
+            border-bottom-color: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step {
+            background: #f8f9fa;
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateX(10px);
+        }
+
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            float: left;
+            margin-right: 1rem;
+            margin-top: -0.5rem;
+        }
+
+        .step h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+        }
+
+        .step p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'Code';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            background: #e74c3c;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .image-placeholder {
+            background: linear-gradient(45deg, #f1f2f6, #ddd);
+            border: 2px dashed #bdc3c7;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-placeholder img {
+            width: 100%;
+            height: auto;
+        }
+
+        .image-placeholder::before {
+            /* content: '🖼️'; */
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .workflow-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .workflow-step {
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            flex: 1;
+            margin: 0.5rem;
+            min-width: 150px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .workflow-step:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+
+        .workflow-step:last-child::after {
+            display: none;
+        }
+
+        .tips {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .tips::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #f0ad4e;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .warning::before {
+            content: '⚠️ ';
+            font-size: 1.2rem;
+        }
+
+        .accordion {
+            margin: 1rem 0;
+        }
+
+        .accordion-header {
+            background: #3498db;
+            color: white;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .accordion-header:hover {
+            background: #2980b9;
+        }
+
+        .accordion-header::after {
+            content: '+';
+            position: absolute;
+            right: 1rem;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active::after {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 0 0 5px 5px;
+            border: 1px solid #3498db;
+            border-top: none;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+            }
+
+            main {
+                padding: 1rem;
+            }
+
+            .nav-container {
+                flex-direction: column;
+            }
+
+            .workflow-diagram {
+                flex-direction: column;
+            }
+
+            .workflow-step::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .language-switch {
+                position: static;
+                text-align: center;
+                margin-top: 1rem;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .hamburger {
+            display: none;
+            font-size: 1.8rem;
+            background: none;
+            border: none;
+            color: white;
+            padding: 1rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .nav-container {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-container.active {
+                display: flex;
+            }
+
+            .nav-item {
+                flex: none;
+                min-width: auto;
+            }
+        }
+
+        .lang-switch-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lang-switch-item .lang-btn {
+            margin: 0 0.25rem;
+        }
+
+        /* ── SPRING CC BRAND ───────────────────────────────────────── */
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #282828 60%, #FF3700 100%);
+            background-attachment: fixed;
+            color: #282828;
+        }
+        header {
+            background: linear-gradient(135deg, #282828 60%, #FF3700 100%);
+        }
+        nav { background: #282828; }
+        .nav-link { color: #E5D2B8; }
+        .nav-link:hover { background: rgba(255,55,0,0.15); color: #FF3700; border-bottom-color: #FF3700; }
+        .nav-link::after { background: linear-gradient(90deg, transparent, rgba(255,55,0,0.15), transparent); }
+        .lang-btn:hover, .lang-btn.active { background: rgba(255,55,0,0.3); }
+        .step { border-left-color: #FF3700; }
+        .step-number { background: #FF3700; }
+        .step h3 { color: #282828; }
+        .code-block { background: #282828; }
+        .code-block::before { background: #FF3700; }
+        .highlight { background: linear-gradient(135deg, #E5D2B8 60%, #FF3700 100%); }
+        .accordion-header { background: #FF3700; }
+        .accordion-header:hover { background: #CC2D00; }
+        .accordion-content { border-color: #FF3700; }
+        .workflow-step { border-color: #FF3700; }
+        .workflow-step:hover { box-shadow: 0 10px 25px rgba(255,55,0,0.3); }
+        .workflow-step::after { color: #FF3700; }
+        footer { background: #282828; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+
+            <h1 data-vi="Hướng Dẫn Tạo Banner HTML5" data-en="HTML5 Banner Creation Guide">Hướng Dẫn Tạo Banner HTML5
+            </h1>
+            <p class="subtitle" data-vi="Sử dụng Adobe Animate CC - Từ Brief đến Sản phẩm hoàn chỉnh"
+                data-en="Using Adobe Animate CC - From Brief to Final Product">Sử dụng Adobe Animate CC - Từ Brief đến
+                Sản phẩm hoàn chỉnh</p>
+        </header>
+
+        <nav>
+            <button class="hamburger" id="hamburger">☰</button>
+
+            <div class="nav-container" id="nav-container">
+                <div class="nav-item"><a href="#overview" class="nav-link" data-vi="Tổng Quan" data-en="Overview">Tổng
+                        Quan</a></div>
+                <div class="nav-item"><a href="#brief" class="nav-link" data-vi="Nhận Brief"
+                        data-en="Receiving Brief">Nhận Brief</a></div>
+                <div class="nav-item"><a href="#photoshop" class="nav-link" data-vi="Photoshop Setup"
+                        data-en="Photoshop Setup">Photoshop Setup</a></div>
+                <div class="nav-item"><a href="#animate" class="nav-link" data-vi="Adobe Animate"
+                        data-en="Adobe Animate">Adobe Animate</a></div>
+                <div class="nav-item"><a href="#export" class="nav-link" data-vi="Export & Optimize"
+                        data-en="Export & Optimize">Export & Optimize</a></div>
+                <div class="nav-item"><a href="#tips" class="nav-link" data-vi="Tips & Tricks"
+                        data-en="Tips & Tricks">Tips & Tricks</a></div>
+                <div class="nav-item lang-switch-item">
+                    <a href="#" class="lang-btn active" data-lang="vi">Tiếng Việt</a>
+                    <a href="#" class="lang-btn" data-lang="en">English</a>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <!-- Overview Section -->
+            <section id="overview" class="section active">
+                <h2 data-vi="Tổng Quan Quy Trình" data-en="Workflow Overview">Tổng Quan Quy Trình</h2>
+
+                <div class="workflow-diagram">
+                    <div class="workflow-step">
+                        <h4 data-vi="1. Nhận Brief" data-en="1. Receive Brief">1. Nhận Brief</h4>
+                        <p data-vi="Từ khách hàng" data-en="From client">Từ khách hàng</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h4 data-vi="2. Photoshop" data-en="2. Photoshop">2. Photoshop</h4>
+                        <p data-vi="Tạo layout" data-en="Create layout">Tạo layout</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h4 data-vi="3. Export Assets" data-en="3. Export Assets">3. Export Assets</h4>
+                        <p data-vi="Tạo elements" data-en="Create elements">Tạo elements</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h4 data-vi="4. Animate" data-en="4. Animate">4. Animate</h4>
+                        <p data-vi="Tạo animation" data-en="Create animation">Tạo animation</p>
+                    </div>
+                    <div class="workflow-step">
+                        <h4 data-vi="5. Export HTML5" data-en="5. Export HTML5">5. Export HTML5</h4>
+                        <p data-vi="Tối ưu code" data-en="Optimize code">Tối ưu code</p>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <h3 data-vi="Tại sao quy trình này hiệu quả?" data-en="Why is this workflow effective?">Tại sao quy
+                        trình này hiệu quả?</h3>
+                    <p data-vi="Quy trình này được thiết kế để tối ưu hóa việc sử dụng các công cụ chuyên biệt cho từng giai đoạn. Photoshop xuất sắc trong việc xử lý layout và tạo assets chất lượng cao, trong khi Adobe Animate CC được tối ưu hóa cho việc tạo animation HTML5 và export code sạch. Việc tách biệt các giai đoạn giúp kiểm soát chất lượng tốt hơn và dễ dàng thay đổi khi cần thiết."
+                        data-en="This workflow is designed to optimize the use of specialized tools for each stage. Photoshop excels at layout processing and creating high-quality assets, while Adobe Animate CC is optimized for HTML5 animation creation and clean code export. Separating the stages allows for better quality control and easier modifications when needed.">
+                        Quy trình này được thiết kế để tối ưu hóa việc sử dụng các công cụ chuyên biệt cho từng giai
+                        đoạn. Photoshop xuất sắc trong việc xử lý layout và tạo assets chất lượng cao, trong khi Adobe
+                        Animate CC được tối ưu hóa cho việc tạo animation HTML5 và export code sạch. Việc tách biệt các
+                        giai đoạn giúp kiểm soát chất lượng tốt hơn và dễ dàng thay đổi khi cần thiết.</p>
+                </div>
+
+                <div class="tips">
+                    <strong data-vi="Lưu ý quan trọng:" data-en="Important note:">Lưu ý quan trọng:</strong>
+                    <span
+                        data-vi="Luôn backup các file gốc ở mỗi giai đoạn. Điều này giúp bạn có thể quay lại và chỉnh sửa khi khách hàng yêu cầu thay đổi mà không phải làm lại từ đầu."
+                        data-en="Always backup original files at each stage. This allows you to go back and edit when clients request changes without starting from scratch.">Luôn
+                        backup các file gốc ở mỗi giai đoạn. Điều này giúp bạn có thể quay lại và chỉnh sửa khi khách
+                        hàng yêu cầu thay đổi mà không phải làm lại từ đầu.</span>
+                </div>
+            </section>
+
+            <!-- Brief Section -->
+            <section id="brief" class="section">
+                <h2 data-vi="Bước 1: Nhận Brief và Working File" data-en="Step 1: Receiving Brief and Working Files">
+                    Bước 1: Nhận Brief và Working File</h2>
+
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 data-vi="Thu thập thông tin từ khách hàng" data-en="Gather information from client">Thu thập
+                        thông tin từ khách hàng</h3>
+                    <p data-vi="Bất kể khách hàng cung cấp file định dạng gì (AI, PSD, JPG, PNG, XD, inDesign, PDF, hay thậm chí là sketch trên giấy), nhiệm vụ của bạn là hiểu rõ ý tưởng và chuyển đổi tất cả thành format phù hợp để làm việc. Giai đoạn này rất quan trọng vì nó quyết định chất lượng của sản phẩm cuối cùng."
+                        data-en="Regardless of what file format the client provides (AI, PSD, JPG, PNG, XD, inDesign, PDF, or even paper sketches), your job is to understand the concept clearly and convert everything into a suitable working format. This stage is crucial as it determines the quality of the final product.">
+                        Bất kể khách hàng cung cấp file định dạng gì (AI, PSD, JPG, PNG, XD, inDesign, PDF, hay thậm chí
+                        là sketch
+                        trên giấy), nhiệm vụ của bạn là hiểu rõ ý tưởng và chuyển đổi tất cả thành format phù hợp để làm
+                        việc. Giai đoạn này rất quan trọng vì nó quyết định chất lượng của sản phẩm cuối cùng.</p>
+
+                    <div class="accordion">
+                        <div class="accordion-header" data-vi="Thông tin cần thu thập" data-en="Information to collect">
+                            Thông tin cần thu thập</div>
+                        <div class="accordion-content">
+                            <ul>
+                                <li data-vi="Kích thước banner (320x100, 728x90, 300x250, etc.)"
+                                    data-en="Banner dimensions (320x100, 728x90, 300x250, etc.)">Kích thước banner
+                                    (320x100, 728x90, 300x250, etc.)</li>
+                                <li data-vi="Thời gian animation (thường 15-30 giây)"
+                                    data-en="Animation duration (usually 15-30 seconds)">Thời gian animation (thường
+                                    15-30 giây)</li>
+                                <li data-vi="File size limit (thường < 150KB)"
+                                    data-en="File size limit (usually < 150KB)">File size limit (thường < 150KB)</li>
+                                <li data-vi="Click URL và tracking requirements"
+                                    data-en="Click URL and tracking requirements">Click URL và tracking requirements
+                                </li>
+                                <li data-vi="Brand guidelines và fonts" data-en="Brand guidelines and fonts">Brand
+                                    guidelines và fonts</li>
+                                <li data-vi="Storyboard hoặc mô tả animation"
+                                    data-en="Storyboard or animation description">Storyboard hoặc mô tả animation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="image-placeholder">
+                    <!-- <div>
+                        <div data-vi="Hình minh họa: Các loại file input thường gặp"
+                            data-en="Illustration: Common input file types">Hình minh họa: Các loại file input thường
+                            gặp</div>
+                        <small data-vi="AI, PSD, JPG, PNG, PDF → Photoshop"
+                            data-en="AI, PSD, JPG, PNG, PDF → Photoshop">AI, PSD, JPG, PNG, PDF → Photoshop</small>
+                    </div> -->
+                    <img src="input_files.jpg" alt="Illustration of common input file types">
+                </div>
+
+                <div class="warning">
+                    <strong data-vi="Lưu ý về chất lượng file:" data-en="Note about file quality:">Lưu ý về chất lượng
+                        file:</strong>
+                    <span
+                        data-vi="Nếu khách cung cấp file có độ phân giải thấp, hãy yêu cầu file gốc có chất lượng cao hơn hoặc vector files để đảm bảo chất lượng banner cuối cùng."
+                        data-en="If the client provides low-resolution files, request original high-quality files or vector files to ensure the final banner quality.">Nếu
+                        khách cung cấp file có độ phân giải thấp, hãy yêu cầu file gốc có chất lượng cao hơn hoặc vector
+                        files để đảm bảo chất lượng banner cuối cùng.</span>
+                </div>
+            </section>
+
+            <!-- Photoshop Section -->
+            <section id="photoshop" class="section">
+                <h2 data-vi="Bước 2: Tạo Layout trong Photoshop" data-en="Step 2: Creating Layout in Photoshop">Bước 2:
+                    Tạo Layout trong Photoshop</h2>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 data-vi="Chuyển đổi tất cả file về Photoshop" data-en="Convert all files to Photoshop">Chuyển
+                        đổi tất cả file về Photoshop</h3>
+                    <p data-vi="Photoshop là công cụ tốt nhất để xử lý và chuẩn bị assets cho web. Ngay cả khi bạn nhận được file Illustrator, việc chuyển sang Photoshop giúp kiểm soát tốt hơn các yếu tố như độ phân giải, color profile, và export quality."
+                        data-en="Photoshop is the best tool for processing and preparing web assets. Even if you receive Illustrator files, converting to Photoshop gives better control over elements like resolution, color profile, and export quality.">
+                        Photoshop là công cụ tốt nhất để xử lý và chuẩn bị assets cho web. Ngay cả khi bạn nhận được
+                        file Illustrator, việc chuyển sang Photoshop giúp kiểm soát tốt hơn các yếu tố như độ phân giải,
+                        color profile, và export quality.</p>
+
+                    <div class="code-block">
+                        <strong data-vi="Cài đặt document Photoshop:" data-en="Photoshop document settings:">Cài đặt
+                            document Photoshop:</strong><br>
+                        - Width: <span data-vi="Theo yêu cầu banner (ví dụ: 320px)"
+                            data-en="As per banner requirements (e.g., 320px)">Theo yêu cầu banner (ví dụ:
+                            320px)</span><br>
+                        - Height: <span data-vi="Theo yêu cầu banner (ví dụ: 100px)"
+                            data-en="As per banner requirements (e.g., 100px)">Theo yêu cầu banner (ví dụ:
+                            100px)</span><br>
+                        - Resolution: 72 PPI<br>
+                        - Color Mode: RGB Color/sRGB Color<br>
+                        - Background: PNG/JPG
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 data-vi="Tổ chức layers theo frame/storyboard" data-en="Organize layers by frame/storyboard">Tổ
+                        chức layers theo frame/storyboard</h3>
+                    <p data-vi="Đây là bước quan trọng nhất trong việc chuẩn bị assets. Việc tổ chức layers một cách có hệ thống sẽ giúp bạn dễ dàng export và import vào Animate sau này. Hãy nghĩ về animation như một câu chuyện với nhiều frame khác nhau."
+                        data-en="This is the most crucial step in asset preparation. Organizing layers systematically will make it easier to export and import into Animate later. Think of animation as a story with different frames.">
+                        Đây là bước quan trọng nhất trong việc chuẩn bị assets. Việc tổ chức layers một cách có hệ thống
+                        sẽ giúp bạn dễ dàng export và import vào Animate sau này. Hãy nghĩ về animation như một câu
+                        chuyện với nhiều frame khác nhau.</p>
+
+                    <div class="accordion">
+                        <div class="accordion-header" data-vi="Chiến lược đặt tên layers"
+                            data-en="Layer naming strategy">Chiến lược đặt tên layers</div>
+                        <div class="accordion-content">
+                            <strong data-vi="Cách đặt tên hiệu quả:" data-en="Effective naming conventions:">Cách đặt
+                                tên hiệu quả:</strong><br>
+                            - Frame01_background<br>
+                            - Frame01_logo<br>
+                            - Frame01_text_headline<br>
+                            - Frame02_product_image<br>
+                            - Frame02_text_description<br>
+                            - Frame03_cta_button<br><br>
+                            <span data-vi="Hoặc theo element:" data-en="Or by element:">Hoặc theo element:</span><br>
+                            - bg_static<br>
+                            - logo_animated<br>
+                            - text_headline_01<br>
+                            - text_headline_02<br>
+                            - button_cta
+                        </div>
+                    </div>
+
+                    <div class="image-placeholder">
+                        <!-- <div>
+                            <div data-vi="Hình minh họa: Cấu trúc layers trong Photoshop"
+                                data-en="Illustration: Layer structure in Photoshop">Hình minh họa: Cấu trúc layers
+                                trong Photoshop</div>
+                            <small data-vi="Frame groups với layers được tổ chức rõ ràng"
+                                data-en="Frame groups with clearly organized layers">Frame groups với layers được tổ
+                                chức rõ ràng</small>
+                        </div> -->
+                        <img src="photoshop_layers.jpg" alt="Illustration of layer structure in Photoshop">
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 data-vi="Export assets sử dụng Generate Plugin" data-en="Export assets using Generate Plugin">
+                        Export assets sử dụng Generate Plugin</h3>
+                    <p data-vi="Photoshop Generator là công cụ mạnh mẽ cho việc export assets tự động. Bằng cách đặt tên layers một cách thông minh, bạn có thể export hàng loạt assets với chất lượng và format phù hợp chỉ trong một lần click. Generator mặc định không kích hoạt, chọn setting → plugin → check enable generator → khởi động photoshop để kích hoạt generator."
+                        data-en="Photoshop Generator is a powerful tool for automatic asset export. By naming layers intelligently, you can batch export assets with appropriate quality and format in just one click. Generator is not activated by default, select setting → plugin → check enable generator → start photoshop to activate generator.">
+                        Photoshop Generator là công cụ mạnh mẽ cho việc export assets tự động. Bằng cách đặt tên layers
+                        một cách thông minh, bạn có thể export hàng loạt assets với chất lượng và format phù hợp chỉ
+                        trong một lần click. Generator mặc định không kích hoạt, chọn setting → plugin → check enable
+                        generator → khởi động photoshop để kích hoạt generator.</p>
+
+                    <div class="code-block">
+                        <strong data-vi="Cách sử dụng Generator:" data-en="How to use Generator:">Cách sử dụng
+                            Generator:</strong><br>
+                        1. File → Automate → Generators Plugins → Image Assets<br>
+                        2. <span data-vi="Đặt tên layer với extension:" data-en="Name layers with extensions:">Đặt tên
+                            layer với extension:</span><br>
+                        &nbsp;&nbsp;&nbsp;- logo.png<br>
+                        &nbsp;&nbsp;&nbsp;- background.jpg<br>
+                        &nbsp;&nbsp;&nbsp;- button.png<br>
+                        &nbsp;&nbsp;&nbsp;- icon.png<br>
+                        3. <span data-vi="Assets sẽ tự động export vào thư mục [filename]-assets"
+                            data-en="Assets will automatically export to [filename]-assets folder">Assets sẽ tự động
+                            export vào thư mục [filename]-assets</span>
+                        <br>
+                        4. <span data-vi="Chỉnh sửa chất lượng bằng cách thêm suffix"
+                            data-en="Adjust quality by adding suffix">Chỉnh sửa chất lượng bằng cách thêm suffix</span><br>
+                        &nbsp;&nbsp;&nbsp;- background.jpg5<br>
+                        &nbsp;&nbsp;&nbsp;- background.jpg50%<br>
+                        <span data-vi="Thêm kích thước hình ảnh đầu ra mong muốn (tương đối hoặc theo các định dạng được hỗ trợ: px, in, cm và mm) làm tiền tố cho tên asset. Photoshop sẽ tự động điều chỉnh tỷ lệ hình ảnh cho phù hợp. Ví dụ:"
+                            data-en="Add the desired output image size (relative or in supported formats: px, in, cm, and mm) as a prefix to the asset name. Photoshop scales the image accordingly. For example:">Thêm kích thước hình ảnh đầu ra mong muốn (tương đối hoặc theo các định dạng được hỗ trợ: px, in, cm và mm) làm tiền tố cho tên asset. Photoshop sẽ tự động điều chỉnh tỷ lệ hình ảnh cho phù hợp. Ví dụ:</span><br>
+                        &nbsp;&nbsp;&nbsp;- 200% logo.png<br>
+                        &nbsp;&nbsp;&nbsp;- 300 x 200 Rounded_rectangle_3.jpg<br>
+                        &nbsp;&nbsp;&nbsp;- 10in x 200mm Rounded_rectangle_3.jpg<br>
+                        <span
+                            data-vi="Lưu ý: Nhớ thêm một ký tự khoảng trắng giữa tiền tố và tên asset. Nếu bạn chỉ định kích thước tính bằng pixel, bạn có thể bỏ qua đơn vị. Ví dụ: 300x200."
+                            data-en="Note: Remember to add a space character between the prefix and the asset name. If you're specifying the size in pixels, you can omit the unit. For example, 300x200.">Lưu ý: Nhớ thêm một ký tự khoảng trắng giữa tiền tố và tên asset. Nếu bạn chỉ định kích thước tính bằng pixel, bạn có thể bỏ qua đơn vị. Ví dụ: 300x200.
+                        </span>
+                    </div>
+
+                    <div class="tips">
+                        <strong data-vi="Pro tip:" data-en="Pro tip:">Pro tip:</strong>
+                        <span
+                            data-vi="Sử dụng Smart Objects để giữ chất lượng vector khi resize. Convert text layers thành Smart Objects trước khi export để đảm bảo text không bị pixelated."
+                            data-en="Use Smart Objects to maintain vector quality when resizing. Convert text layers to Smart Objects before export to ensure text doesn't get pixelated.">Sử
+                            dụng Smart Objects để giữ chất lượng vector khi resize. Convert text layers thành Smart
+                            Objects trước khi export để đảm bảo text không bị pixelated.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Animate Section -->
+            <section id="animate" class="section">
+                <h2 data-vi="Bước 3: Tạo Animation trong Adobe Animate CC"
+                    data-en="Step 3: Creating Animation in Adobe Animate CC">Bước 3: Tạo Animation trong Adobe Animate
+                    CC</h2>
+
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <h3 data-vi="Setup project trong Adobe Animate" data-en="Setup project in Adobe Animate">Setup
+                        project trong Adobe Animate</h3>
+                    <p data-vi="Adobe Animate CC được tối ưu hóa đặc biệt cho HTML5 canvas animation. Việc setup đúng từ đầu sẽ giúp export code sạch và tối ưu performance."
+                        data-en="Adobe Animate CC is specially optimized for HTML5 canvas animation. Proper initial setup will help export clean code and optimize performance.">
+                        Adobe Animate CC được tối ưu hóa đặc biệt cho HTML5 canvas animation. Việc setup đúng từ đầu sẽ
+                        giúp export code sạch và tối ưu performance.</p>
+
+                    <div class="code-block">
+                        <strong data-vi="Cài đặt Document:" data-en="Document Settings:">Cài đặt Document:</strong><br>
+                        - Platform Type: HTML5 Canvas<br>
+                        - <span data-vi="Width/Height: Theo yêu cầu banner"
+                            data-en="Width/Height: As per banner requirements">Width/Height: Theo yêu cầu
+                            banner</span><br>
+                        - FPS: 24-30<br>
+                        - Background: Transparent<br>
+                        - <span data-vi="Ruler units: Pixels" data-en="Ruler units: Pixels">Ruler units:
+                            Pixels</span><br>
+                        - <span data-vi="Stage color: Theo design" data-en="Stage color: As per design">Stage color:
+                            Theo design</span>
+                    </div>
+
+                    <div class="image-placeholder">
+                        <!-- <div>
+                            <div data-vi="Hình minh họa: Giao diện Adobe Animate CC"
+                                data-en="Illustration: Adobe Animate CC interface">Hình minh họa: Giao diện Adobe
+                                Animate CC</div>
+                            <small data-vi="Timeline, Stage, Library panels"
+                                data-en="Timeline, Stage, Library panels">Timeline, Stage, Library panels</small>
+                        </div> -->
+                        <img src="animate_setup.jpg" alt="Illustration of Adobe Animate CC interface">
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <h3 data-vi="Import assets và tổ chức Library" data-en="Import assets and organize Library">Import
+                        assets và tổ chức Library</h3>
+                    <p data-vi="Việc import và tổ chức assets một cách khoa học sẽ giúp bạn làm việc hiệu quả và dễ dàng maintain project sau này. Animate CC có system Library rất mạnh mẽ để quản lý assets."
+                        data-en="Importing and organizing assets scientifically will help you work efficiently and easily maintain the project later. Animate CC has a very powerful Library system for asset management.">
+                        Việc import và tổ chức assets một cách khoa học sẽ giúp bạn làm việc hiệu quả và dễ dàng
+                        maintain project sau này. Animate CC có system Library rất mạnh mẽ để quản lý assets.</p>
+
+                    <div class="accordion">
+                        <div class="accordion-header" data-vi="Quy tắc tổ chức Library"
+                            data-en="Library organization rules">Quy tắc tổ chức Library</div>
+                        <div class="accordion-content">
+                            <strong data-vi="Cấu trúc folder Library:" data-en="Library folder structure:">Cấu trúc
+                                folder Library:</strong><br>
+                            📁 Images<br>
+                            &nbsp;&nbsp;📁 Backgrounds<br>
+                            &nbsp;&nbsp;📁 Products<br>
+                            &nbsp;&nbsp;📁 Icons<br>
+                            📁 Text Elements<br>
+                            📁 Buttons<br>
+                            📁 Symbols<br>
+                            &nbsp;&nbsp;📁 Animated<br>
+                            &nbsp;&nbsp;📁 Static<br><br>
+
+                            <strong data-vi="Tips tối ưu:" data-en="Optimization tips:">Tips tối ưu:</strong><br>
+                            - <span data-vi="Convert bitmap thành Symbol để reuse"
+                                data-en="Convert bitmaps to Symbols for reuse">Convert bitmap thành Symbol để
+                                reuse</span><br>
+                            - <span data-vi="Sử dụng compression settings phù hợp"
+                                data-en="Use appropriate compression settings">Sử dụng compression settings phù
+                                hợp</span><br>
+                            - <span data-vi="Group related elements" data-en="Group related elements">Group related
+                                elements</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">7</div>
+                    <h3 data-vi="Tạo timeline animation" data-en="Create timeline animation">Tạo timeline animation</h3>
+                    <p data-vi="Timeline là trái tim của animation. Hiểu rõ cách sử dụng keyframes, tweens, và easing sẽ giúp tạo ra animations mượt mà và chuyên nghiệp. Adobe Animate cung cấp nhiều loại tween khác nhau để tạo hiệu ứng đa dạng."
+                        data-en="Timeline is the heart of animation. Understanding how to use keyframes, tweens, and easing will help create smooth and professional animations. Adobe Animate provides various types of tweens to create diverse effects.">
+                        Timeline là trái tim của animation. Hiểu rõ cách sử dụng keyframes, tweens, và easing sẽ giúp
+                        tạo ra animations mượt mà và chuyên nghiệp. Adobe Animate cung cấp nhiều loại tween khác nhau để
+                        tạo hiệu ứng đa dạng.</p>
+
+                    <div class="highlight">
+                        <h4 data-vi="Các loại animation phổ biến trong banner:"
+                            data-en="Common animation types in banners:">Các loại animation phổ biến trong banner:</h4>
+                        <ul>
+                            <li><strong>Fade In/Out:</strong> <span data-vi="Hiện/ẩn elements"
+                                    data-en="Show/hide elements">Hiện/ẩn elements</span></li>
+                            <li><strong>Slide/Pan:</strong> <span data-vi="Di chuyển elements"
+                                    data-en="Move elements">Di chuyển elements</span></li>
+                            <li><strong>Scale:</strong> <span data-vi="Phóng to/thu nhỏ" data-en="Scale up/down">Phóng
+                                    to/thu nhỏ</span></li>
+                            <li><strong>Rotation:</strong> <span data-vi="Xoay elements" data-en="Rotate elements">Xoay
+                                    elements</span></li>
+                            <li><strong>Color Tint:</strong> <span data-vi="Thay đổi màu sắc"
+                                    data-en="Change colors">Thay đổi màu sắc</span></li>
+                            <li><strong>Mask:</strong> <span data-vi="Hiệu ứng reveal" data-en="Reveal effects">Hiệu ứng
+                                    reveal</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="code-block">
+                        <strong data-vi="Best practices cho Timeline:" data-en="Timeline best practices:">Best practices
+                            cho Timeline:</strong><br>
+                        - <span data-vi="Sử dụng layer names có ý nghĩa" data-en="Use meaningful layer names">Sử dụng
+                            layer names có ý nghĩa</span><br>
+                        - <span data-vi="Tạo guide layers cho timing reference"
+                            data-en="Create guide layers for timing reference">Tạo guide layers cho timing
+                            reference</span><br>
+                        - <span data-vi="Sử dụng frame labels để mark các scene"
+                            data-en="Use frame labels to mark scenes">Sử dụng frame labels để mark các scene</span><br>
+                        - <span data-vi="Kiểm tra animation ở nhiều speed khác nhau"
+                            data-en="Test animation at different speeds">Kiểm tra animation ở nhiều speed khác
+                            nhau</span><br>
+                        - <span data-vi="Optimize keyframe usage" data-en="Optimize keyframe usage">Optimize keyframe
+                            usage</span>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong data-vi="Lưu ý về performance:" data-en="Performance considerations:">Lưu ý về
+                        performance:</strong>
+                    <span
+                        data-vi="Tránh animation quá nhiều elements cùng lúc. Điều này có thể làm giảm performance trên thiết bị yếu. Ưu tiên transform properties (position, scale, rotation) thay vì filter effects."
+                        data-en="Avoid animating too many elements simultaneously. This can reduce performance on weak devices. Prioritize transform properties (position, scale, rotation) over filter effects.">Tránh
+                        animation quá nhiều elements cùng lúc. Điều này có thể làm giảm performance trên thiết bị yếu.
+                        Ưu tiên transform properties (position, scale, rotation) thay vì filter effects.</span>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section id="export" class="section">
+                <h2 data-vi="Bước 4: Export và Optimize HTML5" data-en="Step 4: Export and Optimize HTML5">Bước 4:
+                    Export và Optimize HTML5</h2>
+
+                <div class="step">
+                    <div class="step-number">8</div>
+                    <h3 data-vi="Export HTML5 từ Adobe Animate" data-en="Export HTML5 from Adobe Animate">Export HTML5
+                        từ Adobe Animate</h3>
+                    <p data-vi="Việc export đúng cách từ Animate sẽ tạo ra code base sạch và tối ưu. Adobe Animate tự động tạo ra HTML, CSS, và JavaScript cần thiết cho banner, nhưng vẫn cần fine-tuning để đạt performance tốt nhất."
+                        data-en="Proper export from Animate will create a clean and optimized code base. Adobe Animate automatically generates the necessary HTML, CSS, and JavaScript for banners, but still needs fine-tuning for best performance.">
+                        Việc export đúng cách từ Animate sẽ tạo ra code base sạch và tối ưu. Adobe Animate tự động tạo
+                        ra HTML, CSS, và JavaScript cần thiết cho banner, nhưng vẫn cần fine-tuning để đạt performance
+                        tốt nhất.</p>
+
+                    <div class="code-block">
+                        <strong data-vi="Export Settings:" data-en="Export Settings:">Export Settings:</strong><br>
+                        File → Publish Settings → HTML5 Canvas<br><br>
+                        <strong>Basic:</strong><br>
+                        - Output name: banner (sẽ tạo banner.html)<br>
+                        - <span data-vi="Include hidden layers: OFF" data-en="Include hidden layers: OFF">Include hidden
+                            layers: OFF</span><br><br>
+                        <strong>Advanced:</strong><br>
+                        - <span data-vi="Compress JavaScript: ON" data-en="Compress JavaScript: ON">Compress JavaScript:
+                            ON</span><br>
+                        - <span data-vi="Include preloader: ON (nếu cần)"
+                            data-en="Include preloader: ON (if needed)">Include preloader: ON (nếu cần)</span><br>
+                        - <span data-vi="Host libraries externally: OFF" data-en="Host libraries externally: OFF">Host
+                            libraries externally: OFF</span><br>
+                        - <span data-vi="Make responsive: Tùy requirement"
+                            data-en="Make responsive: Based on requirements">Make responsive: Tùy requirement</span>
+                    </div>
+
+                    <div class="image-placeholder">
+                        <!-- <div>
+                            <div data-vi="Hình minh họa: Publish Settings panel"
+                                data-en="Illustration: Publish Settings panel">Hình minh họa: Publish Settings panel
+                            </div>
+                            <small data-vi="Cài đặt export HTML5 Canvas" data-en="HTML5 Canvas export settings">Cài đặt
+                                export HTML5 Canvas</small>
+                        </div> -->
+                        <img src="export_settings.jpg" alt="Illustration of Publish Settings panel">
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">9</div>
+                    <h3 data-vi="Loại bỏ code thừa và optimize" data-en="Remove redundant code and optimize">Loại bỏ
+                        code thừa và optimize</h3>
+                    <p data-vi="Adobe Animate thường generate code với nhiều features không cần thiết cho banner đơn giản. Việc clean up code sẽ giảm đáng kể file size và tăng loading speed."
+                        data-en="Adobe Animate often generates code with many unnecessary features for simple banners. Cleaning up code will significantly reduce file size and increase loading speed.">
+                        Adobe Animate thường generate code với nhiều features không cần thiết cho banner đơn giản. Việc
+                        clean up code sẽ giảm đáng kể file size và tăng loading speed.</p>
+
+                    <div class="accordion">
+                        <div class="accordion-header" data-vi="Các bước optimize code"
+                            data-en="Code optimization steps">Các bước optimize code</div>
+                        <div class="accordion-content">
+                            <strong data-vi="1. Trong file HTML:" data-en="1. In HTML file:">1. Trong file
+                                HTML:</strong><br>
+                            - <span data-vi="Xóa các meta tags không cần thiết"
+                                data-en="Remove unnecessary meta tags">Xóa các meta tags không cần thiết</span><br>
+                            - <span data-vi="Minify HTML nếu có thể" data-en="Minify HTML if possible">Minify HTML nếu
+                                có thể</span><br>
+                            - <span data-vi="Remove unused stylesheets" data-en="Remove unused stylesheets">Remove
+                                unused stylesheets</span><br><br>
+
+                            <strong data-vi="2. Trong file JavaScript:" data-en="2. In JavaScript file:">2. Trong file
+                                JavaScript:</strong><br>
+                            - <span data-vi="Remove unused variables" data-en="Remove unused variables">Remove unused
+                                variables</span><br>
+                            - <span data-vi="Combine similar functions" data-en="Combine similar functions">Combine
+                                similar functions</span><br>
+                            - <span data-vi="Minify JavaScript code" data-en="Minify JavaScript code">Minify JavaScript
+                                code</span><br><br>
+
+                            <strong data-vi="3. Assets optimization:" data-en="3. Assets optimization:">3. Assets
+                                optimization:</strong><br>
+                            - <span data-vi="Compress images (TinyPNG, ImageOptim)"
+                                data-en="Compress images (TinyPNG, ImageOptim)">Compress images (TinyPNG,
+                                ImageOptim)</span><br>
+                            - <span data-vi="Convert to WebP nếu support" data-en="Convert to WebP if supported">Convert
+                                to WebP nếu support</span><br>
+                            - <span data-vi="Remove unused assets" data-en="Remove unused assets">Remove unused
+                                assets</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">10</div>
+                    <h3 data-vi="Đổi tên file và thêm Google Ad specs" data-en="Rename files and add Google Ad specs">
+                        Đổi tên file và thêm Google Ad specs</h3>
+                    <p data-vi="Để banner hoạt động đúng trên các ad networks, đặc biệt là Google Ads, cần thêm các meta tags và specifications theo chuẩn. Điều này đảm bảo banner được hiển thị và track đúng cách."
+                        data-en="For banners to work properly on ad networks, especially Google Ads, you need to add meta tags and specifications according to standards. This ensures banners are displayed and tracked correctly.">
+                        Để banner hoạt động đúng trên các ad networks, đặc biệt là Google Ads, cần thêm các meta tags và
+                        specifications theo chuẩn. Điều này đảm bảo banner được hiển thị và track đúng cách.</p>
+
+                    <div class="code-block">
+                        <strong data-vi="Thêm vào &lt;head&gt; section:" data-en="Add to &lt;head&gt; section:">Thêm vào
+                            &lt;head&gt; section:</strong><br><br>
+                        &lt;!-- Google Ad Specs --&gt;<br>
+                        &lt;meta name="ad.size" content="width=320,height=100"&gt;<br>
+                        &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;<br>
+                        &lt;meta name="format-detection" content="telephone=no"&gt;<br><br>
+
+                        &lt;!-- Clicktag Support --&gt;<br>
+                        &lt;script&gt;<br>
+                        var clickTag = "";<br>
+                        &lt;/script&gt;
+                    </div>
+
+                    <div class="code-block">
+                        <strong data-vi="Thêm click handler:" data-en="Add click handler:">Thêm click
+                            handler:</strong><br><br>
+                        function bannerClick() {<br>
+                        &nbsp;&nbsp;if (clickTag) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;window.open(clickTag, '_blank');<br>
+                        &nbsp;&nbsp;}<br>
+                        }<br><br>
+
+                        <span data-vi="// Thêm vào canvas click event" data-en="// Add to canvas click event">// Thêm
+                            vào canvas click event</span><br>
+                        canvas.addEventListener('click', bannerClick);
+                    </div>
+
+                    <div class="tips">
+                        <strong data-vi="File naming convention:" data-en="File naming convention:">File naming
+                            convention:</strong><br>
+                        - index.html (<span data-vi="thay vì banner.html" data-en="instead of banner.html">thay vì
+                            banner.html</span>)<br>
+                        - index.js (<span data-vi="file JavaScript chính" data-en="main JavaScript file">file JavaScript
+                            chính</span>)<br>
+                        - t1.png, t2.png, bg1.jpg, bg2.jpg.... (<span data-vi="assets"
+                            data-en="assets">assets</span>)<br>
+                        - <span data-vi="Tất cả files nên lowercase, không dấu cách"
+                            data-en="All files should be lowercase, no spaces">Tất cả files nên lowercase, không dấu
+                            cách</span>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong data-vi="Kiểm tra file size:" data-en="Check file size:">Kiểm tra file size:</strong>
+                    <span
+                        data-vi="Hầu hết ad networks có giới hạn file size (thường < 150KB cho tổng banner). Sử dụng tools như Google PageSpeed Insights để kiểm tra và optimize further nếu cần."
+                        data-en="Most ad networks have file size limits (usually < 150KB for total banner). Use tools like Google PageSpeed Insights to check and optimize further if needed.">Hầu
+                        hết ad networks có giới hạn file size (thường < 150KB cho tổng banner). Sử dụng tools như Google
+                            PageSpeed Insights để kiểm tra và optimize further nếu cần.</span>
+                </div>
+            </section>
+
+            <!-- Tips Section -->
+            <section id="tips" class="section">
+                <h2 data-vi="Tips & Tricks Nâng Cao" data-en="Advanced Tips & Tricks">Tips & Tricks Nâng Cao</h2>
+
+                <div class="step">
+                    <div class="step-number">💡</div>
+                    <h3 data-vi="Performance Optimization" data-en="Performance Optimization">Performance Optimization
+                    </h3>
+                    <div class="highlight">
+                        <h4 data-vi="Techniques để tăng tốc banner:" data-en="Techniques to speed up banners:">
+                            Techniques để tăng tốc banner:</h4>
+                        <ul>
+                            <li><strong data-vi="Sprite Sheets:" data-en="Sprite Sheets:">Sprite Sheets:</strong> <span
+                                    data-vi="Combine nhiều images nhỏ thành một file"
+                                    data-en="Combine multiple small images into one file">Combine nhiều images nhỏ thành
+                                    một file</span></li>
+                            <li><strong data-vi="CSS Animation:" data-en="CSS Animation:">CSS Animation:</strong> <span
+                                    data-vi="Sử dụng CSS transforms thay vì JS khi có thể"
+                                    data-en="Use CSS transforms instead of JS when possible">Sử dụng CSS transforms thay
+                                    vì JS khi có thể</span></li>
+                            <li><strong data-vi="Lazy Loading:" data-en="Lazy Loading:">Lazy Loading:</strong> <span
+                                    data-vi="Load assets khi cần thiết" data-en="Load assets when needed">Load assets
+                                    khi cần thiết</span></li>
+                            <li><strong data-vi="RequestAnimationFrame:"
+                                    data-en="RequestAnimationFrame:">RequestAnimationFrame:</strong> <span
+                                    data-vi="Đảm bảo smooth animation" data-en="Ensure smooth animation">Đảm bảo smooth
+                                    animation</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">🛠️</div>
+                    <h3 data-vi="Tools và Resources Hữu Ích" data-en="Useful Tools and Resources">Tools và Resources Hữu
+                        Ích</h3>
+                    <div class="accordion">
+                        <div class="accordion-header" data-vi="Optimization Tools" data-en="Optimization Tools">
+                            Optimization Tools</div>
+                        <div class="accordion-content">
+                            <strong data-vi="Image Compression:" data-en="Image Compression:">Image
+                                Compression:</strong><br>
+                            - TinyPNG (online PNG compression)<br>
+                            - ImageOptim (Mac app)<br>
+                            - Squoosh (Google's web app)<br><br>
+
+                            <strong data-vi="Code Minification:" data-en="Code Minification:">Code
+                                Minification:</strong><br>
+                            - UglifyJS (JavaScript minifier)<br>
+                            - HTMLMinifier (HTML compression)<br>
+                            - CSSNano (CSS optimization)<br><br>
+
+                            <strong data-vi="Testing Tools:" data-en="Testing Tools:">Testing Tools:</strong><br>
+                            - Google Ad Preview Tool<br>
+                            - BrowserStack (cross-browser testing)<br>
+                            - GTmetrix (performance analysis)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">🚨</div>
+                    <h3 data-vi="Common Issues và Solutions" data-en="Common Issues and Solutions">Common Issues và
+                        Solutions</h3>
+                    <div class="accordion">
+                        <div class="accordion-header" data-vi="Troubleshooting Guide" data-en="Troubleshooting Guide">
+                            Troubleshooting Guide</div>
+                        <div class="accordion-content">
+                            <strong data-vi="Banner không load:" data-en="Banner not loading:">Banner không
+                                load:</strong><br>
+                            - <span data-vi="Kiểm tra file paths" data-en="Check file paths">Kiểm tra file
+                                paths</span><br>
+                            - <span data-vi="Verify JavaScript syntax" data-en="Verify JavaScript syntax">Verify
+                                JavaScript syntax</span><br>
+                            - <span data-vi="Check console errors" data-en="Check console errors">Check console
+                                errors</span><br><br>
+
+                            <strong data-vi="Animation không smooth:" data-en="Animation not smooth:">Animation không
+                                smooth:</strong><br>
+                            - <span data-vi="Giảm số lượng animated elements"
+                                data-en="Reduce number of animated elements">Giảm số lượng animated elements</span><br>
+                            - <span data-vi="Sử dụng transform thay vì position changes"
+                                data-en="Use transform instead of position changes">Sử dụng transform thay vì position
+                                changes</span><br>
+                            - <span data-vi="Optimize image sizes" data-en="Optimize image sizes">Optimize image
+                                sizes</span><br><br>
+
+                            <strong data-vi="File size quá lớn:" data-en="File size too large:">File size quá
+                                lớn:</strong><br>
+                            - <span data-vi="Compress tất cả images" data-en="Compress all images">Compress tất cả
+                                images</span><br>
+                            - <span data-vi="Remove unused code" data-en="Remove unused code">Remove unused
+                                code</span><br>
+                            - <span data-vi="Use external libraries CDN" data-en="Use external libraries CDN">Use
+                                external libraries CDN</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">📱</div>
+                    <h3 data-vi="Responsive Banner Best Practices" data-en="Responsive Banner Best Practices">Responsive
+                        Banner Best Practices</h3>
+                    <div class="code-block">
+                        <strong data-vi="CSS Media Queries cho responsive:"
+                            data-en="CSS Media Queries for responsive:">CSS Media Queries cho
+                            responsive:</strong><br><br>
+                        @media (max-width: 768px) {<br>
+                        &nbsp;&nbsp;#canvas {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;width: 100% !important;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;height: auto !important;<br>
+                        &nbsp;&nbsp;}<br>
+                        }<br><br>
+
+                        @media (max-width: 480px) {<br>
+                        &nbsp;&nbsp;.banner-container {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;max-width: 320px;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;margin: 0 auto;<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p data-vi="© 2025 HTML5 Banner Creation Guide. Được thiết kế cho các developer và designer chuyên nghiệp."
+                data-en="© 2025 HTML5 Banner Creation Guide. Designed for professional developers and designers.">© 2025
+                HTML5 Banner Creation Guide. Được thiết kế cho các developer và designer chuyên nghiệp.</p>
+            <p data-vi="Cập nhật thường xuyên với các techniques và best practices mới nhất."
+                data-en="Regularly updated with the latest techniques and best practices.">Cập nhật thường xuyên với các
+                techniques và best practices mới nhất.</p>
+        </footer>
+    </div>
+
+    <script>
+
+        // Hamburger menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const navContainer = document.getElementById('nav-container');
+
+        hamburger.addEventListener('click', () => {
+            navContainer.classList.toggle('active');
+        });
+
+        // Language switching functionality
+        const translations = {
+            vi: {},
+            en: {}
+        };
+
+        // Collect all translation data
+        document.querySelectorAll('[data-vi]').forEach(element => {
+            const key = element.getAttribute('data-vi');
+            translations.vi[key] = element.getAttribute('data-vi');
+            translations.en[key] = element.getAttribute('data-en');
+        });
+
+        // Change default language to English
+        let currentLang = 'en';
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update all translatable elements
+            document.querySelectorAll('[data-vi]').forEach(element => {
+                const viText = element.getAttribute('data-vi');
+                const enText = element.getAttribute('data-en');
+
+                if (lang === 'vi' && viText) {
+                    element.textContent = viText;
+                } else if (lang === 'en' && enText) {
+                    element.textContent = enText;
+                }
+            });
+
+            // Update document language
+            document.documentElement.lang = lang;
+        }
+
+        // Navigation functionality
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.style.background = '';
+                link.style.borderBottomColor = 'transparent';
+            });
+
+            const activeLink = document.querySelector(`[href="#${sectionId}"]`);
+            if (activeLink) {
+                activeLink.style.background = '#2c3e50';
+                activeLink.style.borderBottomColor = '#3498db';
+            }
+        }
+
+        // Accordion functionality
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const isActive = header.classList.contains('active');
+
+            // Close all accordions first
+            document.querySelectorAll('.accordion-header').forEach(h => {
+                h.classList.remove('active');
+                h.nextElementSibling.style.display = 'none';
+            });
+
+            // If this wasn't active, open it
+            if (!isActive) {
+                header.classList.add('active');
+                content.style.display = 'block';
+            }
+        }
+
+        // Smooth scrolling for navigation
+        function smoothScrollTo(element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function () {
+            // Language switching
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const lang = this.getAttribute('data-lang');
+                    switchLanguage(lang);
+                });
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const href = this.getAttribute('href');
+                    const sectionId = href.substring(1);
+                    showSection(sectionId);
+
+                    // Smooth scroll to top of main content
+                    document.querySelector('main').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Accordion functionality
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', function () {
+                    toggleAccordion(this);
+                });
+            });
+
+            // Add hover effects to workflow steps
+            document.querySelectorAll('.workflow-step').forEach(step => {
+                step.addEventListener('mouseenter', function () {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.boxShadow = '0 10px 25px rgba(52, 152, 219, 0.3)';
+                });
+
+                step.addEventListener('mouseleave', function () {
+                    this.style.transform = 'scale(1)';
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Add interactive effects to steps
+            document.querySelectorAll('.step').forEach(step => {
+                step.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateX(10px)';
+                });
+
+                step.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+
+            // Copy code functionality for code blocks
+            document.querySelectorAll('.code-block').forEach(block => {
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = currentLang === 'vi' ? 'Sao chép' : 'Copy';
+                copyBtn.style.cssText = `
+                    position: absolute;
+                    top: 0.5rem;
+                    right: 4rem;
+                    background: #3498db;
+                    color: white;
+                    border: none;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 3px;
+                    font-size: 0.8rem;
+                    cursor: pointer;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+
+                block.style.position = 'relative';
+                block.appendChild(copyBtn);
+
+                block.addEventListener('mouseenter', () => {
+                    copyBtn.style.opacity = '1';
+                });
+
+                block.addEventListener('mouseleave', () => {
+                    copyBtn.style.opacity = '0';
+                });
+
+                copyBtn.addEventListener('click', () => {
+                    const text = block.textContent.replace('Code' + copyBtn.textContent, '').trim();
+                    navigator.clipboard.writeText(text).then(() => {
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = currentLang === 'vi' ? 'Đã sao chép!' : 'Copied!';
+                        copyBtn.style.background = '#27ae60';
+
+                        setTimeout(() => {
+                            copyBtn.textContent = originalText;
+                            copyBtn.style.background = '#3498db';
+                        }, 2000);
+                    });
+                });
+            });
+
+            // Initialize with English
+            switchLanguage('en');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            // Alt + L for language switch
+            if (e.altKey && e.key.toLowerCase() === 'l') {
+                e.preventDefault();
+                const newLang = currentLang === 'vi' ? 'en' : 'vi';
+                switchLanguage(newLang);
+            }
+
+            // Number keys for quick navigation
+            if (e.altKey && e.key >= '1' && e.key <= '6') {
+                e.preventDefault();
+                const sections = ['overview', 'brief', 'photoshop', 'animate', 'export', 'tips'];
+                const index = parseInt(e.key) - 1;
+                if (sections[index]) {
+                    showSection(sections[index]);
+                }
+            }
+        });
+
+        // Add progress indicator
+        function updateProgress() {
+            const sections = document.querySelectorAll('.section');
+            const activeSection = document.querySelector('.section.active');
+            const currentIndex = Array.from(sections).indexOf(activeSection);
+            const progress = ((currentIndex + 1) / sections.length) * 100;
+
+            let progressBar = document.getElementById('progress-bar');
+            if (!progressBar) {
+                progressBar = document.createElement('div');
+                progressBar.id = 'progress-bar';
+                progressBar.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: ${progress}%;
+                    height: 3px;
+                    background: linear-gradient(90deg, #3498db, #2ecc71);
+                    z-index: 1000;
+                    transition: width 0.3s ease;
+                `;
+                document.body.appendChild(progressBar);
+            } else {
+                progressBar.style.width = progress + '%';
+            }
+        }
+
+        // Update progress when section changes
+        const originalShowSection = showSection;
+        showSection = function (sectionId) {
+            originalShowSection(sectionId);
+            updateProgress();
+        };
+
+        // Search functionality
+        function createSearchBox() {
+            const searchContainer = document.createElement('div');
+            searchContainer.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: white;
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                z-index: 999;
+                display: none;
+            `;
+
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = currentLang === 'vi' ? 'Tìm kiếm...' : 'Search...';
+            searchInput.style.cssText = `
+                width: 200px;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 3px;
+            `;
+
+            searchContainer.appendChild(searchInput);
+            document.body.appendChild(searchContainer);
+
+            // Toggle search with Ctrl+F
+            document.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    searchContainer.style.display = searchContainer.style.display === 'none' ? 'block' : 'none';
+                    if (searchContainer.style.display === 'block') {
+                        searchInput.focus();
+                    }
+                }
+
+                if (e.key === 'Escape') {
+                    searchContainer.style.display = 'none';
+                }
+            });
+
+            // Search functionality
+            searchInput.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                const allText = document.querySelectorAll('h1, h2, h3, h4, p, li');
+
+                allText.forEach(element => {
+                    if (element.textContent.toLowerCase().includes(query)) {
+                        element.style.backgroundColor = query ? '#ffeb3b' : '';
+                    } else {
+                        element.style.backgroundColor = '';
+                    }
+                });
+            });
+        }
+
+        // Initialize search after DOM load
+        document.addEventListener('DOMContentLoaded', createSearchBox);
+
+        // Print functionality
+        function setupPrint() {
+            const printBtn = document.createElement('button');
+            printBtn.innerHTML = '🖨️';
+            printBtn.title = currentLang === 'vi' ? 'In trang' : 'Print page';
+            printBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: #3498db;
+                color: white;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 999;
+                transition: all 0.3s ease;
+            `;
+
+            printBtn.addEventListener('click', () => {
+                window.print();
+            });
+
+            printBtn.addEventListener('mouseenter', () => {
+                printBtn.style.transform = 'scale(1.1)';
+            });
+
+            printBtn.addEventListener('mouseleave', () => {
+                printBtn.style.transform = 'scale(1)';
+            });
+
+            document.body.appendChild(printBtn);
+        }
+
+        document.addEventListener('DOMContentLoaded', setupPrint);
+
+        // Add loading animation
+        function showLoadingAnimation() {
+            const loader = document.createElement('div');
+            loader.id = 'loader';
+            loader.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255,255,255,0.9);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                ">
+                    <div style="
+                        width: 50px;
+                        height: 50px;
+                        border: 5px solid #f3f3f3;
+                        border-top: 5px solid #3498db;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                    "></div>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            document.body.appendChild(loader);
+
+            setTimeout(() => {
+                loader.remove();
+            }, 1500);
+        }
+
+        // Show loading on page load
+        window.addEventListener('load', showLoadingAnimation);
+    </script>
+</body>
+
+</html>

@@ -8,22 +8,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
     <style>
-        /* ── SPRING CC BRAND TOKENS ──────────────────────────────── */
+        /* ── GLASS DARK TOKENS ──────────────────────────────── */
         :root {
-            --bg: #282828;
-            --surface: #1c1916;
-            --panel: #1c1916;
-            --border: rgba(185,185,177,0.2);
+            --bg: #0a0908;
+            --surface: rgba(255,255,255,0.025);
+            --panel: rgba(255,255,255,0.03);
+            --border: rgba(255,255,255,0.08);
             --border-hi: #FF3700;
             --text: #E5D2B8;
-            --muted: #B9B9B1;
-            --dim: #3a3733;
+            --muted: rgba(185,185,177,0.6);
+            --dim: rgba(255,255,255,0.04);
             --accent: #FF3700;
-            --accent-glow: rgba(255,55,0,0.18);
+            --accent-glow: rgba(255,55,0,0.2);
             --green: #2DB87D;
             --green-bg: rgba(45,184,125,0.12);
-            --red: #D03030;
-            --red-bg: rgba(208,48,48,0.10);
+            --red: #E05252;
+            --red-bg: rgba(224,82,82,0.1);
             --amber: #f0a84c;
             --amber-bg: rgba(240,168,76,0.10);
             --radius: 6px;
@@ -34,11 +34,28 @@
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background: linear-gradient(135deg, #1c1916 0%, #282828 60%, #3d1800 100%);
-            background-attachment: fixed;
+            background: #0a0908;
             color: var(--text);
             min-height: 100vh;
             font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── VIDEO BACKGROUND ─────────────────────────────────── */
+        .bg-video {
+            position: fixed; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.35;
+        }
+        .bg-glow {
+            position: fixed; inset: 0;
+            z-index: -1; pointer-events: none;
+            background:
+                radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
+                radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.1)   0%, transparent 70%);
         }
 
         /* ───── LAYOUT ───── */
@@ -57,10 +74,16 @@
             gap: 16px;
             padding: 0 24px;
             height: 56px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
+            background: rgba(10,9,8,0.5);
+            backdrop-filter: blur(32px) saturate(160%);
+            -webkit-backdrop-filter: blur(32px) saturate(160%);
+            border-bottom: none;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.08),
+                0 2px 16px rgba(0,0,0,0.4);
             flex-shrink: 0;
-            position: relative;
+            position: sticky;
+            top: 0;
             z-index: 200;
         }
 
@@ -156,19 +179,24 @@
             align-items: center;
             gap: 6px;
             padding: 10px 24px;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
+            background: rgba(10,9,8,0.38);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border-bottom: none;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.06),
+                0 3px 12px rgba(0,0,0,0.25);
             flex-shrink: 0;
             flex-wrap: wrap;
             position: sticky;
-            top: 0;
+            top: 56px;
             z-index: 100;
         }
 
         /* ───── BUTTONS ───── */
         .btn {
             display: inline-flex; align-items: center; gap: 6px;
-            background: var(--panel);
+            background: rgba(255,255,255,0.05);
             color: var(--text);
             border: 1px solid var(--border);
             padding: 7px 14px;
@@ -215,10 +243,12 @@
             position: absolute;
             top: calc(100% + 6px);
             left: 0;
-            background: var(--panel);
-            border: 1px solid var(--border-hi);
+            background: rgba(15,13,11,0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: var(--radius-lg);
-            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.08);
             z-index: 1000;
             min-width: 170px;
             overflow: hidden;
@@ -250,7 +280,7 @@
             overflow: hidden;
         }
 
-        thead tr { background: var(--panel); }
+        thead tr { background: rgba(12,10,8,0.82); backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%); }
         thead th {
             padding: 11px 14px;
             font-family: 'DM Mono', monospace;
@@ -354,7 +384,7 @@
         .progress-wrap { display: flex; flex-direction: column; gap: 4px; }
         .progress-bar {
             height: 4px;
-            background: var(--dim);
+            background: rgba(255,255,255,0.08);
             border-radius: 2px;
             overflow: hidden;
         }
@@ -403,10 +433,12 @@
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 9999;
-            background: var(--panel);
-            border: 1px solid var(--border-hi);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+            background: rgba(15,13,11,0.9);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1);
             width: 520px;
             max-width: 94vw;
             padding: 0;
@@ -507,10 +539,10 @@
         }
 
         /* ───── SCROLLBAR ───── */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--border-hi); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,55,0,0.4); }
 
         /* ───── RESPONSIVE ───── */
         @media (max-width: 1080px) {
@@ -530,9 +562,76 @@
             #calculatorBox { width: 95vw; }
         }
 
+        /* ── GLASS DARK UPGRADES ─────────────────────────────────────
+           Upgrade key containers with ::before mask-gradient border
+           matching Aetheris liquid-glass aesthetic.
+        ─────────────────────────────────────────────────────────── */
+
+        /* Calculator modal — replace flat border with gradient border */
+        #calculatorBox {
+            border: none;
+            position: relative;
+        }
+        #calculatorBox::before {
+            content: "";
+            position: absolute; inset: 0;
+            border-radius: 14px;
+            padding: 1px;
+            background: linear-gradient(160deg,
+                rgba(255,255,255,0.42) 0%,
+                rgba(255,255,255,0.12) 30%,
+                rgba(255,255,255,0)    55%,
+                rgba(255,255,255,0.1)  75%,
+                rgba(255,255,255,0.35) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+                    mask-composite: exclude;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Upgrade export dropdown to glass border */
+        .export-menu {
+            border: none;
+            position: relative;
+        }
+        .export-menu::before {
+            content: "";
+            position: absolute; inset: 0;
+            border-radius: var(--radius-lg);
+            padding: 1px;
+            background: linear-gradient(160deg,
+                rgba(255,255,255,0.35) 0%,
+                rgba(255,255,255,0.08) 40%,
+                rgba(255,255,255,0)    60%,
+                rgba(255,255,255,0.25) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+                    mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Row hover — slightly more visible in glass context */
+        tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+        /* ── ENTRANCE ANIMATIONS ─────────────────────────────────── */
+        @keyframes fadeUpIn {
+            from { opacity: 0; filter: blur(8px); transform: translateY(14px); }
+            to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
+        }
+        .topbar     { animation: fadeUpIn .5s ease-out .05s both; }
+        .toolbar    { animation: fadeUpIn .55s ease-out .15s both; }
+        .table-wrap { animation: fadeUpIn .6s ease-out .25s both; }
+
     </style>
 </head>
 <body>
+
+<!-- VIDEO BACKGROUND -->
+<video class="bg-video" autoplay muted loop playsinline>
+  <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4" type="video/mp4">
+</video>
+<div class="bg-glow"></div>
 
 <div class="app-shell">
 

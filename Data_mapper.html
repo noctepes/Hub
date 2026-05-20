@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV / Excel Column Mapper</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #0e0f11;
+      --surface: #16181c;
+      --surface2: #1e2026;
+      --surface3: #242830;
+      --border: #2a2d35;
+      --border2: #363a45;
+      --text: #d4d6dc;
+      --muted: #6b7280;
+      --accent: #4ade80;
+      --accent2: #22c55e;
+      --warn: #f59e0b;
+      --danger: #f87171;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      min-height: 100vh
+    }
+
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px 18px 120px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 100
+    }
+
+    .header-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0
+    }
+
+    .header h1 {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff
+    }
+
+    .header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .header-status {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border2);
+      color: var(--muted)
+    }
+
+    .badge.ok {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden
+    }
+
+    .section-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2)
+    }
+
+    .section-header .step {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--border2);
+      color: var(--muted);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .section-header .step.active {
+      background: var(--accent);
+      color: #000
+    }
+
+    .section-header h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff
+    }
+
+    .section-body {
+      padding: 20px
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px
+    }
+
+    .upload-box {
+      border: 1.5px dashed var(--border2);
+      border-radius: 8px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      text-align: center
+    }
+
+    .upload-box:hover,
+    .upload-box.drag {
+      border-color: var(--accent);
+      background: rgba(74, 222, 128, 0.04)
+    }
+
+    .upload-box.loaded {
+      border-style: solid;
+      border-color: var(--accent);
+      background: rgba(74, 222, 128, 0.05)
+    }
+
+    .upload-box input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%
+    }
+
+    .upload-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: block
+    }
+
+    .upload-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 4px
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    .upload-filename {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 6px;
+      word-break: break-all
+    }
+
+    .upload-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px
+    }
+
+    .options-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px
+    }
+
+    .row-preview {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      display: none
+    }
+
+    .row-preview.visible {
+      display: block;
+      max-height: 200px;
+      overflow-y: auto
+    }
+
+    .preview-header {
+      padding: 7px 12px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px
+    }
+
+    .preview-row {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background .12s;
+      border-bottom: 1px solid var(--border);
+      position: relative
+    }
+
+    .preview-row:last-child {
+      border-bottom: none
+    }
+
+    .preview-row:hover {
+      background: rgba(255, 255, 255, .03)
+    }
+
+    .preview-row.selected {
+      background: rgba(74, 222, 128, .08)
+    }
+
+    .preview-row.selected .row-num {
+      color: var(--accent)
+    }
+
+    .row-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      width: 28px;
+      text-align: center;
+      padding: 7px 4px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border)
+    }
+
+    .row-cells {
+      display: flex;
+      overflow: hidden;
+      flex: 1
+    }
+
+    .row-cell {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 7px 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+      border-right: 1px solid var(--border);
+      color: var(--text);
+      flex-shrink: 0
+    }
+
+    .row-cell:last-child {
+      border-right: none
+    }
+
+    .skip-indicator {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 9px;
+      font-family: var(--mono);
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: rgba(74, 222, 128, .15);
+      color: var(--accent);
+      display: none
+    }
+
+    .preview-row.selected .skip-indicator {
+      display: block
+    }
+
+    .preview-hint {
+      padding: 6px 12px;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      font-style: italic
+    }
+
+    label.field-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      margin-bottom: 5px
+    }
+
+    select,
+    input[type=text] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+      transition: border-color .15s;
+      appearance: none
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px
+    }
+
+    select:focus,
+    input[type=text]:focus {
+      border-color: var(--accent)
+    }
+
+    .format-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px
+    }
+
+    .format-check input[type=checkbox] {
+      accent-color: var(--accent);
+      width: 14px;
+      height: 14px
+    }
+
+    .format-check label {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer
+    }
+
+    .norm-options {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+
+    .config-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px
+    }
+
+    .config-row .arrow {
+      color: var(--muted);
+      font-size: 16px;
+      text-align: center
+    }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      opacity: .7;
+      transition: opacity .15s;
+      line-height: 1
+    }
+
+    .remove-btn:hover {
+      opacity: 1
+    }
+
+    .merge-card {
+      background: var(--surface2);
+      border: 1px solid var(--purple);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden
+    }
+
+    .merge-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(167, 139, 250, .06)
+    }
+
+    .merge-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--purple)
+    }
+
+    .merge-card-body {
+      padding: 14px
+    }
+
+    .merge-target-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 14px;
+      align-items: end
+    }
+
+    .merge-rows-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .merge-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px
+    }
+
+    .merge-row .arr {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center
+    }
+
+    .merge-row input[type=text] {
+      padding: 6px 8px;
+      font-size: 12px
+    }
+
+    .merge-row select {
+      padding: 6px 28px 6px 8px;
+      font-size: 12px
+    }
+
+    .add-merge-row-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px dashed var(--border2);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .add-merge-row-btn:hover {
+      border-color: var(--purple);
+      color: var(--purple)
+    }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px dashed var(--border2);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .add-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .add-btn.purple:hover {
+      border-color: var(--purple);
+      color: var(--purple)
+    }
+
+    .run-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #000;
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      width: 100%
+    }
+
+    .run-btn:hover {
+      background: var(--accent2)
+    }
+
+    .run-btn:active {
+      transform: scale(.98)
+    }
+
+    .run-btn:disabled {
+      background: var(--border2);
+      color: var(--muted);
+      cursor: not-allowed
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: center
+    }
+
+    .stat-card .val {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1;
+      margin-bottom: 4px
+    }
+
+    .stat-card .lbl {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    .stat-card.green .val {
+      color: var(--accent)
+    }
+
+    .stat-card.warn .val {
+      color: var(--warn)
+    }
+
+    .stat-card.blue .val {
+      color: var(--blue)
+    }
+
+    .stat-card.white .val {
+      color: #fff
+    }
+
+    .tabs {
+      display: flex;
+      gap: 2px;
+      padding: 12px 16px 0;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .tab {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all .15s
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent)
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text)
+    }
+
+    .table-controls {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      align-items: center
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 320px
+    }
+
+    .search-wrap input {
+      padding-left: 30px;
+      width: 100%
+    }
+
+    .search-wrap::before {
+      content: '⌕';
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      max-height: 420px;
+      overflow-y: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px
+    }
+
+    thead tr {
+      background: var(--surface2);
+      position: sticky;
+      top: 0;
+      z-index: 5
+    }
+
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, .02)
+    }
+
+    td.changed {
+      color: var(--accent)
+    }
+
+    td.sku-col {
+      color: var(--blue)
+    }
+
+    td.age-col {
+      color: var(--purple)
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 500
+    }
+
+    .tag.match {
+      background: rgba(74, 222, 128, .12);
+      color: var(--accent)
+    }
+
+    .tag.miss {
+      background: rgba(245, 158, 11, .12);
+      color: var(--warn)
+    }
+
+    .tag.empty {
+      background: rgba(107, 114, 128, .15);
+      color: var(--muted)
+    }
+
+    .dl-grid {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px
+    }
+
+    .dl-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--surface2);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap
+    }
+
+    .dl-btn.green {
+      color: var(--accent);
+      border: 1px solid var(--accent)
+    }
+
+    .dl-btn.green:hover {
+      background: rgba(74, 222, 128, .1)
+    }
+
+    .dl-btn.warn {
+      color: var(--warn);
+      border: 1px solid var(--warn)
+    }
+
+    .dl-btn.warn:hover {
+      background: rgba(245, 158, 11, .08)
+    }
+
+    .dl-btn.blue {
+      color: var(--blue);
+      border: 1px solid var(--blue)
+    }
+
+    .dl-btn.blue:hover {
+      background: rgba(96, 165, 250, .08)
+    }
+
+    .notice {
+      background: rgba(96, 165, 250, .08);
+      border: 1px solid rgba(96, 165, 250, .25);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--blue);
+      margin-bottom: 16px;
+      line-height: 1.6
+    }
+
+    .sec-div {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0 14px
+    }
+
+    .sec-div::before,
+    .sec-div::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border)
+    }
+
+    .mt-8 {
+      margin-top: 8px
+    }
+
+    .mt-12 {
+      margin-top: 12px
+    }
+
+    .text-muted {
+      color: var(--muted);
+      font-size: 12px
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(255, 255, 255, .07);
+      padding: 1px 5px;
+      border-radius: 3px
+    }
+
+    .range-card {
+      background: var(--surface2);
+      border: 1px solid var(--warn);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden
+    }
+
+    .range-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(245, 158, 11, .06)
+    }
+
+    .range-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--warn)
+    }
+
+    .range-card-body {
+      padding: 14px
+    }
+
+    .range-target-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px
+    }
+
+    .range-rows-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 80px auto 80px auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px
+    }
+
+    .range-row .arr {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center
+    }
+
+    .range-row input[type=text] {
+      padding: 6px 8px;
+      font-size: 12px
+    }
+
+    .range-row input[type=number] {
+      padding: 6px 8px;
+      font-size: 12px;
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--mono);
+      outline: none
+    }
+
+    .range-row input[type=number]:focus {
+      border-color: var(--warn)
+    }
+
+    .range-inf {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 4px
+    }
+
+    .add-range-row-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px dashed var(--border2);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .add-range-row-btn:hover {
+      border-color: var(--warn);
+      color: var(--warn)
+    }
+
+    .add-btn.orange:hover {
+      border-color: var(--warn);
+      color: var(--warn)
+    }
+
+    td.range-col {
+      color: var(--warn)
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border2);
+      border-radius: 3px
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted)
+    }
+
+    @media(max-width:700px) {
+      .upload-grid {
+        grid-template-columns: 1fr
+      }
+
+      .options-row {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .stats-bar {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .dl-section {
+        grid-template-columns: 1fr !important
+      }
+    }
+
+    /* ── SPRING CC BRAND ──────────────────────────────────────────── */
+    :root {
+      --bg: #1c1916;
+      --surface: #282828;
+      --surface2: rgba(44, 42, 40, .95);
+      --surface3: rgba(54, 52, 48, .95);
+      --border: rgba(185, 185, 177, .2);
+      --border2: rgba(185, 185, 177, .38);
+      --text: #E5D2B8;
+      --muted: #B9B9B1;
+      --accent: #FF3700;
+      --accent2: #CC2D00;
+      --warn: #f0a050;
+      --danger: #D03030;
+      --blue: #D7E8F8;
+      --purple: #D7E8F8;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1c1916 0%, #282828 60%, #3d1800 100%);
+      background-attachment: fixed;
+      font-family: var(--sans)
+    }
+
+    .header {
+      background: #282828;
+      border-bottom-color: rgba(255, 55, 0, .3)
+    }
+
+    .header-icon {
+      background: var(--accent)
+    }
+
+    .header h1 {
+      color: #fff
+    }
+
+    .section-header .step.active {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .upload-box:hover,
+    .upload-box.drag {
+      border-color: var(--accent);
+      background: rgba(255, 55, 0, .04)
+    }
+
+    .upload-box.loaded {
+      border-color: var(--accent);
+      background: rgba(255, 55, 0, .05)
+    }
+
+    .upload-filename {
+      color: var(--accent)
+    }
+
+    .preview-row.selected {
+      background: rgba(255, 55, 0, .08)
+    }
+
+    .preview-row.selected .row-num {
+      color: var(--accent)
+    }
+
+    .skip-indicator {
+      background: rgba(255, 55, 0, .15);
+      color: var(--accent)
+    }
+
+    select:focus,
+    input[type=text]:focus {
+      border-color: var(--accent)
+    }
+
+    .run-btn {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .run-btn:hover {
+      background: var(--accent2)
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent)
+    }
+
+    .stat-card.green .val {
+      color: var(--accent)
+    }
+
+    .dl-btn.green {
+      color: var(--accent);
+      border-color: var(--accent)
+    }
+
+    .dl-btn.green:hover {
+      background: rgba(255, 55, 0, .08)
+    }
+
+    td.changed {
+      color: var(--accent)
+    }
+
+    .tag.match {
+      background: rgba(255, 55, 0, .12);
+      color: var(--accent)
+    }
+
+    .add-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .badge.ok {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .merge-card {
+      border-color: rgba(215, 232, 248, .4)
+    }
+
+    .merge-card-header {
+      background: rgba(215, 232, 248, .06)
+    }
+
+    .merge-label {
+      color: #D7E8F8
+    }
+
+    .add-merge-row-btn:hover {
+      border-color: #D7E8F8;
+      color: #D7E8F8
+    }
+
+    .add-btn.purple:hover {
+      border-color: #D7E8F8;
+      color: #D7E8F8
+    }
+
+    td.age-col {
+      color: #D7E8F8
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent)
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="header-icon">⇄</div>
+    <div>
+      <h1>CSV Column Mapper</h1>
+      <p>Map &amp; replace column values between two CSV files</p>
+    </div>
+    <div class="header-status">
+      <span class="badge" id="badge-src">SOURCE —</span>
+      <span class="badge" id="badge-tgt">TARGET —</span>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- STEP 1 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="step active" id="step1">1</div>
+        <h2>Upload Files</h2>
+      </div>
+      <div class="section-body">
+        <div class="upload-grid">
+          <!-- SRC -->
+          <div>
+            <div class="upload-label">Source File</div>
+            <div class="text-muted mt-8" style="margin-bottom:8px;">File chứa dữ liệu gốc (vd: Hama Product Sheet)</div>
+            <div class="upload-box" id="drop-src">
+              <input type="file" accept=".csv,.xlsx,.xls" id="file-src" onchange="loadFile('src',this)">
+              <span class="upload-icon">📄</span>
+              <div class="upload-label">SOURCE — CSV or Excel</div>
+              <div class="upload-hint">Drop file or click to browse (.csv / .xlsx / .xls)</div>
+              <div class="upload-filename" id="fn-src"></div>
+              <div class="upload-meta" id="meta-src"></div>
+            </div>
+            <div class="options-row">
+              <div id="sep-wrap-src">
+                <label class="field-label">CSV Separator</label>
+                <select id="sep-src" onchange="reloadIfLoaded('src')">
+                  <option value="auto">Auto-detect</option>
+                  <option value=",">Comma ( , )</option>
+                  <option value=";">Semicolon ( ; )</option>
+                  <option value="&#9;">Tab</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Skip first N rows</label>
+                <select id="skip-src" onchange="reloadIfLoaded('src')">
+                  <option value="0">0 — No skip</option>
+                  <option value="1" selected>1 — Skip 1 row</option>
+                  <option value="2">2 — Skip 2 rows</option>
+                  <option value="3">3 — Skip 3 rows</option>
+                </select>
+              </div>
+            </div>
+            <div class="row-preview" id="preview-src">
+              <div class="preview-header">Row preview — click để chọn row làm header</div>
+              <div id="preview-rows-src"></div>
+              <div class="preview-hint">Click vào dòng nào → dòng đó sẽ là header (các dòng trên bị skip)</div>
+            </div>
+          </div>
+          <!-- TGT -->
+          <div>
+            <div class="upload-label">Target File</div>
+            <div class="text-muted mt-8" style="margin-bottom:8px;">File cần được cập nhật (vd: products_export)</div>
+            <div class="upload-box" id="drop-tgt">
+              <input type="file" accept=".csv,.xlsx,.xls" id="file-tgt" onchange="loadFile('tgt',this)">
+              <span class="upload-icon">🎯</span>
+              <div class="upload-label">TARGET — CSV or Excel</div>
+              <div class="upload-hint">Drop file or click to browse (.csv / .xlsx / .xls)</div>
+              <div class="upload-filename" id="fn-tgt"></div>
+              <div class="upload-meta" id="meta-tgt"></div>
+            </div>
+            <div class="options-row">
+              <div id="sep-wrap-tgt">
+                <label class="field-label">CSV Separator</label>
+                <select id="sep-tgt" onchange="reloadIfLoaded('tgt')">
+                  <option value="auto">Auto-detect</option>
+                  <option value=",">Comma ( , )</option>
+                  <option value=";">Semicolon ( ; )</option>
+                  <option value="&#9;">Tab</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Skip first N rows</label>
+                <select id="skip-tgt" onchange="reloadIfLoaded('tgt')">
+                  <option value="0" selected>0 — No skip</option>
+                  <option value="1">1 — Skip 1 row</option>
+                  <option value="2">2 — Skip 2 rows</option>
+                </select>
+              </div>
+            </div>
+            <div class="row-preview" id="preview-tgt">
+              <div class="preview-header">Row preview — click để chọn row làm header</div>
+              <div id="preview-rows-tgt"></div>
+              <div class="preview-hint">Click vào dòng nào → dòng đó sẽ là header (các dòng trên bị skip)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="step" id="step2">2</div>
+        <h2>Configure Column Mapping</h2>
+      </div>
+      <div class="section-body">
+        <div class="notice">
+          🔑 <strong>Key columns</strong>: cột dùng để match giữa 2 file.<br>
+          📋 <strong>Standard mapping</strong>: copy 1 cột Source → 1 cột Target (vd: Price).<br>
+          🔀 <strong>Merge mapping</strong>: gom nhiều cột flag từ Source → 1 cột Target, join bằng <code>; </code> —
+          dùng cho Alder (age).<br>
+          📊 <strong>Range mapping</strong>: đọc số từ cột Target đã update → ghi nhãn range vào cột khác — dùng cho
+          Pris.
+        </div>
+
+        <label class="field-label">Key Match — Cột dùng để so sánh</label>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;margin-bottom:12px">
+          <div>
+            <label class="field-label">Source key column</label>
+            <select id="src-key"></select>
+          </div>
+          <div style="text-align:center;padding-bottom:8px;color:var(--muted);font-size:18px">⟷</div>
+          <div>
+            <label class="field-label">Target key column</label>
+            <select id="tgt-key"></select>
+          </div>
+        </div>
+
+        <div class="norm-options">
+          <label class="field-label" style="margin:0 0 4px">Key normalization</label>
+          <div class="format-check" style="margin-top:0">
+            <input type="checkbox" id="strip-prefix" checked>
+            <label for="strip-prefix">Strip leading apostrophe — <code>'2053</code> → <code>2053</code></label>
+          </div>
+          <div class="format-check" style="margin-top:0">
+            <input type="checkbox" id="num-only" checked>
+            <label for="num-only">Digits + dash only — bỏ chữ cái thừa <code>222TR</code> → <code>222</code></label>
+          </div>
+        </div>
+
+        <div class="sec-div">Standard Mappings — 1 cột → 1 cột</div>
+        <div id="mappings-list"></div>
+        <button class="add-btn" onclick="addMapping()">+ Add standard mapping</button>
+
+        <div class="sec-div">Merge Mappings — nhiều cột flag → 1 cột</div>
+        <div id="merge-list"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <span
+            style="font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">Preset:</span>
+          <button class="add-btn purple" style="padding:6px 12px;font-size:11px" onclick="addMergeMapping('alder')">+
+            Alder</button>
+          <button class="add-btn purple" style="padding:6px 12px;font-size:11px"
+            onclick="addMergeMapping('produkttype')">+ Produkttype</button>
+          <button class="add-btn purple" style="padding:6px 12px;font-size:11px"
+            onclick="addMergeMapping('storrelse')">+ Størrelse</button>
+          <button class="add-btn purple" style="padding:6px 12px;font-size:11px" onclick="addMergeMapping('tema')">+
+            Tema</button>
+          <button class="add-btn purple" style="padding:6px 12px;font-size:11px" onclick="addMergeMapping('custom')">+
+            Custom</button>
+        </div>
+
+        <div class="sec-div">Range Mappings — số → nhãn range</div>
+        <div id="range-list"></div>
+        <button class="add-btn orange" onclick="addRangeMapping()">+ Add range mapping</button>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="step" id="step3">3</div>
+        <h2>Process</h2>
+      </div>
+      <div class="section-body">
+        <button class="run-btn" id="run-btn" onclick="runProcess()" disabled>⚡ Run Mapping</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="section" id="results-section" style="display:none">
+      <div class="section-header">
+        <div class="step active">4</div>
+        <h2>Results</h2>
+      </div>
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+        <div class="stats-bar">
+          <div class="stat-card white">
+            <div class="val" id="s-total">0</div>
+            <div class="lbl">Total rows</div>
+          </div>
+          <div class="stat-card green">
+            <div class="val" id="s-match">0</div>
+            <div class="lbl">Matched</div>
+          </div>
+          <div class="stat-card warn">
+            <div class="val" id="s-nomatch">0</div>
+            <div class="lbl">Not matched</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="val" id="s-empty">0</div>
+            <div class="lbl">Empty SKU</div>
+          </div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('all',this)">All rows</button>
+        <button class="tab" onclick="showTab('matched',this)">Matched</button>
+        <button class="tab" onclick="showTab('unmatched',this)">Not matched</button>
+        <button class="tab" onclick="showTab('empty',this)">Empty SKU</button>
+      </div>
+      <div class="table-controls">
+        <div class="search-wrap">
+          <input type="text" id="search-input" placeholder="Search by SKU or value..." oninput="filterTable()">
+        </div>
+        <span class="text-muted" id="row-count-label"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead id="result-thead"></thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+      </div>
+      <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+        <div
+          style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:2px">
+          Export options</div>
+        <div class="dl-section" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">All matched</div>
+            <button class="dl-btn green" onclick="downloadCSV('matched')">⬇ CSV</button>
+            <button class="dl-btn green" onclick="downloadXLSX('matched')" style="opacity:.8">⬇ Excel</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;color:var(--accent);font-family:var(--mono)">Changed only ✦</div>
+            <button class="dl-btn green" onclick="downloadCSV('changed')">⬇ CSV</button>
+            <button class="dl-btn green" onclick="downloadXLSX('changed')" style="opacity:.8">⬇ Excel</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="font-size:11px;color:var(--warn);font-family:var(--mono)">No SKU match</div>
+            <button class="dl-btn warn" onclick="downloadCSV('nomatch')">⬇ CSV</button>
+            <button class="dl-btn warn" onclick="downloadXLSX('nomatch')" style="opacity:.8">⬇ Excel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const S = { src: { data: null, cols: [], rawText: null, file: null }, tgt: { data: null, cols: [], rawText: null, file: null } };
+    let resultRows = [], currentTab = 'all', mapCount = 0, mergeCount = 0, mergeRowCounters = {};
+
+    // ── FILE LOAD ────────────────────────────────────────────────
+    function isExcel(file) { return /\.(xlsx|xls)$/i.test(file.name); }
+
+    function loadFile(side, input) {
+      const file = input.files[0]; if (!file) return;
+      S[side].file = file;
+      S[side].isExcel = isExcel(file);
+      const sw = document.getElementById('sep-wrap-' + side);
+      if (sw) sw.style.display = S[side].isExcel ? 'none' : '';
+      if (S[side].isExcel) {
+        const r = new FileReader();
+        r.onload = e => { S[side].rawBuffer = e.target.result; parseAndRender(side); };
+        r.readAsArrayBuffer(file);
+      } else {
+        const r = new FileReader();
+        r.onload = e => { S[side].rawText = e.target.result; parseAndRender(side); };
+        r.readAsText(file, 'utf-8');
+      }
+    }
+
+    function reloadIfLoaded(side) {
+      if (S[side].isExcel && S[side].rawBuffer) parseAndRender(side);
+      else if (S[side].rawText) parseAndRender(side);
+    }
+
+    function parseAndRender(side) {
+      const skip = parseInt(document.getElementById('skip-' + side).value);
+      if (S[side].isExcel) { parseExcel(side, skip); }
+      else { parseCSV(side, skip); }
+      const file = S[side].file;
+      document.getElementById('fn-' + side).textContent = file ? file.name : '';
+      document.getElementById('meta-' + side).textContent =
+        S[side].data.length + ' rows \u00b7 ' + S[side].cols.length + ' columns' + (S[side].isExcel ? ' [Excel]' : ' [CSV]');
+      document.getElementById('drop-' + side).classList.add('loaded');
+      document.getElementById('badge-' + side).textContent = side.toUpperCase() + ' ' + S[side].data.length + 'r';
+      document.getElementById('badge-' + side).className = 'badge ok';
+      if (S.src.data && S.tgt.data) buildMappingUI();
+      checkRunReady();
+    }
+
+    function parseCSV(side, skip) {
+      const raw = S[side].rawText;
+      renderRawPreview(side, raw, null);
+      const sepVal = document.getElementById('sep-' + side).value;
+      const lines = raw.split(/\r?\n/);
+      const text = skip > 0 ? lines.slice(skip).join('\n') : raw;
+      const delim = sepVal === 'auto' ? detectDelim(text) : sepVal;
+      const res = Papa.parse(text, {
+        delimiter: delim,
+        header: true,
+        skipEmptyLines: true,
+        worker: false // 🔥 FIX LOCAL FILE ERROR
+      });
+      S[side].cols = (res.meta.fields || []).map(c => c.trim().replace(/\n/g, ' '));
+      S[side].data = res.data;
+    }
+
+    function parseExcel(side, skip) {
+      const wb = XLSX.read(S[side].rawBuffer, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      S[side].rawAoA = aoa;
+      renderRawPreview(side, null, aoa);
+      const headerRow = (aoa[skip] || []).map(c => String(c).trim());
+      const dataRows = aoa.slice(skip + 1).filter(r => r.some(c => c !== ''));
+      S[side].cols = headerRow;
+      S[side].data = dataRows.map(row => {
+        const obj = {};
+        headerRow.forEach((h, i) => { obj[h] = row[i] !== undefined ? String(row[i]) : ''; });
+        return obj;
+      });
+    }
+
+    function detectDelim(text) {
+      const line = text.split('\n')[0] || '';
+      const c = { ',': 0, ';': 0, '\t': 0 };
+      for (const ch of line) if (c[ch] !== undefined) c[ch]++;
+      return Object.entries(c).sort((a, b) => b[1] - a[1])[0][0];
+    }
+
+    // ── ROW PREVIEW ──────────────────────────────────────────────
+    function renderRawPreview(side, rawText, aoa) {
+      const skip = parseInt(document.getElementById('skip-' + side).value);
+      let rows;
+      if (aoa) {
+        rows = aoa.slice(0, 8).map(r => r.slice(0, 5).map(c => String(c)));
+      } else {
+        const sep = detectDelim(rawText);
+        rows = rawText.split(/\r?\n/).filter(l => l.trim()).slice(0, 8).map(l => l.split(sep).slice(0, 5));
+      }
+      const container = document.getElementById('preview-rows-' + side);
+      container.innerHTML = rows.map((cells, i) => `
+    <div class="preview-row ${i === skip ? 'selected' : ''}" onclick="setSkip('${side}',${i})">
+      <div class="row-num">${i}</div>
+      <div class="row-cells">${cells.map(c => `<div class="row-cell" title="${escA(String(c))}">${esc(String(c).trim().slice(0, 22))}</div>`).join('')}</div>
+      <div class="skip-indicator">\u2190 header row</div>
+    </div>`).join('');
+      document.getElementById('preview-' + side).classList.add('visible');
+    }
+    function setSkip(side, i) { document.getElementById('skip-' + side).value = i; reloadIfLoaded(side); }
+
+    // ── MAPPING UI ───────────────────────────────────────────────
+    function buildMappingUI() {
+      popSel('src-key', S.src.cols); popSel('tgt-key', S.tgt.cols);
+      const sk = S.src.cols.find(c => /article|sku|id|code|no/i.test(c));
+      const tk = S.tgt.cols.find(c => /sku|article|id|code/i.test(c));
+      if (sk) document.getElementById('src-key').value = sk;
+      if (tk) document.getElementById('tgt-key').value = tk;
+      if (!document.getElementById('mappings-list').children.length) addMapping();
+      document.getElementById('step2').classList.add('active');
+    }
+    function popSel(id, cols) { document.getElementById(id).innerHTML = mkOpts(cols); }
+    function mkOpts(cols) { return cols.map(c => `<option value="${escA(c)}">${esc(c)}</option>`).join(''); }
+
+    // Standard mapping
+    function addMapping() {
+      if (!S.src.data || !S.tgt.data) { alert('Load both files first.'); return; }
+      const id = ++mapCount;
+      const div = document.createElement('div');
+      div.className = 'config-row'; div.id = 'map-' + id;
+      div.innerHTML = `
+    <div><label class="field-label">From Source column</label><select id="sv-${id}">${mkOpts(S.src.cols)}</select></div>
+    <div class="arrow">→</div>
+    <div><label class="field-label">To Target column</label><select id="tv-${id}">${mkOpts(S.tgt.cols)}</select></div>
+    <div><label class="field-label" style="opacity:0">x</label>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div class="format-check" style="margin-top:0"><input type="checkbox" id="cd-${id}" checked><label for="cd-${id}">Comma→Dot</label></div>
+        <button class="remove-btn" onclick="rmEl('map-${id}')">✕</button>
+      </div>
+    </div>`;
+      document.getElementById('mappings-list').appendChild(div);
+      const sp = S.src.cols.find(c => /price|dkk|euro|pris|cost/i.test(c));
+      const tp = S.tgt.cols.find(c => /price|pris|cost/i.test(c));
+      if (sp) document.getElementById('sv-' + id).value = sp;
+      if (tp) document.getElementById('tv-' + id).value = tp;
+    }
+    function getMappings() {
+      return Array.from(document.getElementById('mappings-list').querySelectorAll('.config-row')).map(row => {
+        const id = row.id.split('-')[1];
+        return { srcCol: document.getElementById('sv-' + id).value, tgtCol: document.getElementById('tv-' + id).value, commaToDot: document.getElementById('cd-' + id).checked };
+      });
+    }
+
+    // Merge mapping
+    // ── MERGE PRESETS ────────────────────────────────────────────
+    const MERGE_PRESETS = {
+      alder: {
+        label: 'Alder (age)',
+        tgtGuess: /alder|age/i,
+        separator: '; ',
+        rows: [
+          { src: '3-5', out: '3-5-ar' },
+          { src: '5-7', out: '5-7-ar' },
+          { src: '7-9', out: '7-9-ar' },
+          { src: '10-13', out: '10-13-ar' },
+          { src: '14 +', out: '14-ar' },
+          { src: '14+', out: '14-ar' }
+        ]
+      },
+      produkttype: {
+        label: 'Produkttype',
+        tgtGuess: /product.?type|produkttype/i,
+        separator: '; ',
+        rows: [
+          { src: 'Begyndersæt (beginner)', out: 'begyndersaet' },
+          { src: 'Bøtter (boxes)', out: 'botter' },
+          { src: 'Gaveæsker (gift boxes)', out: 'gaveaesker' },
+          { src: 'Opbevaring (storage)', out: 'opbevaring' },
+          { src: 'Perler', out: 'perler' },
+          { src: 'Stiftplader', out: 'stiftplader' },
+          { src: 'Tilbehør og bøger (additional + books)', out: 'tilbehor-og-boger' }
+        ]
+      },
+      storrelse: {
+        label: 'Størrelse',
+        tgtGuess: /størrelse|sortiment|size/i,
+        separator: '; ',
+        rows: [
+          { src: 'Midi', out: 'midi-5-ar' },
+          { src: 'Midi Bio', out: 'midi-bio-5-ar' },
+          { src: 'Maxi', out: 'maxi-3-ar' },
+          { src: 'MaxiStick', out: 'maxi-stick-3-ar' },
+          { src: 'Mini', out: 'mini-10-ar' }
+        ]
+      },
+      tema: {
+        label: 'Tema',
+        tgtGuess: /tema/i,
+        separator: '; ',
+        rows: [
+          { src: 'Bluey', out: 'bluey' },
+          { src: 'Dekoration', out: 'dekoration' },
+          { src: 'Dyr', out: 'dyr' },
+          { src: 'Fantasifigurer', out: 'fantasifigurer' },
+          { src: "Gabby's Dollhouse", out: "gabby-s-dollhouse" },
+          { src: 'Halloween', out: 'halloween' },
+          { src: 'Hama ® 3D', out: 'hama-3-d' },
+          { src: 'Jul', out: 'jul' },
+          { src: 'Kidults', out: 'kidults' },
+          { src: 'Transportmidler', out: 'transportmidler' },
+          { src: 'Leg & spil', out: 'leg-spil' },
+          { src: 'Paw Patrol', out: 'paw-patrol' },
+          { src: 'Peppa Pig', out: 'peppa-pig' },
+          { src: 'Påske', out: 'paske' },
+          { src: 'Smykker', out: 'smykker' }
+        ]
+      },
+      custom: {
+        label: 'Custom',
+        tgtGuess: null,
+        separator: '; ',
+        rows: []
+      }
+    };
+
+    function addMergeMapping(presetKey) {
+      if (!S.src.data || !S.tgt.data) { alert('Load both files first.'); return; }
+      const preset = MERGE_PRESETS[presetKey] || MERGE_PRESETS.custom;
+      const id = ++mergeCount;
+      mergeRowCounters[id] = 0;
+      const tgtGuess = preset.tgtGuess ? S.tgt.cols.find(c => preset.tgtGuess.test(c)) : null;
+      const div = document.createElement('div');
+      div.className = 'merge-card'; div.id = 'merge-' + id;
+      div.innerHTML = `
+    <div class="merge-card-header">
+      <span class="merge-label">🔀 ${preset.label} Mapping #${id}</span>
+      <button class="remove-btn" onclick="rmEl('merge-${id}')">✕</button>
+    </div>
+    <div class="merge-card-body">
+      <div class="merge-target-row">
+        <div><label class="field-label">Target column (ghi vào đây)</label><select id="m-tgt-${id}">${mkOpts(S.tgt.cols)}</select></div>
+        <div><label class="field-label">Join separator</label><input type="text" id="m-sep-${id}" value="${preset.separator}" style="width:80px"></div>
+      </div>
+      <label class="field-label">Source columns → Output value khi có dữ liệu</label>
+      <div class="merge-rows-list" id="mrows-${id}"></div>
+      <button class="add-merge-row-btn" onclick="addMergeRow(${id})">+ Add row</button>
+    </div>`;
+      document.getElementById('merge-list').appendChild(div);
+      if (tgtGuess) document.getElementById('m-tgt-' + id).value = tgtGuess;
+      else if (S.tgt.cols.length) document.getElementById('m-tgt-' + id).value = S.tgt.cols[0];
+      // Populate preset rows, matching src col by trimmed name
+      if (preset.rows.length) {
+        preset.rows.forEach(r => {
+          const matchedCol = S.src.cols.find(c => c.trim() === r.src.trim()) || null;
+          addMergeRow(id, matchedCol || r.src, r.out);
+        });
+      } else {
+        addMergeRow(id, null, '');
+      }
+    }
+
+    function addMergeRow(mid, colDefault, outDefault) {
+      const ri = ++mergeRowCounters[mid];
+      const html = `<div class="merge-row" id="mrow-${mid}-${ri}">
+    <div><select id="mrc-${mid}-${ri}">${mkOpts(S.src.cols)}</select></div>
+    <div class="arr">→</div>
+    <div><input type="text" id="mro-${mid}-${ri}" value="${escA(outDefault || '')}" placeholder="output value"></div>
+    <button class="remove-btn" onclick="rmEl('mrow-${mid}-${ri}')" style="font-size:13px">✕</button>
+  </div>`;
+      document.getElementById('mrows-' + mid).insertAdjacentHTML('beforeend', html);
+      if (colDefault) document.getElementById('mrc-' + mid + '-' + ri).value = colDefault;
+    }
+
+    function getMergeMappings() {
+      return Array.from(document.getElementById('merge-list').querySelectorAll('.merge-card')).map(card => {
+        const id = card.id.split('-')[1];
+        const tgtCol = document.getElementById('m-tgt-' + id).value;
+        const separator = document.getElementById('m-sep-' + id).value;
+        const rows = Array.from(card.querySelectorAll('.merge-row')).map(row => {
+          const rid = row.id.replace('mrow-', '');
+          return { srcCol: document.getElementById('mrc-' + rid)?.value || '', output: document.getElementById('mro-' + rid)?.value || '' };
+        }).filter(r => r.srcCol && r.output);
+        return { tgtCol, separator, rows };
+      });
+    }
+
+    function rmEl(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+    // Range mapping
+    let rangeCount = 0, rangeRowCounters = {};
+    const DKK_DEFAULTS = [
+      { min: '', max: '50', label: 'under-50-dkk' },
+      { min: '50', max: '150', label: '50-150-dkk' },
+      { min: '150', max: '250', label: '150-250-dkk' },
+      { min: '250', max: '', label: 'over-250-dkk' }
+    ];
+
+    function addRangeMapping() {
+      if (!S.src.data || !S.tgt.data) { alert('Load both files first.'); return; }
+      const id = ++rangeCount;
+      rangeRowCounters[id] = 0;
+      const srcPriceGuess = S.tgt.cols.find(c => /variant.?price/i.test(c)) || S.tgt.cols.find(c => /price/i.test(c)) || S.tgt.cols[0];
+      const tgtPrisGuess = S.tgt.cols.find(c => /pris/i.test(c)) || S.tgt.cols[0];
+      const div = document.createElement('div');
+      div.className = 'range-card'; div.id = 'range-' + id;
+      div.innerHTML = `
+    <div class="range-card-header">
+      <span class="range-label">📊 Range Mapping #${id}</span>
+      <button class="remove-btn" onclick="rmEl('range-${id}')">✕</button>
+    </div>
+    <div class="range-card-body">
+      <div class="range-target-row">
+        <div>
+          <label class="field-label">Read value from (Target column)</label>
+          <select id="r-src-${id}">${mkOpts(S.tgt.cols)}</select>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Đọc từ cột này sau khi đã update (vd: Variant Price)</div>
+        </div>
+        <div>
+          <label class="field-label">Write label to (Target column)</label>
+          <select id="r-tgt-${id}">${mkOpts(S.tgt.cols)}</select>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Ghi nhãn vào cột này (vd: Pris)</div>
+        </div>
+      </div>
+      <label class="field-label">Range rules — Min ≤ value &lt; Max (để trống = không giới hạn)</label>
+      <div class="range-rows-list" id="rrows-${id}"></div>
+      <button class="add-range-row-btn" onclick="addRangeRow(${id})">+ Add range</button>
+    </div>`;
+      document.getElementById('range-list').appendChild(div);
+      if (srcPriceGuess) document.getElementById('r-src-' + id).value = srcPriceGuess;
+      if (tgtPrisGuess) document.getElementById('r-tgt-' + id).value = tgtPrisGuess;
+      DKK_DEFAULTS.forEach(d => addRangeRow(id, d.min, d.max, d.label));
+    }
+
+    function addRangeRow(mid, minVal, maxVal, labelVal) {
+      const ri = ++rangeRowCounters[mid];
+      const html = `<div class="range-row" id="rrow-${mid}-${ri}">
+    <input type="number" id="rmin-${mid}-${ri}" value="${escA(minVal || '')}" placeholder="Min">
+    <div class="arr">≤ n &lt;</div>
+    <input type="number" id="rmax-${mid}-${ri}" value="${escA(maxVal || '')}" placeholder="Max">
+    <div class="arr">→</div>
+    <input type="text" id="rlbl-${mid}-${ri}" value="${escA(labelVal || '')}" placeholder="Label">
+    <button class="remove-btn" onclick="rmEl('rrow-${mid}-${ri}')" style="font-size:13px">✕</button>
+  </div>`;
+      document.getElementById('rrows-' + mid).insertAdjacentHTML('beforeend', html);
+    }
+
+    function getRangeMappings() {
+      return Array.from(document.getElementById('range-list').querySelectorAll('.range-card')).map(card => {
+        const id = card.id.split('-')[1];
+        const srcCol = document.getElementById('r-src-' + id).value;
+        const tgtCol = document.getElementById('r-tgt-' + id).value;
+        const rules = Array.from(card.querySelectorAll('.range-row')).map(row => {
+          const rid = row.id.replace('rrow-', '');
+          const minRaw = document.getElementById('rmin-' + rid)?.value.trim();
+          const maxRaw = document.getElementById('rmax-' + rid)?.value.trim();
+          const label = document.getElementById('rlbl-' + rid)?.value.trim();
+          return { min: minRaw === '' ? -Infinity : parseFloat(minRaw), max: maxRaw === '' ? Infinity : parseFloat(maxRaw), label };
+        }).filter(r => r.label);
+        return { srcCol, tgtCol, rules };
+      });
+    }
+
+    function applyRangeLabel(value, rules) {
+      const n = parseFloat(String(value).replace(',', '.'));
+      if (isNaN(n)) return '';
+      for (const r of rules) {
+        if (n >= r.min && n < r.max) return r.label;
+      }
+      return '';
+    }
+
+    // ── KEY NORMALIZE ─────────────────────────────────────────────
+    function normalizeKey(raw) {
+      let k = (raw || '').toString().trim();
+      if (document.getElementById('strip-prefix').checked) k = k.replace(/^'+/, '');
+      if (document.getElementById('num-only').checked) k = k.replace(/[^0-9\-]/g, '').replace(/-+$/, '');
+      return k;
+    }
+
+    function runProcess() {
+      const srcKey = document.getElementById('src-key').value;
+      const tgtKey = document.getElementById('tgt-key').value;
+      const mappings = getMappings();
+      const merges = getMergeMappings();
+      const ranges = getRangeMappings();
+
+      // Required cols for "complete row" check (flexible match)
+      const REQ_COLS = ['Article No.', 'Product  name (DK)', 'Product  price (DKK)', 'Product  price (Euro)'];
+      function normCol(s) { return s.replace(/[\s]+/g, ' ').trim(); }
+      function isCompleteRow(row) {
+        return REQ_COLS.every(function (req) {
+          var reqN = normCol(req);
+          var keys = Object.keys(row);
+          var matched = keys.find(function (k) { return normCol(k) === reqN; });
+          var val = matched ? row[matched] : '';
+          return String(val).trim() !== '';
+        });
+      }
+
+      const lookup = {};
+      S.src.data.forEach(row => {
+        // Skip rows that have "deleted" marker in any cell
+        const hasDeleted = Object.values(row).some(v => String(v).trim().toLowerCase() === 'deleted');
+        if (hasDeleted) return;
+        // Skip rows missing required columns (Article No., Product name DK, Price DKK, Price Euro)
+        if (!isCompleteRow(row)) return;
+        const key = normalizeKey(findVal(row, srcKey));
+        if (!key) return;
+        // If key already exists, keep first complete row (both are complete here)
+        if (!lookup[key]) lookup[key] = row;
+      });
+
+      let matched = 0, noMatch = 0, emptyKey = 0;
+      resultRows = S.tgt.data.map(row => {
+        const key = normalizeKey(findVal(row, tgtKey));
+        const newRow = { ...row, _status: '', _changes: {} };
+        if (!key) { emptyKey++; newRow._status = 'empty'; return newRow; }
+        const srcRow = lookup[key];
+        if (!srcRow) {
+          noMatch++; newRow._status = 'nomatch';
+          // Range vẫn chạy cho nomatch nếu cột nguồn có sẵn giá trị
+          ranges.forEach(m => {
+            const numVal = findVal(row, m.srcCol);
+            if (!numVal.trim()) return;
+            const label = applyRangeLabel(numVal, m.rules);
+            if (!label) return;
+            const oldVal = (row[m.tgtCol] || '').toString().trim();
+
+            if (!label) return;
+            if (label === oldVal) return;
+
+            newRow._changes[m.tgtCol] = {
+              old: oldVal,
+              new: label,
+              isRange: true
+            };
+
+            newRow[m.tgtCol] = label;
+          });
+          return newRow;
+        }
+        matched++; newRow._status = 'match';
+
+        // Standard — runs first
+        mappings.forEach(m => {
+          let val = (findVal(srcRow, m.srcCol) || '').trim();
+          if (m.commaToDot) val = val.replace(',', '.');
+
+          const oldVal = (row[m.tgtCol] || '').toString().trim();
+
+          // 🔥 1. Skip nếu empty (tránh xoá data)
+          if (val === '') return;
+
+          // 🔥 2. Skip nếu không thay đổi (idempotent)
+          if (val === oldVal) return;
+
+          // 🔥 3. Skip self-mapping (optional nhưng nên có)
+          if (m.srcCol === m.tgtCol) return;
+
+          newRow._changes[m.tgtCol] = { old: oldVal, new: val };
+          newRow[m.tgtCol] = val;
+        });
+
+        // Merge
+        merges.forEach(m => {
+          const parts = m.rows.filter(r => {
+            const v = findVal(srcRow, r.srcCol);
+            return v !== null && v !== undefined && v.toString().trim() !== '';
+          }).map(r => r.output);
+          const joined = parts.join(m.separator);
+          const oldVal = (row[m.tgtCol] || '').toString().trim();
+
+          // skip nếu không có data
+          if (joined === '') return;
+
+          // skip nếu không đổi
+          if (joined === oldVal) return;
+
+          newRow._changes[m.tgtCol] = {
+            old: oldVal,
+            new: joined,
+            isMerge: true
+          };
+
+          newRow[m.tgtCol] = joined;
+        });
+
+        // Range — runs AFTER standard so it reads updated values
+        ranges.forEach(m => {
+          // Read from the already-updated newRow (not original row)
+          const numVal = newRow[m.srcCol] !== undefined ? newRow[m.srcCol] : findVal(row, m.srcCol);
+          const label = applyRangeLabel(numVal, m.rules);
+          newRow._changes[m.tgtCol] = { old: row[m.tgtCol] || '', new: label, isRange: true };
+          newRow[m.tgtCol] = label;
+        });
+
+        return newRow;
+      });
+
+      document.getElementById('s-total').textContent = S.tgt.data.length;
+      document.getElementById('s-match').textContent = matched;
+      document.getElementById('s-nomatch').textContent = noMatch;
+      document.getElementById('s-empty').textContent = emptyKey;
+
+      const allChanged = [...mappings.map(m => m.tgtCol), ...merges.map(m => m.tgtCol), ...ranges.map(m => m.tgtCol)];
+      renderTable(allChanged, tgtKey, merges.map(m => m.tgtCol), ranges.map(m => m.tgtCol));
+      document.getElementById('results-section').style.display = '';
+      document.getElementById('step3').classList.add('active');
+      document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function findVal(row, col) {
+      if (col in row) return (row[col] || '').toString();
+      const k = Object.keys(row).find(k => k.trim() === col.trim() || k.replace(/\n/g, ' ').trim() === col.trim());
+      return k ? (row[k] || '').toString() : '';
+    }
+
+    // ── TABLE ─────────────────────────────────────────────────────
+    function renderTable(changedCols, tgtKey, mergeCols, rangeCols) {
+      const extra = S.tgt.cols.filter(c => c !== tgtKey && !changedCols.includes(c)).slice(0, 3);
+      const displayCols = [tgtKey, ...changedCols, ...extra];
+      document.getElementById('result-thead').innerHTML =
+        `<tr><th>Status</th>${displayCols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>`;
+      window._TM = { displayCols, changedCols, tgtKey, mergeCols, rangeCols };
+      filterTable();
+    }
+
+    function filterTable() {
+      const { displayCols, changedCols, tgtKey, mergeCols, rangeCols } = window._TM || {};
+      if (!displayCols) return;
+      const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+      const rows = resultRows.filter(r => {
+        if (currentTab === 'matched' && r._status !== 'match') return false;
+        if (currentTab === 'unmatched' && r._status !== 'nomatch') return false;
+        if (currentTab === 'empty' && r._status !== 'empty') return false;
+        if (search) return displayCols.map(c => r[c] || '').join(' ').toLowerCase().includes(search);
+        return true;
+      });
+      document.getElementById('result-tbody').innerHTML = rows.slice(0, 500).map(row => {
+        const tag = row._status === 'match' ? '<span class="tag match">✓ match</span>'
+          : row._status === 'nomatch' ? '<span class="tag miss">✗ no match</span>'
+            : '<span class="tag empty">— empty</span>';
+        const cells = displayCols.map(col => {
+          if (changedCols.includes(col) && row._changes[col]) {
+            const c = row._changes[col];
+            const cls = c.isRange ? 'range-col' : c.isMerge ? 'age-col' : 'changed';
+            return `<td class="${cls}" title="Was: ${escA(c.old)}">${esc(c.new)} <span style="color:var(--muted);font-size:10px;text-decoration:line-through">${esc(c.old)}</span></td>`;
+          }
+          if (col === tgtKey) return `<td class="sku-col">${esc(row[col] || '')}</td>`;
+          return `<td>${esc(row[col] || '')}</td>`;
+        }).join('');
+        return `<tr><td>${tag}</td>${cells}</tr>`;
+      }).join('');
+      document.getElementById('row-count-label').textContent =
+        rows.length > 500 ? `Showing 500 of ${rows.length}` : `${rows.length} rows`;
+    }
+
+    function showTab(tab, btn) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active'); filterTable();
+    }
+
+    // ── DOWNLOAD ──────────────────────────────────────────────────
+    function downloadCSV(mode) {
+      let rows = resultRows;
+      if (mode === 'matched') rows = rows.filter(r => r._status === 'match');
+      if (mode === 'changed') rows = rows.filter(r => r._status === 'match' && Object.keys(r._changes).length > 0);
+      if (mode === 'nomatch') rows = rows.filter(r => r._status === 'nomatch');
+      const clean = rows.map(r => { const o = { ...r }; delete o._status; delete o._changes; return o; });
+      const blob = new Blob([Papa.unparse(clean)], { type: 'text/csv;charset=utf-8;' });
+      const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: mode + '_' + Date.now() + '.csv' });
+      a.click(); URL.revokeObjectURL(a.href);
+    }
+
+    function downloadXLSX(mode) {
+      let rows = resultRows;
+      if (mode === 'matched') rows = rows.filter(r => r._status === 'match');
+      if (mode === 'changed') rows = rows.filter(r => r._status === 'match' && Object.keys(r._changes).length > 0);
+      if (mode === 'nomatch') rows = rows.filter(r => r._status === 'nomatch');
+      const clean = rows.map(r => { const o = { ...r }; delete o._status; delete o._changes; return o; });
+      const ws = XLSX.utils.json_to_sheet(clean);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      XLSX.writeFile(wb, mode + '_' + Date.now() + '.xlsx');
+    }
+
+    function checkRunReady() { document.getElementById('run-btn').disabled = !(S.src.data && S.tgt.data); }
+    function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function escA(s) { return esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+    // Drag & drop
+    ['src', 'tgt'].forEach(side => {
+      const box = document.getElementById('drop-' + side);
+      box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('drag'); });
+      box.addEventListener('dragleave', () => box.classList.remove('drag'));
+      box.addEventListener('drop', e => {
+        e.preventDefault(); box.classList.remove('drag');
+        const file = e.dataTransfer.files[0]; if (!file) return;
+        S[side].file = file;
+        S[side].isExcel = isExcel(file);
+        const sw = document.getElementById('sep-wrap-' + side);
+        if (sw) sw.style.display = S[side].isExcel ? 'none' : '';
+        const input = document.getElementById('file-' + side);
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        if (S[side].isExcel) {
+          const r = new FileReader();
+          r.onload = ev => { S[side].rawBuffer = ev.target.result; parseAndRender(side); };
+          r.readAsArrayBuffer(file);
+        } else {
+          const r = new FileReader();
+          r.onload = ev => { S[side].rawText = ev.target.result; parseAndRender(side); };
+          r.readAsText(file, 'utf-8');
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
