@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banner Preview</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #1a1a1a; overflow: hidden; }
+    .frame-wrap {
+      position: absolute;
+      top: 48px; /* offset for Hub back button */
+      left: 0; right: 0; bottom: 0;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="frame-wrap">
+    <iframe src="./banner-preview/banner-builder.html" title="Banner Builder"></iframe>
+  </div>
+</body>
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Banner Preview Builder</title>
+<style>
+:root{
+  /* Spring CC brand tokens */
+  --sc-orange:#FF3700;--sc-beige:#E5D2B8;--sc-offblack:#282828;
+  --sc-grey:#B9B9B1;--sc-blue:#D7E8F8;
+
+  /* UI surfaces */
+  --bg:#1a1a1a;--surface:#222222;--surface2:#282828;
+  --border:#333333;--border2:#3d3d3d;
+  --text:#ffffff;--muted:#B9B9B1;--muted2:#3a3a3a;
+  --accent:#FF3700;--accent1:#E5D2B8;--ok:#7dd87d;--warn:#ffd166;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans','Menlo','Consolas',monospace;font-size:14px;min-height:100vh;}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:14px;}
+.header h1{font-size:20px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:bold;}
+.header-stats{margin-left:auto;color:var(--muted);font-size:11px;}
+.header-stats em{color:var(--text);font-style:normal;}
+
+.toolbar{display:none;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);gap:10px;align-items:center;position:sticky;top:0;z-index:10;}
+.toolbar.show{display:flex;}
+.btn{padding:7px 14px;background:transparent;border:1px solid var(--border2);color:var(--text);cursor:pointer;font-family:inherit;font-size:11px;border-radius:3px;letter-spacing:.5px;transition:all .12s;}
+.btn:hover{border-color:#444;}
+.btn.primary{background:var(--sc-orange);color:#ffffff;border-color:var(--sc-orange);font-weight:700;}
+.btn.primary:hover{background:var(--sc-beige);color:var(--sc-offblack);border-color:var(--sc-beige);}
+.toolbar-hint{color:var(--muted);font-size:11px;margin-left:auto;}
+.toolbar-hint strong{color:var(--accent);}
+.project-field{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.project-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.project-input{padding:5px 10px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:12px;border-radius:3px;width:220px;letter-spacing:.3px;transition:border-color .12s;}
+.project-input:focus{outline:none;border-color:var(--accent);}
+.project-input.has-value{border-color:rgba(255,55,0,.45);color:var(--sc-orange);}
+
+.dropzone{margin:24px 20px;padding:50px 20px;border:2px dashed var(--border2);border-radius:6px;text-align:center;color:var(--muted);cursor:pointer;transition:all .15s;}
+.dropzone.over{border-color:var(--sc-orange);color:var(--sc-orange);background:rgba(255,55,0,.05);}
+.dropzone h2{font-size:14px;margin-bottom:8px;color:var(--text);font-weight:normal;letter-spacing:1px;}
+.dropzone .hint{font-size:11px;color:var(--muted);line-height:1.6;}
+.dropzone input{display:none;}
+
+.list{padding:0 20px 60px;}
+.group-block{margin-bottom:32px;}
+.group-title{font-size:14px;color:var(--accent);margin-bottom:6px;padding:10px 0 8px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:10px;}
+.group-title-name{font-weight:bold;}
+.group-title-meta{color:var(--muted);font-size:14px;font-weight:normal;}
+.group-name-input{background:transparent;border:none;border-bottom:1px dashed transparent;color:var(--accent);font-family:inherit;font-size:14px;font-weight:bold;padding:0 2px;min-width:60px;max-width:480px;transition:border-color .12s,background .12s;cursor:text;letter-spacing:.5px;}
+.group-name-input:hover{border-bottom-color:rgba(255,140,0,.3);}
+.group-name-input:focus{outline:none;border-bottom-color:var(--accent);background:rgba(255,140,0,.04);}
+.group-name-input.edited{color:var(--warn);border-bottom-color:rgba(255,209,102,.4);}
+.subgroup-title{font-size:10px;color:var(--muted);margin:18px 0 6px;letter-spacing:2px;text-transform:uppercase;padding:4px 0;border-bottom:1px solid #1a1a1a;}
+
+.row-table{width:100%;border-collapse:collapse;font-size:13px;}
+.row-table thead{position:sticky;top:0;background:var(--bg);}
+.row-table th{text-align:left;color:var(--muted);padding:8px;border-bottom:1px solid var(--border);font-weight:normal;font-size:9px;letter-spacing:2px;text-transform:uppercase;}
+.row-table td{padding:6px 8px;border-bottom:1px solid #1a1a1a;vertical-align:middle;}
+.row-table tr:hover{background:rgba(255,255,255,.02);}
+.size-cell{color:var(--accent);font-weight:bold;min-width:80px;font-size:13px;}
+.folder-cell{color:var(--text);word-break:break-all;font-size:13px;line-height:1.45;}
+.parent-cell{color:var(--muted);font-size:10px;}
+.lang-input{width:90px;padding:5px 8px;background:var(--bg);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-radius:2px;}
+.lang-input:focus{outline:none;border-color:var(--accent);}
+.lang-input.user-edited{border-color:var(--sc-orange);color:var(--sc-orange);background:rgba(255,55,0,.04);}
+.lang-input.empty-detect{border-color:var(--warn);color:var(--warn);}
+.lang-flag{display:inline-block;font-size:9px;color:var(--muted);padding-left:4px;letter-spacing:1px;}
+.lang-flag.auto{color:var(--ok);}
+.lang-flag.miss{color:var(--warn);}
+.lang-flag.user{color:var(--accent);}
+
+.empty-state{padding:60px 20px;text-align:center;color:var(--muted);font-size:12px;line-height:1.7;}
+.empty-state strong{color:var(--accent);}
+
+.help{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);color:var(--muted);font-size:11px;line-height:1.6;}
+.help strong{color:var(--accent);}
+.help code{background:var(--bg);padding:1px 5px;border-radius:2px;color:var(--text);font-size:10px;}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>BANNER PREVIEW BUILDER</h1>
+    <div class="header-stats" id="headerStats"></div>
+  </div>
+
+  <div class="toolbar" id="toolbar">
+    <button class="btn primary" id="generateBtn">▼ Generate index.html</button>
+    <button class="btn" id="resetBtn">Reset</button>
+    <div class="project-field">
+      <span class="project-label">Project</span>
+      <input type="text" id="projectInput" class="project-input" placeholder="Tên project…" maxlength="80" autocomplete="off" spellcheck="false">
+    </div>
+    <span class="toolbar-hint">
+      Lưu file <strong>index.html</strong> vào folder cha chứa các banner đã drop để iframe load đúng
+    </span>
+  </div>
+
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" webkitdirectory multiple>
+    <h2>Kéo thả folder vào đây</h2>
+    <div class="hint">
+      Drop 1 folder cha (chứa nhiều banner subfolder) <br>
+      hoặc nhiều banner folder cùng lúc · Click để chọn folder
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+ *  DETECTION LOGIC (port từ scan.js — giữ nguyên hành vi)
+ * ════════════════════════════════════════════════════════════════════ */
+const DEFAULT_LANGS = [
+  'INT','EN','EU','US','UK','WW',
+  'DE','FR','IT','ES','NL','BE','CH','AT','PL','CZ','SK','HU','RO','PT','DK','SE','NO','FI','IS','IE','GR',
+  'JP','CN','KR','TW','HK','SG','TH','VN','ID','PH','IN','AU','NZ',
+  'CA','MX','RU','UA','TR','IL','AE','SA',
+  'GWS','GDN','DV3','TTD','CM','FB','IG','LI','YT','GCN'
+];
+const SKIP_TOKENS = new Set(['OC','NR','XX','AD','BY','BG','BF','BR','W1','W2','T1','T2','MASTER','CC','KP','AP','APG','OMAM']);
+const KNOWN_LANGS = new Set(DEFAULT_LANGS);
+const VARIANT_PRIMARY  = /[-_]([A-Z]{2,3})_([a-z]{2})(?=[-_]|$)/;
+const VARIANT_FALLBACK = /(?:^|[-_])([A-Z]{2,3})(?=[-_]|$)/g;
+
+function extractSize(str){
+  let m = str.match(/(?<!\d)(\d{2,4})(?:x|by)(\d{2,4})(?!\d)/i);
+  if (m) return { w: +m[1], h: +m[2], label: m[1]+'x'+m[2] };
+  m = str.match(/(?<!\d)(\d{2,4})-(\d{2,4})(?!\d)/);
+  if (m) return { w: +m[1], h: +m[2], label: m[1]+'x'+m[2] };
+  return null;
+}
+
+function extractLang(str){
+  if (!str) return null;
+  // Pattern XX_xx (e.g. AT_de, INT_en, NL_nl) — most explicit
+  const p = str.match(VARIANT_PRIMARY);
+  if (p && !SKIP_TOKENS.has(p[1])) return p[1] + '_' + p[2];
+  // Token scan: chỉ pick token nằm trong KNOWN_LANGS
+  const tokens = [];
+  VARIANT_FALLBACK.lastIndex = 0;
+  let m;
+  while ((m = VARIANT_FALLBACK.exec(str)) !== null) tokens.push(m[1]);
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    const t = tokens[i];
+    if (!SKIP_TOKENS.has(t) && KNOWN_LANGS.has(t)) return t;
+  }
+  return null;
+}
+
+function slugify(s){ return s.toLowerCase().replace(/[^a-z0-9]/g, '_'); }
+
+/* ════════════════════════════════════════════════════════════════════
+ *  FOLDER WALK — webkitGetAsEntry API (drop) + webkitRelativePath (input)
+ * ════════════════════════════════════════════════════════════════════ */
+function readDir(entry){
+  return new Promise((resolve)=>{
+    const reader = entry.createReader();
+    const all = [];
+    function read(){
+      reader.readEntries((b)=>{
+        if (b.length === 0) resolve(all);
+        else { all.push(...b); read(); }
+      }, ()=>resolve(all));
+    }
+    read();
+  });
+}
+
+async function walkEntry(entry){
+  if (entry.isFile) return { name: entry.name, isDir: false };
+  const kids = await readDir(entry);
+  const children = [];
+  for (const k of kids) {
+    if (k.name.startsWith('.')) continue;
+    children.push(await walkEntry(k));
+  }
+  return { name: entry.name, isDir: true, children };
+}
+
+function findHtmlFile(node){
+  if (!node.children) return null;
+  const idx = node.children.find(c => !c.isDir && c.name.toLowerCase() === 'index.html');
+  if (idx) return 'index.html';
+  const any = node.children.find(c => !c.isDir && c.name.toLowerCase().endsWith('.html'));
+  return any ? any.name : null;
+}
+
+function findBannerFolders(node, relFromGroup, parentName){
+  const results = [];
+  if (!node.children) return results;
+  for (const c of node.children) {
+    if (!c.isDir || c.name.startsWith('.') || c.name.startsWith('_')) continue;
+    const rel = relFromGroup ? relFromGroup + '/' + c.name : c.name;
+    const sz = extractSize(c.name);
+    const html = sz ? findHtmlFile(c) : null;
+    if (sz && html) {
+      results.push({ size: sz, html, relPath: rel, folderName: c.name, parentName });
+    } else {
+      results.push(...findBannerFolders(c, rel, c.name));
+    }
+  }
+  return results;
+}
+
+function resolveVariantLabel(bf){
+  const fromFolder = extractLang(bf.folderName);
+  if (fromFolder) return fromFolder;
+  if (bf.parentName) {
+    const fromParent = extractLang(bf.parentName);
+    if (fromParent) return fromParent;
+  }
+  return null;
+}
+
+function buildBanners(sizeMap, idPrefix){
+  Object.values(sizeMap).forEach(s =>
+    s.variants.sort((a,b) => (a.lang||'–').localeCompare(b.lang||'–')));
+  return Object.values(sizeMap)
+    .sort((a,b) => (a.w*a.h)-(b.w*b.h) || a.w-b.w)
+    .map((s,i) => ({
+      id: idPrefix+'_'+s.label+'_'+i,
+      width: s.w, height: s.h, label: s.label, variants: s.variants
+    }));
+}
+
+function scanGroups(topLevelNodes, rootName, prefix = ''){
+  const groups = [];
+
+  // Flat-banner detection
+  const flatBanners = [];
+  const otherDirs = [];
+  for (const node of topLevelNodes) {
+    if (node.name.startsWith('_') || node.name.startsWith('.')) continue;
+    const sz = extractSize(node.name);
+    const html = sz ? findHtmlFile(node) : null;
+    if (sz && html) flatBanners.push({ node, sz, html });
+    else otherDirs.push(node);
+  }
+
+  if (flatBanners.length > 0 && otherDirs.length === 0) {
+    const sizeMap = {};
+    for (const { node, sz, html } of flatBanners) {
+      const lang = resolveVariantLabel({ folderName: node.name, parentName: '' });
+      const key = sz.label;
+      const src = (prefix ? prefix + '/' : '') + node.name + '/' + html;
+      if (!sizeMap[key]) sizeMap[key] = { ...sz, variants: [] };
+      sizeMap[key].variants.push({ lang, src, folderName: node.name, parentName: rootName });
+    }
+    const gid = slugify(rootName);
+    const blist = buildBanners(sizeMap, gid);
+    const totalV = blist.reduce((n,b) => n + b.variants.length, 0);
+    groups.push({
+      id: gid, name: rootName, type: 'banner',
+      subGroups: [{ id: gid, name: rootName, banners: blist, totalVariants: totalV }],
+      hasSubGroups: false, totalVariants: totalV, banners: blist,
+    });
+    return groups;
+  }
+
+  // Nested structure
+  for (const node of topLevelNodes) {
+    if (node.name.startsWith('_') || node.name.startsWith('.')) continue;
+    const bannerFolders = findBannerFolders(node, '', '');
+    if (bannerFolders.length === 0) continue;
+
+    for (const bf of bannerFolders) {
+      const segs = bf.relPath.split('/');
+      bf.subGroup = segs.length > 1 ? segs[0] : '';
+    }
+    const sgMap = {};
+    for (const bf of bannerFolders) {
+      const sg = bf.subGroup;
+      if (!sgMap[sg]) sgMap[sg] = {};
+      const lang = resolveVariantLabel(bf);
+      const key = bf.size.label;
+      const src = (prefix ? prefix + '/' : '') + node.name + '/' + bf.relPath + '/' + bf.html;
+      if (!sgMap[sg][key]) sgMap[sg][key] = { ...bf.size, variants: [] };
+      sgMap[sg][key].variants.push({
+        lang, src, folderName: bf.folderName, parentName: bf.parentName || node.name
+      });
+    }
+    const sgEntries = Object.entries(sgMap).sort(([a],[b]) => a.localeCompare(b));
+    const hasSubGroups = sgEntries.length > 1 || (sgEntries.length === 1 && sgEntries[0][0] !== '');
+    const subGroups = sgEntries.map(([sgName, sizeMap]) => {
+      const id = slugify(node.name) + (sgName ? '__' + slugify(sgName) : '');
+      const name = sgName || node.name;
+      const banners = buildBanners(sizeMap, id);
+      return { id, name, banners, totalVariants: banners.reduce((n,b)=>n+b.variants.length, 0) };
+    });
+    const totalVariants = subGroups.reduce((s, sg) => s + sg.totalVariants, 0);
+    const allBanners = subGroups.flatMap(sg => sg.banners);
+    groups.push({
+      id: slugify(node.name), name: node.name, type: 'banner',
+      subGroups, hasSubGroups, totalVariants, banners: allBanners,
+    });
+  }
+  return groups;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  STATE & UI RENDERING
+ * ════════════════════════════════════════════════════════════════════ */
+let SCAN_DATA = [];   // accumulates across drops — only cleared on Reset
+let CAMPAIGN  = '';
+let PROJECT_OVERRIDE = false; // user has manually edited the project name
+
+// Merge new groups into SCAN_DATA — skip if group id already exists
+function mergeIntoScanData(newGroups){
+  const existingIds = new Set(SCAN_DATA.map(g => g.id));
+  let added = 0;
+  for (const g of newGroups) {
+    if (!existingIds.has(g.id)) {
+      SCAN_DATA.push(g);
+      added++;
+    }
+  }
+  return added;
+}
+
+function renderList(groups){
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  if (!groups || groups.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <strong>Không phát hiện banner nào.</strong><br>
+      Folder banner phải có size trong tên (vd: <code>...300x250...</code>) và file <code>index.html</code> bên trong.
+    </div>`;
+    document.getElementById('toolbar').classList.remove('show');
+    return;
+  }
+
+  let totalVariants = 0;
+  groups.forEach(g => {
+    const block = document.createElement('div');
+    block.className = 'group-block';
+
+    // --- Group title with editable project name ---
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'group-title';
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'group-name-input';
+    nameInput.value = g.displayName || g.name;
+    nameInput.title = 'Click để đổi tên project';
+    nameInput.spellcheck = false;
+    autoWidthInput(nameInput);
+    nameInput.addEventListener('input', () => {
+      const val = nameInput.value.trim();
+      g.displayName = val || g.name;
+      nameInput.classList.toggle('edited', val.length > 0 && val !== g.name);
+      autoWidthInput(nameInput);
+    });
+
+    const meta = document.createElement('span');
+    meta.className = 'group-title-meta';
+    meta.textContent = `${g.totalVariants} variants · ${g.banners.length} sizes`;
+
+    titleDiv.appendChild(nameInput);
+    titleDiv.appendChild(meta);
+    block.appendChild(titleDiv);
+    g.subGroups.forEach(sg => {
+      if (g.hasSubGroups) {
+        const t = document.createElement('div');
+        t.className = 'subgroup-title';
+        t.textContent = sg.name + ' · ' + sg.totalVariants + ' variants';
+        block.appendChild(t);
+      }
+      const table = document.createElement('table');
+      table.className = 'row-table';
+      table.innerHTML = `<thead><tr>
+        <th style="width:90px">Size</th>
+        <th>Folder</th>
+        <th style="width:160px">Language</th>
+      </tr></thead><tbody></tbody>`;
+      const tbody = table.querySelector('tbody');
+      sg.banners.forEach(b => {
+        b.variants.forEach(v => {
+          totalVariants++;
+          const tr = document.createElement('tr');
+          const detected = v.lang || '';
+          const flagClass = detected ? 'auto' : 'miss';
+          const flagText = detected ? 'AUTO' : 'NEED INPUT';
+          tr.innerHTML = `
+            <td class="size-cell">${b.label}</td>
+            <td class="folder-cell">${escapeHtml(v.folderName)}</td>
+            <td>
+              <input type="text" class="lang-input ${detected ? '' : 'empty-detect'}"
+                value="${escapeHtml(detected)}" placeholder="– gõ vào –" maxlength="10" />
+              <span class="lang-flag ${flagClass}">${flagText}</span>
+            </td>
+          `;
+          const inp = tr.querySelector('.lang-input');
+          const flag = tr.querySelector('.lang-flag');
+          inp.addEventListener('input', () => {
+            const val = inp.value.trim().toUpperCase().replace(/[^A-Z0-9_]/g, '');
+            if (inp.value !== val) inp.value = val;
+            v.lang = val || null;
+            inp.classList.remove('empty-detect');
+            if (val !== detected) {
+              inp.classList.add('user-edited');
+              flag.className = 'lang-flag user';
+              flag.textContent = 'EDITED';
+            } else if (val) {
+              inp.classList.remove('user-edited');
+              flag.className = 'lang-flag auto';
+              flag.textContent = 'AUTO';
+            } else {
+              inp.classList.add('empty-detect');
+              flag.className = 'lang-flag miss';
+              flag.textContent = 'NEED INPUT';
+            }
+          });
+          tbody.appendChild(tr);
+        });
+      });
+      block.appendChild(table);
+    });
+    list.appendChild(block);
+  });
+
+  document.getElementById('headerStats').innerHTML =
+    `<em>${groups.length}</em> group${groups.length>1?'s':''} · <em>${totalVariants}</em> variants`;
+  document.getElementById('toolbar').classList.add('show');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function autoWidthInput(input){
+  // Measure text width via canvas for accuracy
+  if (!autoWidthInput._ctx) {
+    const cvs = document.createElement('canvas');
+    autoWidthInput._ctx = cvs.getContext('2d');
+  }
+  autoWidthInput._ctx.font = '700 14px DM Sans, Menlo, Consolas, monospace';
+  const w = autoWidthInput._ctx.measureText(input.value || input.placeholder || '').width;
+  input.style.width = Math.max(60, Math.ceil(w) + 20) + 'px';
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  DROP / FILE INPUT HANDLERS
+ * ════════════════════════════════════════════════════════════════════ */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+['dragenter','dragover'].forEach(ev =>
+  dropzone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    dropzone.classList.add('over');
+  }));
+['dragleave','drop'].forEach(ev =>
+  dropzone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    dropzone.classList.remove('over');
+  }));
+
+dropzone.addEventListener('drop', async e => {
+  const items = Array.from(e.dataTransfer.items)
+    .map(i => i.webkitGetAsEntry())
+    .filter(i => i);
+  await processEntries(items);
+});
+
+dropzone.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', e => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+  // Build synthetic tree từ webkitRelativePath
+  const root = { name: '', isDir: true, children: [] };
+  for (const f of files) {
+    const parts = f.webkitRelativePath.split('/');
+    let cur = root;
+    for (let i = 0; i < parts.length - 1; i++) {
+      let next = cur.children.find(c => c.name === parts[i] && c.isDir);
+      if (!next) {
+        next = { name: parts[i], isDir: true, children: [] };
+        cur.children.push(next);
+      }
+      cur = next;
+    }
+    cur.children.push({ name: parts[parts.length - 1], isDir: false });
+  }
+  let topLevelNodes, rootName, prefix = '';
+  if (root.children.length === 1 && root.children[0].isDir) {
+    const only = root.children[0];
+    rootName = only.name;
+    // If the folder itself IS a banner (has size + index.html), treat it as a flat-banner node
+    const sz = extractSize(only.name);
+    const html = sz ? findHtmlFile(only) : null;
+    if (sz && html) {
+      topLevelNodes = [only];
+    } else {
+      topLevelNodes = (only.children || []).filter(c => c.isDir);
+      prefix = rootName; // topLevelNodes are CHILDREN → prefix needed
+    }
+  } else {
+    rootName = 'banners';
+    topLevelNodes = root.children.filter(c => c.isDir);
+  }
+  const newGroups = scanGroups(topLevelNodes, rootName, prefix);
+  mergeIntoScanData(newGroups);
+  renderList(SCAN_DATA);
+  if (SCAN_DATA.length === 1) syncProjectInput(rootName);
+});
+
+async function processEntries(entries){
+  if (entries.length === 0) return;
+  let topLevelNodes, rootName, prefix = '';
+  if (entries.length === 1 && entries[0].isDirectory) {
+    rootName = entries[0].name;
+    const tree = await walkEntry(entries[0]);
+    // If the dropped folder itself IS a banner (has size + index.html), treat it as flat-banner node
+    const sz = extractSize(rootName);
+    const html = sz ? findHtmlFile(tree) : null;
+    if (sz && html) {
+      topLevelNodes = [tree];
+    } else {
+      topLevelNodes = (tree.children || []).filter(c => c.isDir);
+      prefix = rootName; // topLevelNodes are CHILDREN → prefix needed
+    }
+  } else {
+    rootName = 'banners';
+    topLevelNodes = [];
+    for (const e of entries) {
+      if (!e.isDirectory) continue;
+      topLevelNodes.push(await walkEntry(e));
+    }
+  }
+  const newGroups = scanGroups(topLevelNodes, rootName, prefix);
+  mergeIntoScanData(newGroups);
+  renderList(SCAN_DATA);
+  if (SCAN_DATA.length === 1) syncProjectInput(rootName);
+}
+
+function syncProjectInput(autoName){
+  const pi = document.getElementById('projectInput');
+  pi.dataset.auto = autoName;
+  if (!PROJECT_OVERRIDE) {
+    pi.value = autoName;
+    pi.classList.remove('has-value');
+  }
+  CAMPAIGN = PROJECT_OVERRIDE ? pi.value.trim() || autoName : autoName;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+ *  GENERATE & RESET
+ * ════════════════════════════════════════════════════════════════════ */
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  if (!SCAN_DATA) return;
+  const html = generatePreviewHTML(SCAN_DATA, CAMPAIGN);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+
+  // Use File System Access API if available (saves directly to chosen folder)
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'index.html',
+        types: [{ description: 'HTML file', accept: { 'text/html': ['.html'] } }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // user cancelled
+      // fall through to legacy download
+    }
+  }
+
+  // Fallback: standard download
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'index.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  SCAN_DATA = []; CAMPAIGN = ''; PROJECT_OVERRIDE = false;
+  document.getElementById('list').innerHTML = '';
+  document.getElementById('toolbar').classList.remove('show');
+  document.getElementById('headerStats').textContent = '';
+  fileInput.value = '';
+  const pi = document.getElementById('projectInput');
+  pi.value = ''; pi.classList.remove('has-value');
+});
+
+// Project name input — override CAMPAIGN when user edits
+document.getElementById('projectInput').addEventListener('input', function(){
+  const val = this.value.trim();
+  CAMPAIGN = val || (SCAN_DATA ? (this.dataset.auto || '') : '');
+  PROJECT_OVERRIDE = val.length > 0;
+  this.classList.toggle('has-value', val.length > 0);
+});
+
+/* ════════════════════════════════════════════════════════════════════
+ *  PREVIEW HTML GENERATOR (slim, dark theme, GSAP-friendly)
+ * ════════════════════════════════════════════════════════════════════ */
+function generatePreviewHTML(groups, campaign){
+  const now = new Date().toLocaleString('vi-VN');
+  // Strip parentName for cleaner output
+  const cleanGroups = JSON.parse(JSON.stringify(groups));
+  cleanGroups.forEach(g => {
+    // Apply per-project display name to sidebar
+    if (g.displayName) g.name = g.displayName;
+    g.subGroups.forEach(sg =>
+      sg.banners.forEach(b => b.variants.forEach(v => { delete v.parentName; })));
+  });
+  const data = JSON.stringify({ campaign, generatedAt: now, groups: cleanGroups });
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<title>Preview — ${escapeHtml(campaign)}</title>
+<style>
+:root{
+  --sc-orange:#FF3700;--sc-beige:#E5D2B8;--sc-offblack:#282828;--sc-grey:#B9B9B1;--sc-blue:#D7E8F8;
+  --bg:#1a1a1a;--logo:#FF3700;--surface:#222222;--surface2:#282828;--border:#333333;--border2:#3d3d3d;
+  --text:#fff;--muted:#B9B9B1;--muted2:#3a3a3a;--accent:#FF3700;--sidebar:220px;--topbar:44px;--filterbar:42px;--foldername:#D7E8F8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans','Menlo','Consolas',monospace;font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:var(--topbar);display:flex;align-items:center;gap:14px;padding:0 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.logo{color:var(--sc-orange);font-weight:700;font-size:18px;letter-spacing:3px;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
+.sep{color:var(--border2);font-size:16px;}
+.campaign-name{color:var(--text);font-size:13px;}
+.topbar-stats{margin-left:auto;color:var(--muted);font-size:11px;display:flex;gap:18px;}
+.topbar-stats em{color:var(--text);font-style:normal;}
+.layout{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.sidebar-title{padding:12px 14px 8px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--sc-grey);font-weight:500;border-bottom:1px solid var(--border);}
+.group-list{overflow-y:auto;flex:1;padding:6px 0;}
+.group-item{padding:8px 10px 8px 12px;cursor:pointer;border-left:2px solid transparent;color:var(--muted);transition:color .12s,border-color .12s,background .12s;display:flex;align-items:center;gap:5px;user-select:none;}
+.group-item:hover{color:var(--text);background:rgba(255,255,255,.025);}
+.group-item.has-children{cursor:default;}
+.group-item.no-children.active{border-left-color:var(--accent);color:var(--accent);background:rgba(255,140,0,.06);}
+.group-item.no-children.active .group-count{background:rgba(255,140,0,.15);color:var(--accent);}
+.chevron{font-size:8px;color:var(--muted2);flex-shrink:0;transition:transform .15s;width:10px;text-align:center;}
+.group-item.expanded .chevron{transform:rotate(90deg);color:var(--muted);}
+.sg-list{overflow:hidden;}
+.sg-list.collapsed{display:none;}
+.sg-item{padding:6px 10px 6px 24px;cursor:pointer;border-left:2px solid transparent;color:var(--muted);transition:color .12s,border-color .12s,background .12s;display:flex;align-items:center;gap:5px;font-size:10px;}
+.sg-item:hover{color:var(--text);background:rgba(255,255,255,.025);}
+.sg-item.active{border-left-color:var(--accent);color:var(--accent);background:rgba(255,140,0,.06);}
+.sg-item.active .group-count{background:rgba(255,140,0,.15);color:var(--accent);}
+.group-name{flex:1;line-height:1.35;word-break:break-all;font-size:12px;}
+.group-count{font-size:11px;color:var(--muted);background:var(--muted2);padding:1px 5px;border-radius:3px;flex-shrink:0;}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.filterbar{height:var(--filterbar);display:flex;align-items:center;padding:0 18px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg);}
+.fb-right{display:flex;align-items:center;gap:10px;}
+.vis-count{color:var(--muted);font-size:12px;}
+.vis-count em{color:var(--text);font-style:normal;}
+.ctrl{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;letter-spacing:1px;}
+.ctrl input[type=range]{width:80px;cursor:pointer;accent-color:var(--accent);}
+.ctrl-val{font-weight:bold;min-width:28px;font-size:12px;color:var(--accent);}
+.btn-replay-all{display:flex;align-items:center;gap:5px;padding:4px 12px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:3px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .12s;}
+.btn-replay-all:hover{border-color:#555;color:var(--text);}
+.tab-row{display:flex;align-items:center;gap:4px;flex:1;overflow-x:auto;min-width:0;padding-right:12px;}
+.tab-row::-webkit-scrollbar{height:0;}
+.tab-label{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-right:4px;flex-shrink:0;}
+.tab-btn{padding:3px 9px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:3px;cursor:pointer;font-size:11px;font-family:inherit;white-space:nowrap;transition:all .12s;flex-shrink:0;}
+.tab-btn:hover{border-color:#555;color:var(--text);}
+.tab-btn.active{background:var(--sc-beige);border-color:var(--sc-orange);color:var(--sc-offblack);font-weight:700;}
+.content{flex:1;overflow-y:auto;padding:20px 18px 40px;}
+.size-section{margin-bottom:28px;}
+.size-section[data-hidden=true]{display:none;}
+.size-header{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.size-dim{font-size:16px;font-weight:bold;color:var(--text);}
+.size-unit{font-size:11px;color:var(--muted);}
+.size-variants{font-size:11px;color:var(--muted);}
+.banner-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;}
+.banner-card{display:flex;flex-direction:column;gap:5px;}
+.card-header{display:flex;align-items:center;gap:6px;height:26px;}
+.lang-badge{padding:2px 7px;border-radius:3px;font-size:12px;font-weight:bold;letter-spacing:.5px;border:1px solid;}
+.folder-name{font-size:11px;color:var(--muted);white-space:nowrap;padding:0 1px;text-overflow:ellipsis;overflow:hidden;}
+.btn-replay{margin-left:auto;display:flex;align-items:center;gap:4px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:10px;font-family:inherit;padding:2px 6px;border-radius:3px;transition:all .12s;}
+.btn-replay:hover{color:var(--text);background:rgba(255,255,255,.05);}
+.iframe-wrapper{background:#fff;position:relative;border:1px solid var(--border2);overflow:hidden;flex-shrink:0;transition:border-color .15s;}
+.iframe-wrapper:hover{border-color:#444;}
+.iframe-wrapper iframe{display:block;border:none;}
+.lazy-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--surface2);pointer-events:none;transition:opacity .3s;}
+.lazy-placeholder.hidden{opacity:0;pointer-events:none;}
+.lazy-dot{width:6px;height:6px;border-radius:50%;background:var(--muted2);animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.empty-state{display:none;padding:60px 20px;text-align:center;color:var(--muted);}
+.empty-state.show{display:block;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#3a3a3a;}
+@media (max-width:768px){
+  .sidebar{width:160px;}
+  .banner-row{flex-direction:column;}
+  .ctrl,.btn-replay-all{display:none !important;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo">PREVIEW</span>
+  <span class="sep">|</span>
+  <span class="campaign-name" id="campaignName">—</span>
+  <div class="topbar-stats">
+    <span>Variants: <em id="statBanners">0</em></span>
+    <span>Sizes: <em id="statSizes">0</em></span>
+    <span>Groups: <em id="statGroups">0</em></span>
+  </div>
+</div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-title">Groups</div>
+    <div class="group-list" id="groupList"></div>
+  </div>
+  <div class="main">
+    <div class="filterbar">
+      <span class="tab-label">LANGUAGE</span>
+      <div class="tab-row" id="langTabs"></div>
+      <div class="fb-right">
+        <span class="vis-count" id="visCount"></span>
+        <div class="ctrl">
+          SCALE
+          <input type="range" id="scaleSlider" min="20" max="100" value="100" step="5">
+          <span class="ctrl-val" id="scaleVal">100%</span>
+        </div>
+        <button class="btn-replay-all" id="replayAllBtn">↻ Replay All</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div class="empty-state" id="emptyState">No content found.</div>
+    </div>
+  </div>
+</div>
+<script>
+const DATA = ${data};
+let activeGroup=null,activeSubGroup=null,activeLang='all',currentScale=1;
+const iframeMap={};let bannerObs=null;
+function init(){
+  const groups=DATA.groups||[];
+  let tv=0,ts=0;
+  groups.forEach(g=>{tv+=g.totalVariants||0;ts+=g.banners?g.banners.length:0;});
+  campaignName.textContent=DATA.campaign||'Preview';
+  statBanners.textContent=tv;statSizes.textContent=ts;statGroups.textContent=groups.length;
+  document.title=DATA.campaign||'Preview';
+  buildSidebar(groups);
+  if(groups[0]){
+    if(groups[0].hasSubGroups){
+      const e=document.querySelector('.group-item[data-id="'+groups[0].id+'"]');
+      if(e){e.classList.add('expanded');const l=document.querySelector('.sg-list[data-gid="'+groups[0].id+'"]');if(l)l.classList.remove('collapsed');}
+      selectSubGroup(groups[0].id,groups[0].subGroups[0].id);
+    }else{selectGroup(groups[0].id);}
+  }
+  scaleSlider.addEventListener('input',e=>{currentScale=parseInt(e.target.value)/100;scaleVal.textContent=e.target.value+'%';applyScale();});
+  replayAllBtn.addEventListener('click',replayAll);
+}
+function buildSidebar(groups){
+  const list=document.getElementById('groupList');list.innerHTML='';
+  groups.forEach(g=>{
+    const wrap=document.createElement('div');
+    const el=document.createElement('div');
+    el.className='group-item '+(g.hasSubGroups?'has-children':'no-children');
+    el.dataset.id=g.id;
+    el.innerHTML='<span class="chevron">'+(g.hasSubGroups?'▶':'')+'</span><span class="group-name">'+g.name+'</span><span class="group-count">'+g.totalVariants+'</span>';
+    if(g.hasSubGroups){
+      const sgList=document.createElement('div');sgList.className='sg-list collapsed';sgList.dataset.gid=g.id;
+      g.subGroups.forEach(sg=>{
+        const s=document.createElement('div');s.className='sg-item';s.dataset.gid=g.id;s.dataset.sgid=sg.id;
+        s.innerHTML='<span class="group-name">'+sg.name+'</span><span class="group-count">'+sg.totalVariants+'</span>';
+        s.addEventListener('click',e=>{e.stopPropagation();selectSubGroup(g.id,sg.id);});
+        sgList.appendChild(s);
+      });
+      el.addEventListener('click',()=>{
+        const isExp=el.classList.toggle('expanded');
+        sgList.classList.toggle('collapsed',!isExp);
+        if(isExp&&activeGroup!==g.id)selectSubGroup(g.id,g.subGroups[0].id);
+      });
+      wrap.appendChild(el);wrap.appendChild(sgList);
+    }else{
+      el.addEventListener('click',()=>selectGroup(g.id));
+      wrap.appendChild(el);
+    }
+    list.appendChild(wrap);
+  });
+}
+function buildLangTabs(banners){
+  const langs=new Set();
+  banners.forEach(b=>b.variants.forEach(v=>langs.add(v.lang||'–')));
+  const bar=document.getElementById('langTabs');bar.innerHTML='';
+  if(langs.size<=1){activeLang='all';return;}
+  ['all',...Array.from(langs).sort()].forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='tab-btn'+(v===activeLang?' active':'');
+    btn.textContent=v==='all'?'All':v.toUpperCase();
+    btn.addEventListener('click',()=>{
+      activeLang=v;
+      bar.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      filterByLang();
+    });
+    bar.appendChild(btn);
+  });
+}
+function selectGroup(id){
+  activeGroup=id;activeSubGroup=null;activeLang='all';
+  document.querySelectorAll('.group-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id&&el.classList.contains('no-children')));
+  document.querySelectorAll('.sg-item').forEach(el=>el.classList.remove('active'));
+  const g=DATA.groups.find(x=>x.id===id);if(!g)return;
+  render();
+}
+function selectSubGroup(gid,sgid){
+  activeGroup=gid;activeSubGroup=sgid;activeLang='all';
+  document.querySelectorAll('.group-item').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.sg-item').forEach(el=>el.classList.toggle('active',el.dataset.sgid===sgid));
+  const g=DATA.groups.find(x=>x.id===gid);const sg=g.subGroups.find(x=>x.id===sgid);if(!sg)return;
+  const parentEl=document.querySelector('.group-item[data-id="'+gid+'"]');
+  if(parentEl&&!parentEl.classList.contains('expanded')){parentEl.classList.add('expanded');const sl=document.querySelector('.sg-list[data-gid="'+gid+'"]');if(sl)sl.classList.remove('collapsed');}
+  render();
+}
+function render(){
+  const g=DATA.groups.find(x=>x.id===activeGroup);if(!g)return;
+  const sg=activeSubGroup?g.subGroups.find(x=>x.id===activeSubGroup):g.subGroups[0];if(!sg)return;
+  const c=document.getElementById('content');const empty=document.getElementById('emptyState');
+  c.querySelectorAll('.size-section').forEach(el=>el.remove());
+  Object.keys(iframeMap).forEach(k=>delete iframeMap[k]);
+  if(bannerObs)bannerObs.disconnect();
+  empty.classList.remove('show');
+  buildLangTabs(sg.banners);
+  sg.banners.forEach(b=>c.insertBefore(buildSection(b),empty));
+  filterByLang();applyScale();initLazy();
+}
+function buildSection(b){
+  const sec=document.createElement('div');sec.className='size-section';
+  sec.dataset.nativeW=b.width;sec.dataset.nativeH=b.height;
+  sec.innerHTML='<div class="size-header"><span class="size-dim">'+b.width+' × '+b.height+'</span><span class="size-unit">px ·</span><span class="size-variants">'+b.variants.length+' variant'+(b.variants.length!==1?'s':'')+'</span></div><div class="banner-row"></div>';
+  const row=sec.querySelector('.banner-row');
+  b.variants.forEach((v,i)=>{
+    const cid=b.id+'_'+(v.lang||'unk')+'_'+i;
+    const card=document.createElement('div');
+    card.className='banner-card';card.dataset.lang=v.lang||'–';
+    const lang=v.lang||'–';
+    card.innerHTML='<div class="card-header"><span class="lang-badge" style="'+badge(lang)+'">'+lang+'</span><button class="btn-replay" data-cid="'+cid+'">↻ Replay</button></div><div class="folder-name" title="'+v.folderName+'">'+v.folderName+'</div><div class="iframe-wrapper" id="wrap_'+cid+'" data-cid="'+cid+'" style="width:'+(b.width*currentScale)+'px;height:'+(b.height*currentScale)+'px"><iframe id="frame_'+cid+'" style="width:'+b.width+'px;height:'+b.height+'px;transform:scale('+currentScale+');transform-origin:top left;display:block;border:none" scrolling="no"></iframe><div class="lazy-placeholder" id="ph_'+cid+'"><div class="lazy-dot"></div></div></div>';
+    card.querySelector('.btn-replay').addEventListener('click',()=>replay(cid));
+    row.appendChild(card);
+    iframeMap[cid]={src:v.src,loaded:false};
+  });
+  return sec;
+}
+function badge(lang){
+  const k=lang.split('_')[0];let h=0;
+  for(let i=0;i<k.length;i++)h=k.charCodeAt(i)+((h<<5)-h);
+  const hue=((h%360)+360)%360;
+  return 'color:hsl('+hue+',70%,72%);background:hsla('+hue+',70%,72%,.1);border-color:hsla('+hue+',70%,72%,.3)';
+}
+function applyScale(){
+  document.querySelectorAll('.size-section').forEach(sec=>{
+    const w=parseInt(sec.dataset.nativeW),h=parseInt(sec.dataset.nativeH);
+    sec.querySelectorAll('.iframe-wrapper').forEach(wrap=>{
+      const f=wrap.querySelector('iframe');
+      wrap.style.width=Math.round(w*currentScale)+'px';wrap.style.height=Math.round(h*currentScale)+'px';
+      if(f){f.style.width=w+'px';f.style.height=h+'px';f.style.transform='scale('+currentScale+')';}
+    });
+  });
+}
+function filterByLang(){
+  let vis=0,tot=0;
+  document.querySelectorAll('.banner-card').forEach(card=>{
+    tot++;
+    const show=activeLang==='all'||card.dataset.lang===activeLang;
+    card.style.display=show?'':'none';
+    if(show)vis++;
+  });
+  document.querySelectorAll('.size-section').forEach(sec=>{
+    const any=[...sec.querySelectorAll('.banner-card')].some(c=>c.style.display!=='none');
+    sec.style.display=any?'':'none';
+  });
+  document.getElementById('visCount').innerHTML='<em>'+vis+'</em>/'+tot;
+}
+function initLazy(){
+  if(bannerObs)bannerObs.disconnect();
+  bannerObs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const w=e.target,cid=w.dataset.cid,info=iframeMap[cid];
+      if(!info||info.loaded)return;
+      const f=document.getElementById('frame_'+cid),ph=document.getElementById('ph_'+cid);
+      f.src=info.src;info.loaded=true;
+      f.addEventListener('load',()=>ph&&ph.classList.add('hidden'),{once:true});
+      setTimeout(()=>ph&&ph.classList.add('hidden'),1500);
+      bannerObs.unobserve(w);
+    });
+  },{root:document.getElementById('content'),rootMargin:'300px 0px',threshold:0});
+  document.querySelectorAll('[id^=wrap_]').forEach(el=>bannerObs.observe(el));
+}
+function replay(cid){
+  const f=document.getElementById('frame_'+cid),info=iframeMap[cid];
+  if(!f||!info)return;
+  const ph=document.getElementById('ph_'+cid);if(ph)ph.classList.remove('hidden');
+  f.src=info.src+'?_r='+Date.now();
+  f.addEventListener('load',()=>ph&&ph.classList.add('hidden'),{once:true});
+}
+function replayAll(){document.querySelectorAll('.btn-replay').forEach(b=>b.click());}
+init();
+<\/script>
+<\/body>
+<\/html>`;
+}
+</script>
+</body>
+</html>
