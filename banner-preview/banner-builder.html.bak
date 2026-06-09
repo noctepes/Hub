@@ -419,155 +419,147 @@
       border-radius: 3px;
     }
 
-    /* ════════════════════════════════════════════════════════════
-       HUB GLASS THEME — Mirrors Hub home + Banner_Tracker
-    ════════════════════════════════════════════════════════════ */
+    /* ── HUB GLASS THEME OVERRIDE ─────────────────────────────────── */
     :root {
-      --bg: #0a0908;
-      --surface: rgba(255,255,255,0.03);
-      --surface2: rgba(255,255,255,0.04);
-      --border: rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
+      --bg: transparent;
+      --surface: rgba(255, 255, 255, 0.03);
+      --surface2: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --border2: rgba(255, 255, 255, 0.14);
       --text: #E5D2B8;
-      --muted: rgba(185,185,177,0.55);
+      --muted: rgba(229, 210, 184, 0.6);
       --accent: #FF3700;
       --accent1: #E5D2B8;
     }
-    html, body { background: var(--bg) !important; }
+
+    html,
     body {
-      color: var(--text);
-      padding-top: 56px; /* Reserve space for Hub back button */
+      background: transparent !important;
     }
-    /* Video bg + ambient glow — match Hub home */
-    .bg-video {
-      position: fixed; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -2; opacity: 0.35; pointer-events: none;
-    }
-    .bg-glow {
-      position: fixed; inset: 0;
-      z-index: -1; pointer-events: none;
+
+    body {
       background:
-        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.11)  0%, transparent 70%);
+        radial-gradient(ellipse 60% 50% at 10% 90%, rgba(255, 55, 0, .18) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 55% at 90% 10%, rgba(255, 55, 0, .06) 0%, transparent 60%),
+        linear-gradient(135deg, #0a0908 0%, #1c1916 55%, #0a0908 100%) !important;
+      background-attachment: fixed !important;
+      color: var(--text);
     }
-    /* Header — glass top bar */
+
     .header {
-      background: rgba(255,255,255,0.03) !important;
+      background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(32px) saturate(160%);
       -webkit-backdrop-filter: blur(32px) saturate(160%);
-      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
-    .header h1 { color: var(--accent); text-shadow: 0 0 14px rgba(255,55,0,0.45); }
-    .header-stats em { color: var(--text); }
-    /* Toolbar — sticky glass */
-    .toolbar {
-      background: rgba(255,255,255,0.03) !important;
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
-      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
-    }
-    /* Buttons — pill glass */
-    .btn {
-      background: rgba(255,255,255,0.04) !important;
-      border: 1px solid rgba(255,255,255,0.10) !important;
-      color: var(--text) !important;
-      border-radius: 9999px !important;
-      padding: 7px 16px !important;
-    }
-    .btn:hover {
-      background: rgba(255,255,255,0.08) !important;
-      border-color: rgba(255,255,255,0.20) !important;
-    }
-    .btn.primary {
-      background: var(--accent) !important;
-      border-color: var(--accent) !important;
-      color: #fff !important;
-      box-shadow: 0 4px 16px rgba(255,55,0,0.30);
-    }
-    .btn.primary:hover {
-      background: #CC2C00 !important;
-      border-color: #CC2C00 !important;
-      color: #fff !important;
-    }
-    /* Inputs */
-    .project-input, .lang-input, .group-name-input {
-      background: rgba(255,255,255,0.04) !important;
-      border: 1px solid rgba(255,255,255,0.10) !important;
-      color: var(--text) !important;
-      border-radius: 8px !important;
-    }
-    .project-input:focus, .lang-input:focus, .group-name-input:focus {
-      border-color: var(--accent) !important;
-      background: rgba(255,55,0,0.05) !important;
-    }
-    .project-input.has-value { color: var(--accent) !important; }
-    .lang-input.user-edited { color: var(--accent) !important; background: rgba(255,55,0,0.06) !important; }
-    .project-label { color: var(--muted); }
-    .toolbar-hint { color: var(--muted); }
-    .toolbar-hint strong { color: var(--accent); }
-    /* Dropzone — liquid glass with ::before border */
-    .dropzone {
-      position: relative;
-      background: rgba(255,255,255,0.02) !important;
-      border: 1.5px dashed rgba(255,255,255,0.18) !important;
-      border-radius: 14px !important;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: var(--muted);
-      margin: 24px 20px !important;
-    }
-    .dropzone.over {
-      background: rgba(255,55,0,0.08) !important;
-      border-color: var(--accent) !important;
-      color: var(--accent) !important;
-    }
-    .dropzone h2 { color: var(--text); }
-    /* Tables */
-    .row-table thead { background: transparent !important; }
-    .row-table th {
-      border-bottom-color: rgba(255,255,255,0.10) !important;
-      color: var(--muted) !important;
-    }
-    .row-table td { border-bottom-color: rgba(255,255,255,0.05) !important; }
-    .row-table tr:hover { background: rgba(255,255,255,0.03) !important; }
-    .size-cell, .group-title, .group-title-name, .group-name-input { color: var(--accent) !important; }
-    .folder-cell { color: var(--text) !important; }
-    .parent-cell, .subgroup-title { color: var(--muted) !important; }
-    .group-title { border-bottom-color: rgba(255,255,255,0.10) !important; }
-    .subgroup-title { border-bottom-color: rgba(255,255,255,0.06) !important; }
-    /* Help block */
-    .help {
-      background: rgba(255,255,255,0.03) !important;
-      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: var(--muted);
-    }
-    .help strong { color: var(--accent); }
-    .help code {
-      background: rgba(0,0,0,0.35) !important;
-      color: var(--text) !important;
-      border-radius: 4px;
-    }
-    .empty-state { color: var(--muted); }
-    .empty-state strong { color: var(--accent); }
-    /* Scrollbar */
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10) !important; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent) !important; }
 
+    .header h1 {
+      color: var(--accent);
+      text-shadow: 0 0 14px rgba(255, 55, 0, 0.4);
+    }
+
+    .toolbar {
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: var(--text);
+      border-radius: 6px;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.20);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(255, 55, 0, 0.25);
+    }
+
+    .btn.primary:hover {
+      background: #CC2C00;
+      border-color: #CC2C00;
+      color: #fff;
+    }
+
+    .project-input,
+    .lang-input,
+    .group-name-input {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: var(--text);
+    }
+
+    .dropzone {
+      background: rgba(255, 255, 255, 0.02);
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      margin: 24px 20px;
+    }
+
+    .dropzone.over {
+      border-color: var(--accent);
+      background: rgba(255, 55, 0, 0.06);
+    }
+
+    .dropzone h2 {
+      color: var(--text);
+    }
+
+    .row-table thead {
+      background: transparent;
+    }
+
+    .row-table th {
+      border-bottom-color: rgba(255, 255, 255, 0.10);
+      color: var(--muted);
+    }
+
+    .row-table td {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .row-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .group-title {
+      border-bottom-color: rgba(255, 255, 255, 0.10);
+    }
+
+    .subgroup-title {
+      border-bottom-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .help {
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .help code {
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.10);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
   </style>
 </head>
 
 <body>
-  <!-- VIDEO BACKGROUND + AMBIENT GLOW — match Hub home -->
-  <video class="bg-video" autoplay muted loop playsinline>
-    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4" type="video/mp4">
-  </video>
-  <div class="bg-glow"></div>
-
   <div class="header">
     <h1>BANNER PREVIEW BUILDER</h1>
     <div class="header-stats" id="headerStats"></div>

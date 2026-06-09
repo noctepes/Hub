@@ -1,0 +1,2585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FileFinder</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #F7F2EC;
+      --s1: #FFFFFF;
+      --s2: #FFFFFF;
+      --s3: #E8E0D4;
+      --b1: #D8CDB8;
+      --b2: #C4B9A8;
+      --txt: #282828;
+      --muted: #FFFFFF;
+      --muted2: #999990;
+      --acc: #FF3700;
+      --acc2: rgba(255, 55, 0, .08);
+      --ok: #3d9e5a;
+      --ok2: rgba(61, 158, 90, .1);
+      --err: #c44444;
+      --err2: rgba(196, 68, 68, .1);
+      --font: 'DM Sans', sans-serif;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: var(--font);
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--b1);
+      background: var(--s1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      color: var(--acc);
+      white-space: nowrap;
+    }
+
+    .logo em {
+      color: var(--txt);
+      font-style: normal;
+    }
+
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .tab-bar {
+      display: flex;
+      gap: 2px;
+      background: var(--s2);
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .tab-btn {
+      padding: 6px 18px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--s1);
+      color: var(--acc);
+      box-shadow: 0 1px 4px rgba(40, 40, 40, .1);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--txt);
+    }
+
+    #browser-warn {
+      font-size: 11px;
+      color: var(--err);
+      background: var(--err2);
+      border: 1px solid rgba(196, 68, 68, .3);
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang-switch {
+      display: flex;
+      background: var(--s2);
+      border: 1px solid var(--b1);
+      border-radius: 4px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .lang-btn {
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      border-radius: 2px;
+      transition: all .2s;
+    }
+
+    .lang-btn.active {
+      background: var(--acc);
+      color: #fff;
+    }
+
+    /* ── TAB CONTENT ── */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── SHARED ── */
+    .action-bar {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--b1);
+      background: var(--s1);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background: var(--acc);
+      color: #fff;
+      border: none;
+      padding: 8px 22px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .15s;
+      text-transform: uppercase;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #CC2C00;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: .3;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--acc);
+      border: 1.5px solid var(--acc);
+      padding: 6px 14px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--acc2);
+    }
+
+    .hint-text {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .progress-wrap {
+      height: 2px;
+      background: var(--b1);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--acc);
+      width: 0%;
+      transition: width .3s;
+    }
+
+    .progress-fill.running {
+      width: 100%;
+      animation: prog 1.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes prog {
+      from {
+        opacity: .4
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    input[type=text],
+    input[type=number] {
+      background: var(--s1);
+      border: 1px solid var(--b2);
+      color: var(--txt);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 5px 9px;
+      border-radius: 5px;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    input[type=text]:focus,
+    input[type=number]:focus {
+      border-color: var(--acc);
+    }
+
+    input.full-w {
+      width: 100%;
+    }
+
+    input[type=checkbox] {
+      accent-color: var(--acc);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 8px;
+      color: var(--muted);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .empty-icon {
+      font-size: 36px;
+      opacity: .3;
+      margin-bottom: 4px;
+    }
+
+    .empty p {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ── PART 1: LIST GENERATOR ── */
+    .list-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .list-top {
+      display: flex;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .scan-card {
+      flex: 1;
+      background: var(--s1);
+      border: 1.5px dashed var(--b2);
+      border-radius: 12px;
+      padding: 18px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all .2s;
+      min-height: 80px;
+    }
+
+    .scan-card:hover {
+      border-color: var(--acc);
+      background: var(--acc2);
+    }
+
+    .scan-card.ok {
+      border-style: solid;
+      border-color: var(--ok);
+      background: var(--ok2);
+    }
+
+    .scan-card .sc-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .scan-card .sc-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .scan-card.ok .sc-lbl {
+      color: var(--ok);
+    }
+
+    .scan-card .sc-path {
+      font-size: 12px;
+      color: var(--txt);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .scan-options {
+      background: var(--s1);
+      border: 1px solid var(--b1);
+      border-radius: 12px;
+      padding: 16px 18px;
+      min-width: 268px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .opt-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .opt-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .opt-hint {
+      font-size: 10px;
+      color: var(--muted2);
+      line-height: 1.5;
+    }
+
+    /* Scan results */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .stat-card {
+      background: var(--s1);
+      border: 1px solid var(--b1);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+
+    .stat-card strong {
+      color: var(--acc);
+      font-weight: 700;
+      font-size: 20px;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .stat-card span {
+      color: var(--muted);
+    }
+
+    .stat-card.ok {
+      border-color: var(--ok);
+      background: var(--ok2);
+    }
+
+    .stat-card.ok strong {
+      color: var(--ok);
+    }
+
+    .dl-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .btn-dl {
+      background: var(--s1);
+      border: 1px solid var(--b1);
+      color: var(--txt);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-dl:hover {
+      border-color: var(--acc);
+      color: var(--acc);
+    }
+
+    .preview-box {
+      background: var(--s1);
+      border: 1px solid var(--b1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .preview-head {
+      padding: 8px 12px;
+      background: var(--s2);
+      border-bottom: 1px solid var(--b1);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-head span.acc {
+      color: var(--acc);
+      font-weight: 700;
+    }
+
+    .preview-list {
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
+    .preview-row {
+      display: flex;
+      gap: 10px;
+      padding: 5px 12px;
+      border-top: 1px solid var(--b1);
+      font-size: 11px;
+    }
+
+    .preview-row:first-child {
+      border-top: none;
+    }
+
+    .preview-row:hover {
+      background: var(--s2);
+    }
+
+    .pr-num {
+      color: var(--muted);
+      min-width: 34px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .pr-name {
+      color: var(--txt);
+      font-weight: 500;
+      flex-shrink: 0;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pr-path {
+      color: var(--muted);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── PART 2: FIND FILE ── */
+    .find-layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    aside {
+      width: 252px;
+      min-width: 252px;
+      background: var(--s1);
+      border-right: 1px solid var(--b1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sb-sec {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--b1);
+    }
+
+    .sb-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 7px 4px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .step-dot {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border-radius: 50%;
+      border: 1.5px solid var(--b2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--muted);
+      transition: all .2s;
+      margin-top: 1px;
+    }
+
+    .step.done .step-dot {
+      background: var(--acc);
+      border-color: var(--acc);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .step-title {
+      font-size: 12px;
+      color: var(--muted);
+      transition: color .2s;
+    }
+
+    .step.done .step-title {
+      color: var(--acc);
+    }
+
+    .step-detail {
+      font-size: 10px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 178px;
+      margin-top: 2px;
+    }
+
+    .cfg-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      gap: 8px;
+    }
+
+    .cfg-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    input.cfg-w {
+      width: 52px;
+    }
+
+    .find-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .top-panel {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--b1);
+      background: var(--s1);
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .drop-zone {
+      flex: 1;
+      border: 1.5px dashed var(--b2);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all .2s;
+      min-height: 80px;
+      text-align: center;
+      padding: 12px;
+      background: var(--s1);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.over {
+      border-color: var(--acc);
+      background: var(--acc2);
+    }
+
+    .drop-zone.ok {
+      border-style: solid;
+      border-color: var(--ok);
+      background: var(--ok2);
+    }
+
+    .drop-icon {
+      font-size: 20px;
+      opacity: .7;
+    }
+
+    .drop-lbl {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .drop-lbl strong {
+      color: var(--txt);
+    }
+
+    .drop-name {
+      font-size: 11px;
+      color: var(--ok);
+      font-weight: 500;
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    .folder-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 186px;
+    }
+
+    .f-card {
+      background: var(--s2);
+      border: 1px solid var(--b1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .2s;
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .f-card:hover {
+      border-color: var(--acc);
+      background: var(--acc2);
+    }
+
+    .f-card.ok {
+      border-color: var(--ok);
+      background: var(--ok2);
+    }
+
+    .f-icon {
+      font-size: 18px;
+      opacity: .8;
+    }
+
+    .f-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .f-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .f-card.ok .f-lbl {
+      color: var(--ok);
+    }
+
+    .f-path {
+      font-size: 11px;
+      color: var(--txt);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .results-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 20px 20px;
+    }
+
+    .res-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .res-summary {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    .tag-ok {
+      background: var(--ok2);
+      color: var(--ok);
+      border: 1px solid rgba(61, 158, 90, .25);
+    }
+
+    .tag-err {
+      background: var(--err2);
+      color: var(--err);
+      border: 1px solid rgba(196, 68, 68, .25);
+    }
+
+    .btn-sm {
+      background: var(--s2);
+      border: 1px solid var(--b1);
+      color: var(--txt);
+      font-family: var(--font);
+      font-size: 11px;
+      padding: 5px 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-sm:hover {
+      border-color: var(--acc);
+      color: var(--acc);
+    }
+
+    .btn-copy {
+      background: var(--acc);
+      color: #fff;
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 5px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-copy:hover {
+      background: #CC2C00;
+    }
+
+    .btn-copy:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .size-summary {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 3px 9px;
+      border: 1px solid var(--b1);
+      border-radius: 4px;
+      background: var(--s2);
+    }
+
+    .size-summary strong {
+      color: var(--acc);
+      font-weight: 700;
+    }
+
+    .size-summary.heavy strong {
+      color: #ff9b3d;
+    }
+
+    .size-summary.huge strong {
+      color: var(--err);
+    }
+
+    .res-group {
+      margin-bottom: 8px;
+      border: 1px solid var(--b1);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .g-head {
+      background: var(--s2);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: background .15s;
+    }
+
+    .g-head:hover {
+      background: var(--s3);
+    }
+
+    .g-kw {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--acc);
+    }
+
+    .g-count {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .g-arr {
+      font-size: 10px;
+      color: var(--muted);
+      transition: transform .2s;
+    }
+
+    .g-arr.open {
+      transform: rotate(90deg);
+    }
+
+    .g-files {
+      display: none;
+    }
+
+    .g-files.open {
+      display: block;
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-top: 1px solid var(--b1);
+      transition: background .1s;
+    }
+
+    .file-row:hover {
+      background: var(--s2);
+    }
+
+    .file-row input[type=checkbox] {
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .f-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--txt);
+      flex-shrink: 0;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .f-relpath {
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 1px 4px;
+      margin: -1px -4px;
+      transition: background .1s, color .1s;
+    }
+
+    .f-relpath:hover {
+      color: var(--acc);
+      background: var(--acc2);
+    }
+
+    .f-relpath:hover::after {
+      content: ' ⎘';
+      font-size: 10px;
+      opacity: .7;
+    }
+
+    .f-relpath.path-copied {
+      color: var(--ok) !important;
+      background: var(--ok2) !important;
+    }
+
+    .f-size {
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+      min-width: 62px;
+      text-align: right;
+    }
+
+    .f-size.loading {
+      opacity: .4;
+      font-style: italic;
+    }
+
+    .f-size.heavy {
+      color: #ff9b3d;
+      font-weight: 600;
+    }
+
+    .f-size.huge {
+      color: var(--err);
+      font-weight: 700;
+    }
+
+    .f-prog {
+      flex-shrink: 0;
+      width: 64px;
+      height: 4px;
+      background: var(--b1);
+      border-radius: 2px;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+
+    .f-prog.active {
+      opacity: 1;
+    }
+
+    .f-prog-fill {
+      height: 100%;
+      background: var(--acc);
+      width: 0%;
+      transition: width .15s ease-out;
+    }
+
+    .f-prog-fill.done {
+      background: var(--ok);
+    }
+
+    .f-prog-fill.err {
+      background: var(--err);
+    }
+
+    .f-st {
+      font-size: 10px;
+      flex-shrink: 0;
+      font-weight: 500;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    .f-st.loading {
+      color: var(--acc);
+    }
+
+    .f-st.copied {
+      color: var(--ok);
+    }
+
+    .f-st.err {
+      color: var(--err);
+    }
+
+    .missing-box {
+      margin-top: 12px;
+      border: 1px solid rgba(196, 68, 68, .25);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .missing-head {
+      background: var(--err2);
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--err);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .missing-body {
+      padding: 10px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .m-chip {
+      font-size: 11px;
+      background: var(--err2);
+      border: 1px solid rgba(196, 68, 68, .2);
+      color: var(--err);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--s1);
+      border: 1px solid var(--b1);
+      border-radius: 10px;
+      padding: 12px 16px;
+      min-width: 240px;
+      max-width: 340px;
+      box-shadow: 0 8px 24px rgba(40, 40, 40, .15);
+      z-index: 999;
+      transform: translateY(12px);
+      opacity: 0;
+      transition: all .25s;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--acc);
+      margin-bottom: 4px;
+    }
+
+    .toast-msg {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .toast-bar {
+      height: 3px;
+      background: var(--b1);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .toast-fill {
+      height: 100%;
+      background: var(--acc);
+      border-radius: 2px;
+      transition: width .2s;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--b2);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    /* ── SPRING CC BRAND — DARK DEPTH ─────────────────────────── */
+    :root {
+      --bg: #1c1916;
+      --s1: #282828;
+      --s2: rgba(44, 42, 40, .95);
+      --s3: rgba(54, 52, 48, .95);
+      --b1: rgba(185, 185, 177, .2);
+      --b2: rgba(185, 185, 177, .35);
+      --txt: #E5D2B8;
+      --muted: #B9B9B1;
+      --muted2: #777770;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1c1916 0%, #282828 60%, #3d1800 100%);
+      background-attachment: fixed;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       HUB GLASS THEME — Mirrors Hub home + Banner_Tracker exactly
+    ════════════════════════════════════════════════════════════ */
+    :root {
+      --bg: #0a0908;
+      --s1: rgba(255,255,255,0.03);
+      --s2: rgba(255,255,255,0.025);
+      --s3: rgba(255,255,255,0.06);
+      --b1: rgba(255,255,255,0.07);
+      --b2: rgba(255,255,255,0.12);
+      --txt: #E5D2B8;
+      --muted: rgba(185,185,177,0.55);
+      --muted2: rgba(185,185,177,0.4);
+      --acc: #FF3700;
+      --acc2: rgba(255,55,0,.09);
+      --ok: #2DB87D;
+      --ok2: rgba(45,184,125,0.12);
+      --err: #E05252;
+      --err2: rgba(224,82,82,0.14);
+    }
+    html, body { background: var(--bg) !important; color: var(--txt); }
+    body {
+      padding-top: 56px;
+      font-family: 'DM Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Video bg + ambient glow — identical to Banner_Tracker */
+    .bg-video {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -2; opacity: 0.35; pointer-events: none;
+    }
+    .bg-glow {
+      position: fixed; inset: 0;
+      z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.11)  0%, transparent 70%);
+    }
+
+    /* Header — glass top bar */
+    header {
+      background: rgba(255,255,255,0.03) !important;
+      backdrop-filter: blur(32px) saturate(160%);
+      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+      position: relative;
+    }
+    .logo { color: var(--acc); text-shadow: 0 0 14px rgba(255,55,0,0.45); }
+    .logo em { color: var(--txt); }
+    .tab-bar {
+      background: rgba(255,255,255,0.04) !important;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 9999px !important;
+    }
+    .tab-btn { border-radius: 9999px !important; color: rgba(229,210,184,0.6) !important; }
+    .tab-btn.active {
+      background: rgba(255,255,255,0.10) !important;
+      color: var(--acc) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.12) !important;
+    }
+    .tab-btn:hover:not(.active) { color: var(--txt) !important; }
+    .lang-switch {
+      background: rgba(255,255,255,0.04) !important;
+      border: 1px solid rgba(255,255,255,0.08) !important;
+      border-radius: 9999px;
+    }
+    .lang-btn { border-radius: 9999px; }
+    .lang-btn.active { background: var(--acc); color: #fff; }
+    #browser-warn { background: var(--err2); border-color: rgba(224,82,82,0.35); color: var(--err); }
+
+    /* Bars */
+    .action-bar, .filter-bar, .top-panel {
+      background: rgba(255,255,255,0.02) !important;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+    }
+    .progress-wrap { background: rgba(255,255,255,0.06); }
+
+    /* Sidebar */
+    aside {
+      background: rgba(255,255,255,0.02) !important;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255,255,255,0.07) !important;
+    }
+    .sb-sec { border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+    .step-dot { border-color: rgba(255,255,255,0.18) !important; color: var(--muted); }
+    .step.done .step-dot { background: var(--acc); border-color: var(--acc); color: #fff; }
+    .step.done .step-title { color: var(--acc); }
+    .step-title, .step-detail, .sb-label, .cfg-lbl { color: var(--muted); }
+
+    /* Liquid-glass cards with gradient border */
+    .scan-card, .scan-options, .f-card, .res-group, .preview-box,
+    .stat-card, .size-summary, .scan-status-card {
+      position: relative;
+      background: rgba(255,255,255,0.03) !important;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border: none !important;
+      border-radius: 14px !important;
+    }
+    .scan-card::before, .scan-options::before, .f-card::before,
+    .res-group::before, .preview-box::before, .stat-card::before,
+    .size-summary::before, .scan-status-card::before {
+      content: ""; position: absolute; inset: 0; border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.28) 0%,
+        rgba(255,255,255,0.07) 25%,
+        rgba(255,255,255,0) 50%,
+        rgba(255,255,255,0.07) 75%,
+        rgba(255,255,255,0.28) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      pointer-events: none;
+    }
+    .res-group { overflow: hidden; }
+
+    /* Drop zone */
+    .drop-zone {
+      background: rgba(255,255,255,0.02) !important;
+      border: 1.5px dashed rgba(255,255,255,0.18) !important;
+      border-radius: 14px !important;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .drop-zone:hover, .drop-zone.over,
+    .scan-card:hover, .f-card:hover {
+      background: rgba(255,55,0,0.08) !important;
+      border-color: rgba(255,55,0,0.45) !important;
+    }
+    .scan-card.ok, .f-card.ok, .drop-zone.ok {
+      background: rgba(45,184,125,0.10) !important;
+      border-color: rgba(45,184,125,0.45) !important;
+    }
+    .scan-card.ok .sc-lbl, .f-card.ok .f-lbl { color: var(--ok); }
+    .drop-name { color: var(--ok); }
+
+    /* Group / preview heads */
+    .g-head, .preview-head, .missing-head {
+      background: rgba(255,255,255,0.04) !important;
+    }
+    .preview-head { color: var(--muted); }
+    .preview-head span.acc, .g-kw, .scan-status-title, .scan-status-count { color: var(--acc) !important; }
+    .g-head:hover { background: rgba(255,255,255,0.08) !important; }
+
+    /* Inputs */
+    input[type=text], input[type=number] {
+      background: rgba(255,255,255,0.04) !important;
+      border: 1px solid rgba(255,255,255,0.10) !important;
+      color: var(--txt) !important;
+      border-radius: 8px !important;
+    }
+    input[type=text]:focus, input[type=number]:focus {
+      border-color: var(--acc) !important;
+      background: rgba(255,55,0,0.06) !important;
+    }
+    input[type=checkbox] { accent-color: var(--acc); }
+
+    /* Buttons */
+    .btn-primary {
+      background: var(--acc) !important;
+      box-shadow: 0 4px 16px rgba(255,55,0,0.30);
+      border-radius: 9999px !important;
+      padding: 8px 22px !important;
+    }
+    .btn-primary:hover:not(:disabled) { background: #CC2C00 !important; }
+    .btn-secondary {
+      background: rgba(255,55,0,0.08) !important;
+      border-color: var(--acc) !important;
+      border-radius: 9999px !important;
+    }
+    .btn-sm, .btn-dl {
+      background: rgba(255,255,255,0.04) !important;
+      border: 1px solid rgba(255,255,255,0.10) !important;
+      color: var(--txt) !important;
+      border-radius: 8px !important;
+    }
+    .btn-sm:hover, .btn-dl:hover {
+      border-color: var(--acc) !important;
+      color: var(--acc) !important;
+      background: rgba(255,55,0,0.08) !important;
+    }
+    .btn-copy { background: var(--acc) !important; border-radius: 8px !important; }
+    .btn-copy:hover { background: #CC2C00 !important; }
+
+    /* Rows & paths */
+    .file-row, .preview-row { border-top-color: rgba(255,255,255,0.05) !important; }
+    .file-row:hover, .preview-row:hover { background: rgba(255,255,255,0.04) !important; }
+    .preview-row:first-child { border-top: none !important; }
+    .f-relpath:hover { color: var(--acc) !important; background: rgba(255,55,0,0.10) !important; }
+    .f-relpath.path-copied { color: var(--ok) !important; background: rgba(45,184,125,0.15) !important; }
+
+    /* Tags / chips / missing */
+    .tag-ok, .stat-card.ok {
+      background: var(--ok2) !important; color: var(--ok) !important;
+      border-color: rgba(45,184,125,0.30) !important;
+    }
+    .tag-err, .m-chip {
+      background: var(--err2) !important; color: var(--err) !important;
+      border-color: rgba(224,82,82,0.30) !important;
+    }
+    .missing-box { border-color: rgba(224,82,82,0.30) !important; }
+    .missing-head {
+      background: rgba(224,82,82,0.10) !important;
+      color: var(--err) !important;
+    }
+    .stat-card strong { color: var(--acc) !important; }
+    .stat-card.ok strong { color: var(--ok) !important; }
+    .size-summary strong { color: var(--acc) !important; }
+
+    /* Spinner */
+    .scan-status-spinner {
+      border-color: rgba(255,255,255,0.10) !important;
+      border-top-color: var(--acc) !important;
+    }
+
+    /* Toast — glass dark */
+    #toast {
+      background: rgba(20,18,16,0.85) !important;
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.10) !important;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
+      border-radius: 12px !important;
+    }
+    .toast-title { color: var(--acc); }
+    .toast-msg { color: var(--muted); }
+    .toast-bar { background: rgba(255,255,255,0.10); }
+    .toast-fill { background: var(--acc); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--acc); }
+
+    /* Empty state */
+    .empty { color: var(--muted); }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- VIDEO BACKGROUND + AMBIENT GLOW — match Hub home -->
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4" type="video/mp4">
+  </video>
+  <div class="bg-glow"></div>
+
+  <header>
+    <div class="logo">FILE<em>FINDER</em></div>
+    <div class="header-center">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tbtn-list" onclick="switchTab('list')" data-i18n="listTab">📋 TẠO DANH
+          SÁCH</button>
+        <button class="tab-btn" id="tbtn-find" onclick="switchTab('find')" data-i18n="findTab">🔍 TÌM FILE</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="browser-warn">⚠ Chrome or Edge required — Safari not supported</div>
+      <div class="lang-switch" onclick="toggleLang()">
+        <div id="btn-en" class="lang-btn active">EN</div>
+        <div id="btn-vi" class="lang-btn">VN</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+     TAB 1 — TẠO DANH SÁCH
+══════════════════════════════════════════ -->
+  <div id="tab-list" class="tab-content active">
+    <div class="action-bar">
+      <button class="btn-primary" id="btn-scan" disabled onclick="doScan()">⚡ SCAN</button>
+      <span class="hint-text" id="scan-hint"></span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="scan-progress"></div>
+    </div>
+    <div class="list-body">
+      <div class="list-top">
+        <div class="scan-card" id="scan-folder-card" onclick="pickScanFolder()">
+          <div class="sc-icon">📂</div>
+          <div style="flex:1;min-width:0">
+            <div class="sc-lbl" data-i18n="scanFolderLbl">Folder cần quét</div>
+            <div class="sc-path" id="scan-folder-path"></div>
+          </div>
+        </div>
+        <div class="scan-options">
+          <div class="opt-label" data-i18n="scanOptTitle">Tùy chọn</div>
+          <div>
+            <div id="ext-filter-lbl" style="font-size:11px;color:var(--muted);margin-bottom:5px;"></div>
+            <input type="text" class="full-w" id="ext-filter">
+          </div>
+          <div>
+            <div id="name-filter-lbl" style="font-size:11px;color:var(--muted);margin-bottom:5px;"></div>
+            <input type="text" class="full-w" id="name-filter" oninput="filterPreview(this.value)">
+          </div>
+          <div class="opt-row">
+            <input type="checkbox" id="scan-skip-hidden" checked>
+            <label for="scan-skip-hidden" id="skip-hidden-lbl" style="font-size:11px;cursor:pointer;"></label>
+          </div>
+          <div class="opt-hint" id="opt-hint-box"></div>
+        </div>
+      </div>
+      <div id="list-results">
+        <div class="empty">
+          <div class="empty-icon">📋</div>
+          <p id="list-empty-p"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+     TAB 2 — TÌM FILE
+══════════════════════════════════════════ -->
+  <div id="tab-find" class="tab-content">
+    <div class="find-layout">
+      <aside>
+        <div class="sb-sec">
+          <div class="sb-label" data-i18n="steps">WORKFLOW</div>
+          <div class="step" id="step1">
+            <div class="step-dot">1</div>
+            <div>
+              <div class="step-title" data-i18n="s1Title">Excel / TXT Source</div>
+              <div class="step-detail" id="s1-detail">Not selected</div>
+            </div>
+          </div>
+          <div class="step" id="step2" onclick="pickFolder('src')">
+            <div class="step-dot">2</div>
+            <div>
+              <div class="step-title" data-i18n="s2Title">Search Directory</div>
+              <div class="step-detail" id="s2-detail">Not selected</div>
+            </div>
+          </div>
+          <div class="step" id="step3" onclick="pickFolder('out')">
+            <div class="step-dot">3</div>
+            <div>
+              <div class="step-title" data-i18n="s3Title">Export Destination</div>
+              <div class="step-detail" id="s3-detail">Not selected</div>
+            </div>
+          </div>
+        </div>
+        <div class="sb-sec">
+          <div class="sb-label" data-i18n="excelConfig">FILE PARSER</div>
+          <div class="cfg-row">
+            <span class="cfg-lbl" data-i18n="colKey">Filename Column</span>
+            <input type="text" class="cfg-w" id="col-input" value="A" maxlength="2">
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-lbl" data-i18n="skipHeader">Omit Header Row</span>
+            <input type="checkbox" id="skip-header">
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-lbl" data-i18n="skipHidden">Ignore Hidden Files</span>
+            <input type="checkbox" id="skip-hidden" checked>
+          </div>
+        </div>
+        <span id="kw-count" style="display:none">0</span>
+      </aside>
+      <div class="find-main">
+        <div class="top-panel">
+          <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <div class="drop-icon">📊</div>
+            <div class="drop-lbl" id="drop-text"><strong>Click or drag &amp; drop</strong><br>Excel / TXT file here
+            </div>
+            <div class="drop-name" id="excel-name" style="display:none"></div>
+          </div>
+          <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.txt">
+          <div class="folder-col">
+            <div class="f-card" id="src-card" onclick="pickFolder('src')">
+              <div class="f-icon">🔍</div>
+              <div class="f-info">
+                <div class="f-lbl" data-i18n="searchFolder">Search Directory</div>
+                <div class="f-path" id="src-path">Click to select folder</div>
+              </div>
+            </div>
+            <div class="f-card" id="out-card" onclick="pickFolder('out')">
+              <div class="f-icon">📁</div>
+              <div class="f-info">
+                <div class="f-lbl" data-i18n="outputFolder">Export Destination</div>
+                <div class="f-path" id="out-path">Click to select folder</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="action-bar">
+          <button class="btn-primary" id="btn-search" disabled onclick="doSearch()" data-i18n="search">⚡ SEARCH</button>
+          <span class="hint-text" id="search-hint" data-i18n="selectItemsNeeded">Complete all 3 steps above</span>
+        </div>
+        <div class="filter-bar" id="result-filter-bar" style="display:none">
+          <span
+            style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap">🔎</span>
+          <input type="text" id="result-filter" oninput="filterResults(this.value)">
+          <span class="filter-count" id="result-filter-count" style="display:none"></span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="results-area" id="results-area">
+          <div class="empty">
+            <div class="empty-icon">🗂</div>
+            <p data-i18n="uploadAndSearch">Upload Excel / TXT and select folders then click SEARCH</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast">
+    <div class="toast-title" id="toast-title"></div>
+    <div class="toast-msg" id="toast-msg"></div>
+    <div class="toast-bar">
+      <div class="toast-fill" id="toast-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <script>
+    // ── TAB ───────────────────────────────────────────────────────────────────────
+    function switchTab(name) {
+      ['list', 'find'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('active', t === name)
+        document.getElementById('tbtn-' + t).classList.toggle('active', t === name)
+      })
+    }
+
+    // ── I18N ──────────────────────────────────────────────────────────────────────
+    const LANG = {
+      vi: {
+        steps: 'CÁC BƯỚC', s1Title: 'Nguồn Excel / TXT', s2Title: 'Folder tìm kiếm', s3Title: 'Folder output',
+        notSelected: 'Chưa chọn', excelConfig: 'CẤU HÌNH FILE', colKey: 'Cột tên file',
+        skipHeader: 'Bỏ qua dòng đầu', skipHidden: 'Ẩn file hệ thống',
+        searchFolder: 'Folder tìm kiếm', clickToSelectFolder: 'Click để chọn folder', outputFolder: 'Folder output',
+        search: '⚡ Tìm Kiếm', selectItemsNeeded: 'Cần chọn đủ 3 mục',
+        uploadAndSearch: 'Upload Excel / TXT và chọn folder rồi nhấn SEARCH',
+        drop_1: '<strong>Click hoặc kéo thả</strong><br>file Excel / TXT vào đây',
+        hintReady: 'keywords · Sẵn sàng tìm kiếm', hintOutMissing: ' · Output chưa chọn',
+        hintMissing: 'Còn thiếu: ', hintExcel: 'File nguồn', hintSrcFolder: 'Folder tìm kiếm',
+        noMatch: 'Không tìm thấy file nào khớp với keyword', resultsLabel: 'KẾT QUẢ',
+        notFoundTag: 'không tìm thấy', selectedLabel: 'Đã chọn:', btnSelectAll: 'Chọn tất cả',
+        btnDeselect: 'Bỏ chọn', btnSkipHeavy: 'Bỏ file nặng', btnSkipHeavyTitle: 'Bỏ chọn file ≥ 20MB',
+        btnExportTitle: 'Xuất Excel đường dẫn file', missingHeader: 'Không tìm thấy',
+        scanningHint: 'Đang scan:', foundHint: 'file từ', scannedHint: 'keywords · Đã scan', filesUnit: 'files',
+        toastCopyMissingOut: 'Thiếu folder output', toastCopyMissingOutMsg: 'Click step 3 hoặc card Output để chọn',
+        toastNoFile: 'Chưa chọn file', toastNoFileMsg: 'Chọn ít nhất 1 file để copy',
+        toastCopying: 'Đang copy...', toastDone: 'Hoàn tất ✓',
+        toastDoneMsg: 'Đã copy {n} files ({size}) vào "{folder}"',
+        toastHeavyOff: 'Đã bỏ chọn', toastHeavyOffMsg: '{n} file nặng (≥ 20MB)',
+        toastExportDone: 'Đã export ✓', toastExportNoFile: 'Chưa chọn file', toastExportNoFileMsg: 'Tick ít nhất 1 file',
+        statusLoading: '⏳ đang tải...', statusCopied: '✓ copied',
+        noSupportTitle: 'Không hỗ trợ', noSupportMsg: 'Cần dùng Chrome hoặc Edge',
+        listTab: '📋 TẠO DANH SÁCH', findTab: '🔍 TÌM FILE',
+        scanHintInit: 'Chọn folder để bắt đầu', scanReadyMsg: 'Sẵn sàng scan',
+        scanFolderLbl: 'Folder cần quét', scanFolderClick: 'Click để chọn folder',
+        scanOptTitle: 'Tùy chọn', extFilterLbl: 'Lọc đuôi file',
+        extFilterHint: '(vd: jpg ai png)', extFilterPlaceholder: 'Để trống = lấy tất cả file',
+        skipHiddenLbl: 'Bỏ qua file ẩn (. prefix)',
+        optHint: 'Kết quả tạo 2 file trong folder đã chọn:<br><strong>list_kem_path.txt</strong> — đường dẫn tương đối<br><strong>list_ten_sach.txt</strong> — tên file sạch (dùng cho Tab Tìm File)',
+        listEmptyP: 'Chọn folder và nhấn SCAN<br>để tạo danh sách file',
+        scanningMsg: 'Đang scan:', noFilesFound: 'Không tìm thấy file nào', noFilesMsg: 'Không có file nào',
+        savedMsg: 'Đã lưu →', couldNotSaveMsg: 'Không thể lưu vào folder',
+        previewLabel: 'XEM TRƯỚC', showingFirst: '(hiển thị {n} đầu)', andMore: '… và {n} file khác',
+        filesFoundLabel: 'files tìm thấy', useForFindBtn: '→ Dùng để Tìm File',
+        useForFindToast: 'Đã tải danh sách', useForFindHint: 'keywords · Chọn folder tìm kiếm',
+        stripExtBtn: 'Xoá đuôi file', restoreExtBtn: 'Giữ đuôi file',
+        nameFilterLbl: 'Tìm tên file', nameFilterHint: '(vd: logo banner)',
+        nameFilterPlaceholder: 'Để trống = hiện tất cả',
+        resultFilterPlaceholder: 'Lọc tên file trong kết quả...',
+        filterCount: 'Hiển thị {v} / {t}'
+      },
+      en: {
+        steps: 'WORKFLOW', s1Title: 'Excel / TXT Source', s2Title: 'Search Directory', s3Title: 'Export Destination',
+        notSelected: 'Not selected', excelConfig: 'FILE PARSER', colKey: 'Filename Column',
+        skipHeader: 'Omit Header Row', skipHidden: 'Ignore Hidden Files',
+        searchFolder: 'Search Directory', clickToSelectFolder: 'Click to select folder', outputFolder: 'Export Destination',
+        search: '⚡ SEARCH', selectItemsNeeded: 'Complete all 3 steps above',
+        uploadAndSearch: 'Upload Excel / TXT and select folders then click SEARCH',
+        drop_1: '<strong>Click or drag &amp; drop</strong><br>Excel / TXT file here',
+        hintReady: 'keywords · Ready to search', hintOutMissing: ' · Output folder not set',
+        hintMissing: 'Missing: ', hintExcel: 'Source file', hintSrcFolder: 'Search folder',
+        noMatch: 'No files found matching keywords', resultsLabel: 'RESULTS',
+        notFoundTag: 'not found', selectedLabel: 'Selected:', btnSelectAll: 'Select all',
+        btnDeselect: 'Deselect', btnSkipHeavy: 'Skip heavy', btnSkipHeavyTitle: 'Deselect files ≥ 20MB',
+        btnExportTitle: 'Export file paths', missingHeader: 'Not found',
+        scanningHint: 'Scanning:', foundHint: 'files from', scannedHint: 'keywords · Scanned', filesUnit: 'files',
+        toastCopyMissingOut: 'Output folder missing', toastCopyMissingOutMsg: 'Click step 3 or Output card to select folder',
+        toastNoFile: 'No files selected', toastNoFileMsg: 'Select at least 1 file to copy',
+        toastCopying: 'Copying...', toastDone: 'Done ✓',
+        toastDoneMsg: 'Copied {n} files ({size}) into "{folder}"',
+        toastHeavyOff: 'Deselected', toastHeavyOffMsg: '{n} heavy files (≥ 20MB)',
+        toastExportDone: 'Exported ✓', toastExportNoFile: 'No files selected', toastExportNoFileMsg: 'Tick at least 1 file',
+        statusLoading: '⏳ loading...', statusCopied: '✓ copied',
+        noSupportTitle: 'Not supported', noSupportMsg: 'Please use Chrome or Edge',
+        listTab: '📋 FILE LIST', findTab: '🔍 FILE FINDER',
+        scanHintInit: 'Select a folder to begin', scanReadyMsg: 'Ready to scan',
+        scanFolderLbl: 'Folder to scan', scanFolderClick: 'Click to select folder',
+        scanOptTitle: 'Options', extFilterLbl: 'Filter by extension',
+        extFilterHint: '(e.g. jpg ai png)', extFilterPlaceholder: 'Leave empty = all files',
+        skipHiddenLbl: 'Skip hidden files (. prefix)',
+        optHint: 'Results save 2 files in the selected folder:<br><strong>list_kem_path.txt</strong> — relative paths<br><strong>list_ten_sach.txt</strong> — clean filenames (use in File Finder tab)',
+        listEmptyP: 'Select folder and click SCAN<br>to generate file list',
+        scanningMsg: 'Scanning:', noFilesFound: 'No files found', noFilesMsg: 'No files',
+        savedMsg: 'Saved →', couldNotSaveMsg: 'Could not save to folder',
+        previewLabel: 'PREVIEW', showingFirst: '(showing first {n})', andMore: '… and {n} more',
+        filesFoundLabel: 'files found', useForFindBtn: '→ Use for File Finder',
+        useForFindToast: 'List loaded', useForFindHint: 'keywords · Select search folder',
+        stripExtBtn: 'Strip extensions', restoreExtBtn: 'Keep extensions',
+        nameFilterLbl: 'Search filename', nameFilterHint: '(e.g. logo banner)',
+        nameFilterPlaceholder: 'Leave empty = show all',
+        resultFilterPlaceholder: 'Filter results by filename...',
+        filterCount: 'Showing {v} / {t}'
+      }
+    }
+    let currentLang = 'en'
+
+    function toggleLang() {
+      currentLang = currentLang === 'vi' ? 'en' : 'vi'
+      document.getElementById('btn-vi').classList.toggle('active')
+      document.getElementById('btn-en').classList.toggle('active')
+      updateUI()
+    }
+
+    function updateUI() {
+      const dict = LANG[currentLang]
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n')
+        if (dict[key] !== undefined) el.textContent = dict[key]
+      })
+      const dropTextEl = document.getElementById('drop-text')
+      if (dropTextEl) {
+        const excelName = document.getElementById('excel-name')
+        if (!excelName || excelName.style.display === 'none') dropTextEl.innerHTML = dict.drop_1
+      }
+      // Part 1 static elements
+      const extLbl = document.getElementById('ext-filter-lbl')
+      if (extLbl) extLbl.innerHTML = `${dict.extFilterLbl} <span style="color:var(--muted2)">${dict.extFilterHint}</span>`
+      const extInput = document.getElementById('ext-filter')
+      if (extInput) extInput.placeholder = dict.extFilterPlaceholder
+      const skipLbl = document.getElementById('skip-hidden-lbl')
+      if (skipLbl) skipLbl.textContent = dict.skipHiddenLbl
+      const optHintBox = document.getElementById('opt-hint-box')
+      if (optHintBox) optHintBox.innerHTML = dict.optHint
+      const nameFilterLbl = document.getElementById('name-filter-lbl')
+      if (nameFilterLbl) nameFilterLbl.innerHTML = `${dict.nameFilterLbl} <span style="color:var(--muted2)">${dict.nameFilterHint}</span>`
+      const nameFilterInput = document.getElementById('name-filter')
+      if (nameFilterInput) nameFilterInput.placeholder = dict.nameFilterPlaceholder
+      const rfInput = document.getElementById('result-filter')
+      if (rfInput) rfInput.placeholder = dict.resultFilterPlaceholder
+      // Part 1 dynamic elements
+      if (typeof LS !== 'undefined') {
+        const scanHint = document.getElementById('scan-hint')
+        if (scanHint && !LS.scanning) {
+          if (!LS.scanHandle) scanHint.textContent = dict.scanHintInit
+          else if (!LS.lastNameLines.length) scanHint.textContent = `"${LS.scanHandle.name}" · ${dict.scanReadyMsg}`
+        }
+        const scanFolderPath = document.getElementById('scan-folder-path')
+        if (scanFolderPath) scanFolderPath.textContent = LS.scanHandle ? LS.scanHandle.name : dict.scanFolderClick
+        const listEmptyP = document.getElementById('list-empty-p')
+        if (listEmptyP) listEmptyP.innerHTML = dict.listEmptyP
+      }
+      if (typeof S !== 'undefined') {
+        const s1d = document.getElementById('s1-detail')
+        if (s1d) s1d.textContent = S.excelName || dict.notSelected
+        const s2d = document.getElementById('s2-detail')
+        if (s2d) s2d.textContent = S.srcHandle ? S.srcHandle.name : dict.notSelected
+        const s3d = document.getElementById('s3-detail')
+        if (s3d) s3d.textContent = S.outHandle ? S.outHandle.name : dict.notSelected
+        const srcPath = document.getElementById('src-path')
+        if (srcPath) srcPath.textContent = S.srcHandle ? S.srcHandle.name : dict.clickToSelectFolder
+        const outPath = document.getElementById('out-path')
+        if (outPath) outPath.textContent = S.outHandle ? S.outHandle.name : dict.clickToSelectFolder
+      }
+      if (typeof S !== 'undefined' && (S.results.length || S.missing.length)) {
+        const cbStates = {}
+        document.querySelectorAll('.file-row input[type=checkbox]').forEach(cb => { cbStates[cb.dataset.id] = cb.checked })
+        if (typeof renderResults === 'function') {
+          renderResults()
+          document.querySelectorAll('.file-row input[type=checkbox]').forEach(cb => {
+            if (cbStates[cb.dataset.id] !== undefined) cb.checked = cbStates[cb.dataset.id]
+          })
+          if (typeof updateSelectedSize === 'function') updateSelectedSize()
+        }
+      }
+      if (typeof checkReady === 'function') checkReady()
+    }
+    updateUI()
+
+    if (!('showDirectoryPicker' in window)) document.getElementById('browser-warn').style.display = 'block'
+
+    // ── TOAST ─────────────────────────────────────────────────────────────────────
+    let _toastTimer
+    function toast(title, msg, pct) {
+      const el = document.getElementById('toast')
+      document.getElementById('toast-title').textContent = title
+      document.getElementById('toast-msg').textContent = msg
+      if (pct !== undefined) document.getElementById('toast-fill').style.width = pct + '%'
+      el.classList.add('show'); clearTimeout(_toastTimer)
+      if (pct === undefined || pct === 100) _toastTimer = setTimeout(() => el.classList.remove('show'), 3500)
+    }
+    function updateToast(title, msg, pct) {
+      document.getElementById('toast-title').textContent = title
+      document.getElementById('toast-msg').textContent = msg
+      if (pct !== undefined) document.getElementById('toast-fill').style.width = pct + '%'
+    }
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    }
+  </script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // PART 1 — LIST GENERATOR
+    // ═══════════════════════════════════════════════════════════════
+    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], stripExt: false }
+
+    async function pickScanFolder() {
+      if (!('showDirectoryPicker' in window)) { toast('Not supported', 'Please use Chrome or Edge'); return }
+      try {
+        const handle = await window.showDirectoryPicker({ mode: 'readwrite' })
+        LS.scanHandle = handle
+        document.getElementById('scan-folder-path').textContent = handle.name
+        document.getElementById('scan-folder-card').classList.add('ok')
+        document.getElementById('btn-scan').disabled = false
+        document.getElementById('scan-hint').textContent = `"${handle.name}" · ${LANG[currentLang].scanReadyMsg}`
+      } catch (e) { if (e.name !== 'AbortError') toast('Lỗi', e.message) }
+    }
+
+    async function* walkDirList(handle, relPath, skipHidden) {
+      for await (const [name, entry] of handle.entries()) {
+        if (skipHidden && name.startsWith('.')) continue
+        const path = relPath ? relPath + '/' + name : name
+        if (entry.kind === 'file') yield { name, relPath: path }
+        else yield* walkDirList(entry, path, skipHidden)
+      }
+    }
+
+    async function doScan() {
+      if (LS.scanning || !LS.scanHandle) return
+      LS.scanning = true
+      const btn = document.getElementById('btn-scan')
+      const prog = document.getElementById('scan-progress')
+      const hint = document.getElementById('scan-hint')
+      btn.disabled = true; prog.classList.add('running')
+
+      const extRaw = document.getElementById('ext-filter').value.trim()
+      const exts = extRaw ? extRaw.split(/[\s,;]+/).map(e => e.replace(/^\./, '').toLowerCase()).filter(Boolean) : []
+      const nameQueryRaw = document.getElementById('name-filter').value.trim().toLowerCase()
+      const nameQueries = nameQueryRaw ? nameQueryRaw.split(/[\s,;]+/).filter(Boolean) : []
+      const skipHidden = document.getElementById('scan-skip-hidden').checked
+
+      // Show scanning status in results area
+      const resultsArea = document.getElementById('list-results')
+      resultsArea.innerHTML = `
+    <div class="scan-status-card">
+      <div class="scan-status-spinner"></div>
+      <div>
+        <div class="scan-status-title" id="scan-status-title">Đang quét...</div>
+        <div class="scan-status-sub" id="scan-status-sub">${LS.scanHandle.name}</div>
+      </div>
+      <div class="scan-status-count" id="scan-status-count">0</div>
+    </div>`
+
+      const pathLines = [], nameLines = []
+      let count = 0, scanned = 0
+      try {
+        for await (const { name, relPath } of walkDirList(LS.scanHandle, '', skipHidden)) {
+          scanned++
+          if (exts.length) {
+            const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
+            if (!exts.includes(ext)) continue
+          }
+          if (nameQueries.length && !nameQueries.some(q => name.toLowerCase().includes(q))) continue
+          count++
+          pathLines.push('./' + relPath)
+          nameLines.push(name)
+          if (scanned % 100 === 0) {
+            const cntEl = document.getElementById('scan-status-count')
+            const subEl = document.getElementById('scan-status-sub')
+            if (cntEl) cntEl.textContent = count.toLocaleString() + ' files'
+            if (subEl) subEl.textContent = relPath.length > 60 ? '…' + relPath.slice(-60) : relPath
+            hint.textContent = `${LANG[currentLang].scanningMsg} ${scanned.toLocaleString()} mục...`
+            await new Promise(r => setTimeout(r, 0))
+          }
+        }
+      } catch (e) { toast('Lỗi scan', e.message) }
+
+      prog.classList.remove('running'); prog.style.width = '0%'
+      LS.scanning = false; btn.disabled = false
+      LS.lastNameLines = nameLines
+
+      if (!count) {
+        const dd = LANG[currentLang]
+        hint.textContent = dd.noFilesFound
+        document.getElementById('list-results').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>${dd.noFilesMsg}${exts.length ? ` · ${exts.join(', ')}` : ''}</p></div>`
+        return
+      }
+
+      const pathContent = pathLines.join('\n')
+      const nameContent = nameLines.join('\n')
+
+      LS.pathLines = pathLines; LS.nameLines = nameLines; LS.stripExt = false
+      const filterSuffix = (nameQueries.length ? ` · "${nameQueries.join(' | ')}"` : '') + (exts.length ? ` · ${exts.join(', ')}` : '')
+      hint.textContent = `${count.toLocaleString()} files found${filterSuffix}`
+      renderScanResults(count, pathLines, nameLines, pathContent, nameContent)
+    }
+
+    function renderScanResults(count, pathLines, nameLines, pathContent, nameContent) {
+      const area = document.getElementById('list-results')
+      const d = LANG[currentLang]
+      area.innerHTML = ''
+
+      // Stats
+      const stats = document.createElement('div')
+      stats.className = 'stats-row'
+      stats.innerHTML = `
+    <div class="stat-card"><strong>${count.toLocaleString()}</strong><span>${d.filesFoundLabel}</span></div>`
+      area.appendChild(stats)
+
+      // Download + use buttons
+      const dlRow = document.createElement('div')
+      dlRow.className = 'dl-row'
+      const url1 = URL.createObjectURL(new Blob([pathContent], { type: 'text/plain' }))
+      const url2 = URL.createObjectURL(new Blob([nameContent], { type: 'text/plain' }))
+      dlRow.innerHTML = `
+    <a href="${url1}" download="list_kem_path.txt" class="btn-dl">📥 list_kem_path.txt</a>
+    <a href="${url2}" download="list_ten_sach.txt" class="btn-dl" id="dl-names-link">📥 list_ten_sach.txt</a>
+    <button class="btn-secondary" id="btn-strip-ext" onclick="toggleStripExt()">${d.stripExtBtn}</button>
+    <button class="btn-secondary" onclick="useListForFind()">${d.useForFindBtn}</button>`
+      area.appendChild(dlRow)
+
+      // Preview
+      const box = document.createElement('div')
+      box.className = 'preview-box'
+      const preview = pathLines.slice(0, 300)
+      const moreMsg = pathLines.length > 300 ? `<div class="preview-row" style="justify-content:center;color:var(--muted);padding:10px 0">${d.andMore.replace('{n}', (pathLines.length - 300).toLocaleString())}</div>` : ''
+      box.innerHTML = `
+    <div class="preview-head">
+      <span>${d.previewLabel} — ${pathLines.length.toLocaleString()} paths${pathLines.length > 300 ? ' ' + d.showingFirst.replace('{n}', '300') : ''}</span>
+      <span class="acc">${LS.scanHandle.name}</span>
+    </div>
+    <div class="preview-list">
+      ${preview.map((p, i) => `<div class="preview-row"><div class="pr-num">${i + 1}</div><div class="pr-name">${esc(nameLines[i])}</div><div class="pr-path">${esc(p)}</div></div>`).join('')}
+      ${moreMsg}
+    </div>`
+      area.appendChild(box)
+    }
+
+    async function toggleStripExt() {
+      if (!LS.nameLines.length) return
+      LS.stripExt = !LS.stripExt
+      const d = LANG[currentLang]
+      const activeNames = LS.stripExt
+        ? LS.nameLines.map(n => n.includes('.') ? n.slice(0, n.lastIndexOf('.')) : n)
+        : LS.nameLines
+      const nameContent = activeNames.join('\n')
+
+      // Update download link
+      const dlLink = document.getElementById('dl-names-link')
+      if (dlLink) dlLink.href = URL.createObjectURL(new Blob([nameContent], { type: 'text/plain' }))
+
+      // Update button style + label
+      const btn = document.getElementById('btn-strip-ext')
+      if (btn) {
+        btn.textContent = LS.stripExt ? d.restoreExtBtn : d.stripExtBtn
+        btn.style.background = LS.stripExt ? 'var(--acc)' : ''
+        btn.style.color = LS.stripExt ? '#fff' : ''
+        btn.style.borderColor = LS.stripExt ? 'var(--acc)' : ''
+      }
+
+      // Update preview name column
+      document.querySelectorAll('.preview-row').forEach((row, i) => {
+        const nameEl = row.querySelector('.pr-name')
+        if (nameEl && activeNames[i] !== undefined) nameEl.textContent = activeNames[i]
+      })
+
+      // Sync useListForFind data
+      LS.lastNameLines = activeNames
+    }
+
+    function filterPreview(q) {
+      q = (q || '').trim().toLowerCase()
+      let visible = 0, total = 0
+      document.querySelectorAll('.preview-row').forEach(row => {
+        const nameEl = row.querySelector('.pr-name')
+        if (!nameEl) return
+        total++
+        const show = !q || nameEl.textContent.toLowerCase().includes(q)
+        row.style.display = show ? '' : 'none'
+        if (show) visible++
+      })
+    }
+
+    function useListForFind() {
+      if (!LS.lastNameLines.length) return
+      switchTab('find')
+      S.rawRows = LS.lastNameLines.map(n => [n])
+      S.excelName = 'list_ten_sach.txt (from scan)'
+      const dz = document.getElementById('drop-zone')
+      dz.classList.add('ok')
+      document.querySelector('#step1 .step-dot').textContent = '✓'
+      document.getElementById('step1').classList.add('done')
+      document.getElementById('s1-detail').textContent = S.excelName
+      parseKeywords()
+      const nameEl = document.getElementById('excel-name')
+      nameEl.textContent = `✓ list_ten_sach.txt — ${LS.lastNameLines.length} keywords`
+      nameEl.style.display = 'block'
+      document.getElementById('drop-text').style.display = 'none'
+      const ld = LANG[currentLang]
+      toast(ld.useForFindToast, `${LS.lastNameLines.length} ${ld.useForFindHint}`)
+    }
+  </script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // PART 2 — FILE FINDER
+    // ═══════════════════════════════════════════════════════════════
+    const S = {
+      keywords: [], rawRows: [], excelName: '',
+      srcHandle: null, outHandle: null,
+      results: [], missing: [],
+      searching: false, copying: false,
+      fileCounter: 0, fileMap: new Map()
+    }
+
+    document.getElementById('file-input').addEventListener('change', e => { const f = e.target.files[0]; if (f) loadExcel(f) })
+    const dz = document.getElementById('drop-zone')
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over') })
+    dz.addEventListener('dragleave', () => dz.classList.remove('over'))
+    dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); const f = e.dataTransfer.files[0]; if (f) loadExcel(f) })
+
+    function loadExcel(file) {
+      const ext = file.name.split('.').pop().toLowerCase()
+      if (ext === 'txt') {
+        const reader = new FileReader()
+        reader.onload = ev => { S.rawRows = ev.target.result.split(/\r?\n/).map(line => [line]); onFileLoaded(file.name) }
+        reader.readAsText(file, 'UTF-8'); return
+      }
+      const reader = new FileReader()
+      reader.onload = ev => {
+        try {
+          const wb = XLSX.read(ev.target.result, { type: 'array' })
+          S.rawRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' })
+          onFileLoaded(file.name)
+        } catch (err) { toast('Error', 'Cannot read file: ' + err.message) }
+      }
+      reader.readAsArrayBuffer(file)
+    }
+
+    function onFileLoaded(name) {
+      S.excelName = name
+      dz.classList.add('ok')
+      document.querySelector('#step1 .step-dot').textContent = '✓'
+      document.getElementById('step1').classList.add('done')
+      document.getElementById('s1-detail').textContent = name
+      parseKeywords()
+    }
+
+    function colToIdx(s) {
+      s = s.trim().toUpperCase(); let idx = 0
+      for (let i = 0; i < s.length; i++) idx = idx * 26 + (s.charCodeAt(i) - 64)
+      return idx - 1
+    }
+
+    function parseKeywords() {
+      if (!S.rawRows.length) return
+      const colIdx = colToIdx(document.getElementById('col-input').value || 'A')
+      const skipH = document.getElementById('skip-header').checked
+      S.keywords = S.rawRows.slice(skipH ? 1 : 0).map(r => (r[colIdx] || '').toString().trim()).filter(v => v.length > 0)
+      const cnt = document.getElementById('kw-count'); if (cnt) cnt.textContent = S.keywords.length
+      const nameEl = document.getElementById('excel-name')
+      nameEl.textContent = `✓ ${S.excelName} — ${S.keywords.length} keywords`
+      nameEl.style.display = 'block'
+      checkReady()
+    }
+
+    async function pickFolder(type) {
+      if (!('showDirectoryPicker' in window)) { toast(LANG[currentLang].noSupportTitle, LANG[currentLang].noSupportMsg); return }
+      try {
+        const handle = await window.showDirectoryPicker({ mode: 'readwrite' })
+        if (type === 'src') {
+          S.srcHandle = handle
+          document.getElementById('src-path').textContent = handle.name
+          document.getElementById('src-card').classList.add('ok')
+          document.getElementById('step2').classList.add('done')
+          document.querySelector('#step2 .step-dot').textContent = '✓'
+          document.getElementById('s2-detail').textContent = handle.name
+        } else {
+          S.outHandle = handle
+          document.getElementById('out-path').textContent = handle.name
+          document.getElementById('out-card').classList.add('ok')
+          document.getElementById('step3').classList.add('done')
+          document.querySelector('#step3 .step-dot').textContent = '✓'
+          document.getElementById('s3-detail').textContent = handle.name
+        }
+        checkReady()
+      } catch (e) { if (e.name !== 'AbortError') toast('Lỗi', e.message) }
+    }
+
+    function checkReady() {
+      const dict = LANG[currentLang]
+      const ready = S.keywords.length > 0 && S.srcHandle
+      const btn = document.getElementById('btn-search')
+      const hint = document.getElementById('search-hint')
+      btn.disabled = !ready
+      if (ready) {
+        hint.textContent = `${S.keywords.length} ${dict.hintReady}${S.outHandle ? '' : dict.hintOutMissing}`
+      } else {
+        const missing = []
+        if (!S.keywords.length) missing.push(dict.hintExcel)
+        if (!S.srcHandle) missing.push(dict.hintSrcFolder)
+        hint.textContent = dict.hintMissing + missing.join(', ')
+      }
+    }
+
+    async function* walkDir(handle, relPath) {
+      for await (const [name, entry] of handle.entries()) {
+        if (document.getElementById('skip-hidden').checked && name.startsWith('.')) continue
+        const path = relPath ? relPath + '/' + name : name
+        if (entry.kind === 'file') yield { name, relPath: path, handle: entry }
+        else yield* walkDir(entry, path)
+      }
+    }
+
+    function fmtSize(b) {
+      if (b == null) return '...'
+      if (b < 1024) return b + ' B'
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'
+      if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'
+      return (b / 1073741824).toFixed(2) + ' GB'
+    }
+    function sizeClass(b) {
+      if (b == null) return 'loading'
+      if (b >= 104857600) return 'huge'
+      if (b >= 20971520) return 'heavy'
+      return ''
+    }
+
+    async function doSearch() {
+      if (S.searching) return
+      S.searching = true; S.fileMap.clear(); S.fileCounter = 0
+      const rf = document.getElementById('result-filter'); if (rf) rf.value = ''
+      const rfBar = document.getElementById('result-filter-bar'); if (rfBar) rfBar.style.display = 'none'
+      const rfCnt = document.getElementById('result-filter-count'); if (rfCnt) rfCnt.style.display = 'none'
+      const btn = document.getElementById('btn-search')
+      const prog = document.getElementById('progress')
+      const hint = document.getElementById('search-hint')
+      btn.disabled = true; prog.classList.add('running')
+      const kwLower = S.keywords.map(k => ({ orig: k, low: k.toLowerCase() }))
+      const resMap = new Map(); kwLower.forEach(k => resMap.set(k.orig, []))
+      let scanned = 0
+      try {
+        for await (const file of walkDir(S.srcHandle, '')) {
+          scanned++
+          if (scanned % 50 === 0) {
+            hint.textContent = `${LANG[currentLang].scanningHint} ${scanned.toLocaleString()} files...`
+            await new Promise(r => setTimeout(r, 0))
+          }
+          const lName = file.name.toLowerCase()
+          for (const kw of kwLower) {
+            if (lName.includes(kw.low)) {
+              const id = ++S.fileCounter
+              S.fileMap.set(id, { name: file.name, relPath: file.relPath, handle: file.handle, size: null })
+              resMap.get(kw.orig).push({ name: file.name, relPath: file.relPath, id })
+            }
+          }
+        }
+      } catch (e) { toast('Lỗi scan', e.message) }
+      prog.classList.remove('running'); prog.style.width = '0%'
+      S.searching = false; btn.disabled = false
+      S.results = []; S.missing = []
+      for (const kw of S.keywords) {
+        const files = resMap.get(kw) || []
+        if (files.length) S.results.push({ keyword: kw, files })
+        else S.missing.push(kw)
+      }
+      const dd = LANG[currentLang]
+      hint.textContent = `${S.results.reduce((a, g) => a + g.files.length, 0)} ${dd.foundHint} ${S.results.length}/${S.keywords.length} ${dd.scannedHint} ${scanned.toLocaleString()} ${dd.filesUnit}`
+      renderResults(); updateSelectedSize(); fetchSizesInBackground()
+    }
+
+    async function fetchSizesInBackground() {
+      const seen = new Map()
+      for (const [id, f] of S.fileMap) {
+        if (seen.has(f.relPath)) { f.size = seen.get(f.relPath); paintSize(id, f.size); continue }
+        seen.set(f.relPath, null)
+        try {
+          const fileObj = await f.handle.getFile()
+          f.size = fileObj.size; seen.set(f.relPath, fileObj.size)
+          for (const [id2, f2] of S.fileMap) { if (f2.relPath === f.relPath) { f2.size = fileObj.size; paintSize(id2, fileObj.size) } }
+        } catch (e) { f.size = 0; paintSize(id, 0) }
+        if (S.fileCounter > 50) await new Promise(r => setTimeout(r, 0))
+      }
+      updateSelectedSize()
+    }
+
+    function paintSize(id, bytes) {
+      const el = document.querySelector(`#row-${id} .f-size`)
+      if (!el) return
+      el.textContent = fmtSize(bytes); el.className = 'f-size ' + sizeClass(bytes)
+    }
+
+    // renderResults: insertAdjacentHTML per group — no RangeError on large result sets
+    function renderResults() {
+      const area = document.getElementById('results-area')
+      const totalFiles = S.results.reduce((a, g) => a + g.files.length, 0)
+      if (!S.results.length && !S.missing.length) {
+        area.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>${LANG[currentLang].noMatch}</p></div>`
+        return
+      }
+      const d = LANG[currentLang]
+      area.innerHTML = ''
+      area.insertAdjacentHTML('beforeend', `
+    <div class="res-header">
+      <div class="res-summary">${d.resultsLabel}
+        <span class="tag tag-ok">✓ ${totalFiles} files</span>
+        ${S.missing.length ? `<span class="tag tag-err">✗ ${S.missing.length} ${d.notFoundTag}</span>` : ''}
+      </div>
+      <div class="size-summary" id="size-summary">${d.selectedLabel} <strong id="sel-count">0</strong> · <strong id="sel-size">...</strong></div>
+      <button class="btn-sm" onclick="selectAll(true)">${d.btnSelectAll}</button>
+      <button class="btn-sm" onclick="selectAll(false)">${d.btnDeselect}</button>
+      <button class="btn-sm" onclick="deselectHeavy()" title="${d.btnSkipHeavyTitle}">${d.btnSkipHeavy}</button>
+      <button class="btn-sm" onclick="exportPaths()" title="${d.btnExportTitle}">📊 EXPORT</button>
+      <button class="btn-copy" id="btn-copy" onclick="doCopy()">📋 COPY</button>
+    </div>`)
+      S.results.forEach((g, gi) => {
+        area.insertAdjacentHTML('beforeend', `
+      <div class="res-group">
+        <div class="g-head" onclick="toggleGroup(${gi})">
+          <div class="g-kw">${esc(g.keyword)}</div>
+          <div class="g-count">${g.files.length} file${g.files.length > 1 ? 's' : ''}</div>
+          <div class="g-arr open" id="arr-${gi}">▶</div>
+        </div>
+        <div class="g-files open" id="gf-${gi}"></div>
+      </div>`)
+        const gfEl = document.getElementById(`gf-${gi}`)
+        g.files.forEach(f => {
+          gfEl.insertAdjacentHTML('beforeend', `
+        <div class="file-row" id="row-${f.id}">
+          <input type="checkbox" checked data-id="${f.id}" onchange="updateSelectedSize()">
+          <div class="f-name" title="${esc(f.name)}">${esc(f.name)}</div>
+          <div class="f-relpath" title="${esc(f.relPath)}" onclick="copyPath(this,'${esc(f.relPath)}')">${esc(f.relPath)}</div>
+          <div class="f-size loading">...</div>
+          <div class="f-prog" id="fp-${f.id}"><div class="f-prog-fill" id="fpf-${f.id}"></div></div>
+          <div class="f-st" id="fst-${f.id}"></div>
+        </div>`)
+        })
+      })
+      if (S.missing.length) {
+        area.insertAdjacentHTML('beforeend', `
+      <div class="missing-box">
+        <div class="missing-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none'">
+          ✗ ${d.missingHeader} (${S.missing.length} keywords)
+        </div>
+        <div class="missing-body">${S.missing.map(m => `<div class="m-chip">${esc(m)}</div>`).join('')}</div>
+      </div>`)
+      }
+      // Show filter bar and re-apply any active filter
+      const rfBar = document.getElementById('result-filter-bar')
+      if (rfBar) rfBar.style.display = ''
+      const rfInput = document.getElementById('result-filter')
+      if (rfInput && rfInput.value) filterResults(rfInput.value)
+    }
+
+    function toggleGroup(gi) {
+      document.getElementById(`gf-${gi}`).classList.toggle('open')
+      document.getElementById(`arr-${gi}`).classList.toggle('open')
+    }
+    function selectAll(val) {
+      document.querySelectorAll('.file-row input[type=checkbox]').forEach(cb => cb.checked = val)
+      updateSelectedSize()
+    }
+    function deselectHeavy() {
+      let off = 0
+      document.querySelectorAll('.file-row input[type=checkbox]').forEach(cb => {
+        const f = S.fileMap.get(parseInt(cb.dataset.id))
+        if (f && f.size != null && f.size >= 20971520 && cb.checked) { cb.checked = false; off++ }
+      })
+      updateSelectedSize()
+      toast(LANG[currentLang].toastHeavyOff, LANG[currentLang].toastHeavyOffMsg.replace('{n}', off))
+    }
+    function updateSelectedSize() {
+      const cntEl = document.getElementById('sel-count')
+      const sizeEl = document.getElementById('sel-size')
+      const wrap = document.getElementById('size-summary')
+      if (!cntEl || !sizeEl) return
+      const seen = new Set(); let bytes = 0, count = 0, hasUnknown = false
+      document.querySelectorAll('.file-row input[type=checkbox]:checked').forEach(cb => {
+        const f = S.fileMap.get(parseInt(cb.dataset.id))
+        if (!f || seen.has(f.relPath)) return
+        seen.add(f.relPath); count++
+        if (f.size == null) hasUnknown = true; else bytes += f.size
+      })
+      cntEl.textContent = count + ' file' + (count !== 1 ? 's' : '')
+      sizeEl.textContent = (hasUnknown ? '~ ' : '') + fmtSize(bytes)
+      wrap.className = 'size-summary'
+      if (bytes >= 1073741824) wrap.classList.add('huge')
+      else if (bytes >= 209715200) wrap.classList.add('heavy')
+    }
+
+    function copyPath(el, path) {
+      navigator.clipboard.writeText(path).then(() => {
+        el.classList.add('path-copied')
+        const orig = el.textContent
+        el.textContent = '✓ ' + path
+        setTimeout(() => {
+          el.classList.remove('path-copied')
+          el.textContent = orig
+        }, 1200)
+      }).catch(() => {
+        // fallback for older browsers
+        const ta = document.createElement('textarea')
+        ta.value = path; ta.style.position = 'fixed'; ta.style.opacity = '0'
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy')
+        document.body.removeChild(ta)
+        el.classList.add('path-copied')
+        setTimeout(() => el.classList.remove('path-copied'), 1200)
+      })
+    }
+
+    function filterResults(q) {
+      q = (q || '').trim().toLowerCase()
+      let visible = 0, total = 0
+      document.querySelectorAll('.file-row').forEach(row => {
+        const nameEl = row.querySelector('.f-name')
+        if (!nameEl) return
+        total++
+        const show = !q || nameEl.textContent.toLowerCase().includes(q)
+        row.style.display = show ? '' : 'none'
+        if (show) visible++
+      })
+      const countEl = document.getElementById('result-filter-count')
+      if (countEl) {
+        if (q && total > 0) {
+          const d = LANG[currentLang]
+          countEl.innerHTML = d.filterCount.replace('{v}', `<strong>${visible}</strong>`).replace('{t}', total)
+          countEl.style.display = ''
+        } else {
+          countEl.style.display = 'none'
+        }
+      }
+      updateSelectedSize()
+    }
+
+    async function doCopy() {
+      if (S.copying) return
+      const dl = LANG[currentLang]
+      if (!S.outHandle) { toast(dl.toastCopyMissingOut, dl.toastCopyMissingOutMsg); return }
+      const checked = [...document.querySelectorAll('.file-row input[type=checkbox]:checked')]
+      if (!checked.length) { toast(dl.toastNoFile, dl.toastNoFileMsg); return }
+      S.copying = true; document.getElementById('btn-copy').disabled = true
+      const seen = new Set(); const items = []
+      for (const cb of checked) {
+        const id = parseInt(cb.dataset.id); const f = S.fileMap.get(id)
+        if (!f || seen.has(f.relPath)) continue
+        seen.add(f.relPath); items.push({ id, f })
+      }
+      let done = 0, totalBytesAll = 0, copiedBytesAll = 0
+      for (const it of items) if (it.f.size) totalBytesAll += it.f.size
+      toast(dl.toastCopying, `0 / ${items.length} files`, 0)
+      for (const { id, f } of items) {
+        const stEl = document.getElementById(`fst-${id}`)
+        const fpEl = document.getElementById(`fp-${id}`)
+        const fpfEl = document.getElementById(`fpf-${id}`)
+        try {
+          if (stEl) { stEl.textContent = dl.statusLoading; stEl.className = 'f-st loading' }
+          if (fpEl) fpEl.classList.add('active')
+          if (fpfEl) { fpfEl.style.width = '0%'; fpfEl.classList.remove('done', 'err') }
+          const file = await f.handle.getFile()
+          const total = file.size || f.size || 0
+          let name = f.name; let n = 1
+          while (true) {
+            try {
+              await S.outHandle.getFileHandle(name)
+              const dot = name.lastIndexOf('.')
+              const base = dot > -1 ? name.slice(0, dot) : name
+              const ext = dot > -1 ? name.slice(dot) : ''
+              name = `${base.replace(/_\d+$/, '')}_${n}${ext}`; n++
+            } catch { break }
+          }
+          const newHandle = await S.outHandle.getFileHandle(name, { create: true })
+          const writable = await newHandle.createWritable()
+          if (total > 0 && file.stream) {
+            const reader = file.stream().getReader()
+            let loaded = 0, lastPaint = 0
+            while (true) {
+              const { done: rdone, value } = await reader.read(); if (rdone) break
+              await writable.write(value); loaded += value.byteLength; copiedBytesAll += value.byteLength
+              const pct = Math.min(100, Math.round(loaded / total * 100))
+              if (pct - lastPaint >= 5 || loaded === total) {
+                lastPaint = pct
+                if (fpfEl) fpfEl.style.width = pct + '%'
+                if (stEl) stEl.textContent = `↓ ${pct}% · ${fmtSize(loaded)}/${fmtSize(total)}`
+                const overall = totalBytesAll > 0 ? Math.round(copiedBytesAll / totalBytesAll * 100) : Math.round(done / items.length * 100)
+                updateToast(dl.toastCopying, `${done}/${items.length} files · ${fmtSize(copiedBytesAll)}`, overall)
+                await new Promise(r => setTimeout(r, 0))
+              }
+            }
+          } else {
+            const buf = await file.arrayBuffer(); await writable.write(buf); copiedBytesAll += buf.byteLength
+          }
+          await writable.close()
+          if (fpfEl) { fpfEl.style.width = '100%'; fpfEl.classList.add('done') }
+          if (stEl) { stEl.textContent = name === f.name ? dl.statusCopied : `✓ → ${name}`; stEl.className = 'f-st copied' }
+        } catch (e) {
+          if (fpfEl) fpfEl.classList.add('err')
+          if (stEl) { stEl.textContent = '✗ ' + (e.message || 'lỗi'); stEl.className = 'f-st err' }
+        }
+        done++
+        const overall = totalBytesAll > 0 ? Math.round(copiedBytesAll / totalBytesAll * 100) : Math.round(done / items.length * 100)
+        updateToast(dl.toastCopying, `${done}/${items.length} files · ${fmtSize(copiedBytesAll)}`, overall)
+        await new Promise(r => setTimeout(r, 0))
+      }
+      S.copying = false; document.getElementById('btn-copy').disabled = false
+      toast(dl.toastDone, dl.toastDoneMsg.replace('{n}', done).replace('{size}', fmtSize(copiedBytesAll)).replace('{folder}', S.outHandle.name), 100)
+    }
+
+    function exportPaths() {
+      const de = LANG[currentLang]
+      const checked = [...document.querySelectorAll('.file-row input[type=checkbox]:checked')]
+      if (!checked.length) { toast(de.toastExportNoFile, de.toastExportNoFileMsg); return }
+      const byPath = new Map()
+      for (const cb of checked) {
+        const id = parseInt(cb.dataset.id); const f = S.fileMap.get(id); if (!f) continue
+        if (!byPath.has(f.relPath)) byPath.set(f.relPath, { f, keywords: new Set() })
+      }
+      for (const g of S.results) {
+        for (const fr of g.files) {
+          const phys = S.fileMap.get(fr.id); if (!phys) continue
+          const entry = byPath.get(phys.relPath); if (!entry) continue
+          const cb = document.querySelector(`.file-row input[data-id="${fr.id}"]`)
+          if (cb && cb.checked) entry.keywords.add(g.keyword)
+        }
+      }
+      const rows = [['Keyword(s)', 'File name', 'Relative path', 'Size', 'Bytes']]
+      let totalBytes = 0
+      for (const { f, keywords } of byPath.values()) {
+        const bytes = f.size || 0; totalBytes += bytes
+        rows.push([[...keywords].join(', '), f.name, f.relPath, f.size != null ? fmtSize(f.size) : '', bytes])
+      }
+      const ws = XLSX.utils.aoa_to_sheet(rows)
+      ws['!cols'] = [{ wch: 24 }, { wch: 32 }, { wch: 50 }, { wch: 12 }, { wch: 12 }]
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Paths')
+      if (S.missing.length) {
+        const ws2 = XLSX.utils.aoa_to_sheet([['Missing keyword'], ...S.missing.map(m => [m])])
+        ws2['!cols'] = [{ wch: 40 }]; XLSX.utils.book_append_sheet(wb, ws2, 'Missing')
+      }
+      const d = new Date(); const pad = n => String(n).padStart(2, '0')
+      XLSX.writeFile(wb, `filefinder-paths-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.xlsx`)
+      toast(de.toastExportDone, `${byPath.size} files · ${fmtSize(totalBytes)}`, 100)
+    }
+
+    document.getElementById('col-input').addEventListener('change', parseKeywords)
+    document.getElementById('col-input').addEventListener('input', parseKeywords)
+    document.getElementById('skip-header').addEventListener('change', parseKeywords)
+    try { localStorage.removeItem('ff_base_path'); localStorage.removeItem('ff_lucid_tpl') } catch { }
+    // Re-run after all scripts loaded so LS/S are defined and Part 1 text renders
+    updateUI()
+  </script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // STATE PERSISTENCE — survive Live Server / accidental refresh
+    // ═══════════════════════════════════════════════════════════════
+    const _SK = 'ff_state_v2'
+
+    function _saveState() {
+      try {
+        sessionStorage.setItem(_SK, JSON.stringify({
+          lang: currentLang,
+          tab: document.querySelector('.tab-content.active')?.id || 'tab-list',
+          ls: {
+            pathLines: LS.pathLines,
+            nameLines: LS.nameLines,
+            stripExt: LS.stripExt,
+            folderName: LS.scanHandle?.name || ''
+          },
+          s: {
+            keywords: S.keywords,
+            rawRows: S.rawRows,
+            excelName: S.excelName,
+            results: S.results.map(g => ({
+              keyword: g.keyword,
+              files: g.files.map(({ name, relPath, id }) => ({ name, relPath, id }))
+            })),
+            missing: S.missing,
+            fileCounter: S.fileCounter,
+            srcName: S.srcHandle?.name || '',
+            outName: S.outHandle?.name || '',
+            fileMapData: [...S.fileMap].map(([id, { name, relPath, size }]) => [id, { name, relPath, size }])
+          }
+        }))
+      } catch (e) { }
+    }
+
+    function _restoreState() {
+      try {
+        const raw = sessionStorage.getItem(_SK)
+        if (!raw) return
+        const st = JSON.parse(raw)
+
+        // ── Language ──
+        if (st.lang && st.lang !== currentLang) {
+          currentLang = st.lang
+          document.getElementById('btn-vi').classList.toggle('active', st.lang === 'vi')
+          document.getElementById('btn-en').classList.toggle('active', st.lang === 'en')
+        }
+
+        // ── Part 1: scan results ──
+        if (st.ls && st.ls.pathLines?.length) {
+          LS.pathLines = st.ls.pathLines
+          LS.nameLines = st.ls.nameLines || []
+          LS.stripExt = st.ls.stripExt || false
+          LS.lastNameLines = LS.nameLines
+          const pathContent = LS.pathLines.join('\n')
+          const nameContent = LS.nameLines.join('\n')
+          if (st.ls.folderName) {
+            document.getElementById('scan-folder-path').textContent = st.ls.folderName
+            document.getElementById('scan-folder-card').classList.add('ok')
+            document.getElementById('btn-scan').disabled = false
+          }
+          renderScanResults(LS.pathLines.length, LS.pathLines, LS.nameLines, pathContent, nameContent, false)
+          document.getElementById('scan-hint').textContent =
+            `${LS.pathLines.length.toLocaleString()} files · ⚡ restored`
+        }
+
+        // ── Part 2: keywords + results ──
+        if (st.s) {
+          S.keywords = st.s.keywords || []
+          S.rawRows = st.s.rawRows || []
+          S.excelName = st.s.excelName || ''
+          S.results = st.s.results || []
+          S.missing = st.s.missing || []
+          S.fileCounter = st.s.fileCounter || 0
+          S.fileMap.clear()
+            ; (st.s.fileMapData || []).forEach(([id, f]) => S.fileMap.set(id, f))
+
+          if (S.excelName) {
+            document.getElementById('step1').classList.add('done')
+            document.querySelector('#step1 .step-dot').textContent = '✓'
+            const nameEl = document.getElementById('excel-name')
+            nameEl.textContent = `✓ ${S.excelName} — ${S.keywords.length} keywords`
+            nameEl.style.display = 'block'
+            document.getElementById('drop-text').style.display = 'none'
+            document.getElementById('drop-zone').classList.add('ok')
+          }
+
+          // Show folder names (handles lost, need re-select to copy)
+          const noHandle = currentLang === 'vi' ? ' ⚠ cần chọn lại' : ' ⚠ re-select'
+          if (st.s.srcName) {
+            document.getElementById('src-path').textContent = st.s.srcName + noHandle
+            document.getElementById('s2-detail').textContent = st.s.srcName
+          }
+          if (st.s.outName) {
+            document.getElementById('out-path').textContent = st.s.outName + noHandle
+            document.getElementById('s3-detail').textContent = st.s.outName
+          }
+
+          if (S.results.length || S.missing.length) {
+            renderResults()
+            updateSelectedSize()
+            const rfBar = document.getElementById('result-filter-bar')
+            if (rfBar) rfBar.style.display = ''
+            // Show restore notice in hint
+            const hint = document.getElementById('search-hint')
+            if (hint) hint.textContent = `${S.results.reduce((a, g) => a + g.files.length, 0)} files · ⚡ restored — re-select folders to copy`
+          }
+        }
+
+        // ── Active tab ──
+        if (st.tab) switchTab(st.tab.replace('tab-', ''))
+
+        updateUI()
+      } catch (e) { }
+    }
+
+    // ── Hook save after scan & search complete ──
+    const _origRenderScan = renderScanResults
+    renderScanResults = function (...args) { _origRenderScan(...args); _saveState() }
+
+    const _origRenderResults = renderResults
+    renderResults = function (...args) { _origRenderResults(...args); _saveState() }
+
+    // Also save when keywords are loaded
+    const _origOnFileLoaded = onFileLoaded
+    onFileLoaded = function (...args) { _origOnFileLoaded(...args); _saveState() }
+
+    // ── Warn on accidental refresh / close when there's active data ──
+    window.addEventListener('beforeunload', e => {
+      if (LS.pathLines.length || S.results.length || S.keywords.length) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    })
+
+    // ── Restore on load ──
+    _restoreState()
+  </script>
+</body>
+
+</html>

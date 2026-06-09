@@ -1236,6 +1236,9 @@
         <button class="nav-tab" data-tool="Banner_Preview" onclick="switchTab(this)">
           <span class="nav-tab-icon">🖼️</span> Preview
         </button>
+        <button class="nav-tab" data-tool="File_finder" onclick="switchTab(this)">
+          <span class="nav-tab-icon">🔎</span> Finder
+        </button>
       </div>
 
       <!-- Env badge -->
@@ -1327,6 +1330,12 @@
                 <div class="stat-card-label">Scan folders or drag &amp; drop to preview banners locally</div>
                 <span class="stat-card-tag">localhost</span>
               </div>
+              <div class="stat-card liquid-glass" onclick="openTool('File_finder')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">🔎</div>
+                <div class="stat-card-value">Finder</div>
+                <div class="stat-card-label">Generate file lists &amp; locate files across folders</div>
+                <span class="stat-card-tag">Local</span>
+              </div>
             </div><!-- /hero-stats -->
             <div class="stats-dots">
               <button class="stats-dot active" data-idx="0"></button>
@@ -1335,6 +1344,7 @@
               <button class="stats-dot" data-idx="3"></button>
               <button class="stats-dot" data-idx="4"></button>
               <button class="stats-dot" data-idx="5"></button>
+              <button class="stats-dot" data-idx="6"></button>
             </div>
           </div><!-- /stats-slider -->
 
@@ -1352,6 +1362,7 @@
             <span class="hero-footer-name" onclick="openTool('Data_mapper')">DataMapper</span>
             <span class="hero-footer-name" onclick="openTool('HTML5_guide')">HTML5Guide</span>
             <span class="hero-footer-name" onclick="openTool('Banner_Preview')">BannerPreview</span>
+            <span class="hero-footer-name" onclick="openTool('File_finder')">FileFinder</span>
           </div>
         </div>
 
@@ -1485,6 +1496,24 @@
               <span class="card-arrow">↗</span>
             </div>
 
+            <div class="tool-card liquid-glass on-view" onclick="openTool('File_finder')"
+              style="transition-delay:.82s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">🔎</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">List gen</span>
+                  <span class="card-tag-pill liquid-glass">Find files</span>
+                  <span class="card-tag-pill liquid-glass">Excel</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">File<br />Finder</div>
+                <div class="card-desc">Generate file lists from any folder and search across multiple paths instantly.</div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
           </div><!-- /tools-grid -->
 
           <footer class="tools-footer">
@@ -1549,6 +1578,7 @@
       Data_mapper: { file: 'Data_mapper.html', label: 'Data Mapper' },
       HTML5_guide: { file: 'HTML5_banner_guideline/index.html', label: 'HTML5 Guide' },
       Banner_Preview: { file: 'Banner_Preview.html', label: 'Banner Preview' },
+      File_finder: { file: 'File_finder.html', label: 'File Finder' },
     };
 
     const frames = {};
