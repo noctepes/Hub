@@ -1201,10 +1201,44 @@
     }
     html, body { background: var(--bg) !important; color: var(--txt); }
     body {
-      padding-top: 56px;
       font-family: 'DM Sans', sans-serif;
+      font-size: 15px !important; /* bumped from 13px */
       -webkit-font-smoothing: antialiased;
     }
+    /* Brighter text tokens — whiter, more legible */
+    :root {
+      --txt: #F5EBD8 !important;
+      --muted: rgba(229,219,200,0.72) !important;
+      --muted2: rgba(229,219,200,0.5) !important;
+    }
+    /* Top header — push content right to clear Hub back button (~96px) */
+    header { padding-left: 110px !important; }
+    .logo { font-size: 22px !important; }
+    .tab-btn { font-size: 13px !important; padding: 7px 20px !important; }
+    .lang-btn { font-size: 11px !important; padding: 4px 10px !important; }
+    /* Bump common element sizes */
+    .sc-lbl, .opt-label, .f-lbl, .sb-label { font-size: 11px !important; }
+    .sc-path, .f-path, .step-title, .cfg-lbl, .opt-row, .opt-row label {
+      font-size: 13px !important; color: var(--txt) !important;
+    }
+    .opt-hint, .step-detail { font-size: 12px !important; color: var(--muted) !important; }
+    .hint-text { font-size: 12px !important; }
+    .pr-num { font-size: 12px !important; }
+    .pr-name { font-size: 13px !important; }
+    .pr-path { font-size: 12px !important; }
+    .f-name { font-size: 13px !important; }
+    .f-relpath { font-size: 12px !important; }
+    .f-size { font-size: 11px !important; }
+    .stat-card span { font-size: 12px !important; color: var(--muted) !important; }
+    .stat-card strong { font-size: 24px !important; }
+    .res-summary { font-size: 14px !important; }
+    .g-kw { font-size: 14px !important; }
+    .g-count { font-size: 12px !important; }
+    .scan-status-title { font-size: 15px !important; }
+    .scan-status-sub { font-size: 12px !important; }
+    .scan-status-count { font-size: 30px !important; }
+    .preview-head { font-size: 11px !important; padding: 10px 14px !important; }
+    .empty p { font-size: 14px !important; }
     /* Video bg + ambient glow — identical to Banner_Tracker */
     .bg-video {
       position: fixed; inset: 0;
@@ -1394,10 +1428,59 @@
     .stat-card.ok strong { color: var(--ok) !important; }
     .size-summary strong { color: var(--acc) !important; }
 
-    /* Spinner */
+    /* Scan status card — force flex row + strong glass visibility */
+    .scan-status-card {
+      display: flex !important;
+      align-items: center !important;
+      gap: 18px !important;
+      padding: 20px 24px !important;
+      margin-top: 16px !important;
+      background: rgba(255,255,255,0.05) !important;
+      border: 1px solid rgba(255,255,255,0.10) !important;
+      border-radius: 14px !important;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+    }
+    .scan-status-card::before { display: none !important; } /* skip mask border on this card */
+    .scan-status-card > div:nth-child(2) {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .scan-status-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--acc) !important;
+    }
+    .scan-status-sub {
+      font-size: 11px;
+      color: var(--muted) !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+    .scan-status-count {
+      flex-shrink: 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--acc) !important;
+      letter-spacing: -.02em;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+    /* Spinner — visible, thicker */
     .scan-status-spinner {
-      border-color: rgba(255,255,255,0.10) !important;
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      border: 3px solid rgba(255,255,255,0.15) !important;
       border-top-color: var(--acc) !important;
+      border-radius: 50% !important;
+      flex-shrink: 0;
+      animation: spin .7s linear infinite;
     }
 
     /* Toast — glass dark */
@@ -1421,6 +1504,74 @@
     /* Empty state */
     .empty { color: var(--muted); }
 
+    /* ── Preview toolbar + new row layout ──────────────────── */
+    .preview-toolbar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.02);
+    }
+    .pv-chk-wrap { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--txt); cursor: pointer; user-select: none; }
+    .pv-chk-wrap input { width: 16px; height: 16px; accent-color: var(--acc); cursor: pointer; }
+    .pv-filter { display: inline-flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: 9999px; padding: 3px; }
+    .pv-fbtn {
+      background: transparent; border: none; color: var(--muted);
+      padding: 5px 14px; font-family: 'DM Sans', sans-serif; font-size: 12px;
+      border-radius: 9999px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .pv-fbtn em { font-style: normal; font-size: 11px; opacity: .75; }
+    .pv-fbtn:hover { color: var(--txt); }
+    .pv-fbtn.active { background: var(--acc); color: #fff; }
+    .pv-fbtn.active em { opacity: 1; color: #fff; }
+    .pv-selcount { margin-left: auto; font-size: 12px; color: var(--muted); }
+    .preview-toolbar .btn-copy { padding: 7px 18px !important; font-size: 13px !important; }
+
+    /* New preview row layout — flex with checkbox + size col */
+    .preview-list { max-height: 60vh !important; overflow-y: auto; }
+    .preview-row {
+      display: flex !important; align-items: center; gap: 12px !important;
+      padding: 7px 14px !important;
+      border-top: 1px solid rgba(255,255,255,0.05) !important;
+    }
+    .preview-row.hidden { display: none !important; }
+    .preview-row .pr-check { width: 15px; height: 15px; accent-color: var(--acc); cursor: pointer; flex-shrink: 0; }
+    .preview-row .pr-num { min-width: 40px; text-align: right; color: var(--muted) !important; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .preview-row .pr-name { max-width: 240px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; color: var(--txt) !important; font-weight: 500; }
+    .preview-row .pr-path {
+      flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      color: var(--muted) !important; cursor: pointer;
+      padding: 2px 6px; margin: -2px -6px; border-radius: 4px;
+      transition: color .12s, background .12s;
+    }
+    .preview-row .pr-path:hover { color: var(--acc) !important; background: rgba(255,55,0,0.10) !important; }
+    .preview-row .pr-path:hover::after { content: ' ⎘'; font-size: 11px; opacity: .8; }
+    .preview-row .pr-path.path-copied { color: var(--ok) !important; background: rgba(45,184,125,0.18) !important; }
+    .preview-row .pr-size {
+      flex-shrink: 0; min-width: 80px; text-align: right;
+      color: var(--muted) !important; font-variant-numeric: tabular-nums;
+    }
+    .preview-row .pr-size.heavy { color: #ff9b3d !important; font-weight: 600; }
+
+    /* Reset button */
+    .btn-reset {
+      background: rgba(255,55,0,0.10);
+      border: 1px solid rgba(255,55,0,0.40);
+      color: var(--acc);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-reset:hover {
+      background: var(--acc);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(255,55,0,0.30);
+    }
+
   </style>
 </head>
 
@@ -1443,6 +1594,7 @@
     </div>
     <div class="header-right">
       <div id="browser-warn">⚠ Chrome or Edge required — Safari not supported</div>
+      <button class="btn-reset" onclick="hardReset()" title="Clear all state &amp; reload">↻ Reset</button>
       <div class="lang-switch" onclick="toggleLang()">
         <div id="btn-en" class="lang-btn active">EN</div>
         <div id="btn-vi" class="lang-btn">VN</div>
@@ -1796,7 +1948,29 @@
     // ═══════════════════════════════════════════════════════════════
     // PART 1 — LIST GENERATOR
     // ═══════════════════════════════════════════════════════════════
-    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], stripExt: false }
+    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], sizes: [], handles: [], stripExt: false, sizeFilter: 'all' }
+
+    /* ── Hard reset — wipes scan state + UI, hot-reloads the iframe ── */
+    function hardReset() {
+      // Clear in-memory state
+      LS.scanHandle = null; LS.scanning = false; LS.lastNameLines = []
+      LS.pathLines = []; LS.nameLines = []; LS.sizes = []; LS.handles = []
+      LS.stripExt = false; LS.sizeFilter = 'all'
+      // Clear any cached storage we may have set
+      try { localStorage.clear(); sessionStorage.clear() } catch (_) {}
+      // Force a fresh reload bypassing cache
+      const url = new URL(location.href)
+      url.searchParams.set('v', Date.now())
+      location.replace(url.toString())
+    }
+    const HEAVY_BYTES = 400 * 1024 * 1024 /* 400 MB threshold */
+    function fmtSize(b) {
+      if (b == null) return '—'
+      if (b < 1024) return b + ' B'
+      if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB'
+      if (b < 1024 * 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + ' MB'
+      return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB'
+    }
 
     async function pickScanFolder() {
       if (!('showDirectoryPicker' in window)) { toast('Not supported', 'Please use Chrome or Edge'); return }
@@ -1814,7 +1988,7 @@
       for await (const [name, entry] of handle.entries()) {
         if (skipHidden && name.startsWith('.')) continue
         const path = relPath ? relPath + '/' + name : name
-        if (entry.kind === 'file') yield { name, relPath: path }
+        if (entry.kind === 'file') yield { name, relPath: path, fileHandle: entry }
         else yield* walkDirList(entry, path, skipHidden)
       }
     }
@@ -1845,10 +2019,10 @@
       <div class="scan-status-count" id="scan-status-count">0</div>
     </div>`
 
-      const pathLines = [], nameLines = []
+      const pathLines = [], nameLines = [], sizes = [], handles = []
       let count = 0, scanned = 0
       try {
-        for await (const { name, relPath } of walkDirList(LS.scanHandle, '', skipHidden)) {
+        for await (const { name, relPath, fileHandle } of walkDirList(LS.scanHandle, '', skipHidden)) {
           scanned++
           if (exts.length) {
             const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
@@ -1858,7 +2032,11 @@
           count++
           pathLines.push('./' + relPath)
           nameLines.push(name)
-          if (scanned % 100 === 0) {
+          handles.push(fileHandle)
+          let sz = null
+          try { const f = await fileHandle.getFile(); sz = f.size } catch (_) {}
+          sizes.push(sz)
+          if (scanned % 100 === 0 || count % 50 === 0) {
             const cntEl = document.getElementById('scan-status-count')
             const subEl = document.getElementById('scan-status-sub')
             if (cntEl) cntEl.textContent = count.toLocaleString() + ' files'
@@ -1883,7 +2061,8 @@
       const pathContent = pathLines.join('\n')
       const nameContent = nameLines.join('\n')
 
-      LS.pathLines = pathLines; LS.nameLines = nameLines; LS.stripExt = false
+      LS.pathLines = pathLines; LS.nameLines = nameLines; LS.sizes = sizes; LS.handles = handles
+      LS.stripExt = false; LS.sizeFilter = 'all'
       const filterSuffix = (nameQueries.length ? ` · "${nameQueries.join(' | ')}"` : '') + (exts.length ? ` · ${exts.join(', ')}` : '')
       hint.textContent = `${count.toLocaleString()} files found${filterSuffix}`
       renderScanResults(count, pathLines, nameLines, pathContent, nameContent)
@@ -1913,21 +2092,99 @@
     <button class="btn-secondary" onclick="useListForFind()">${d.useForFindBtn}</button>`
       area.appendChild(dlRow)
 
-      // Preview
+      // Preview — render ALL rows with checkbox, size, click-to-copy path
       const box = document.createElement('div')
       box.className = 'preview-box'
-      const preview = pathLines.slice(0, 300)
-      const moreMsg = pathLines.length > 300 ? `<div class="preview-row" style="justify-content:center;color:var(--muted);padding:10px 0">${d.andMore.replace('{n}', (pathLines.length - 300).toLocaleString())}</div>` : ''
+      const sizes = LS.sizes
+      const heavyCount = sizes.filter(s => s != null && s >= HEAVY_BYTES).length
+      const lightCount = sizes.filter(s => s != null && s < HEAVY_BYTES).length
+      const rowsHtml = pathLines.map((p, i) => {
+        const sz = sizes[i]
+        const cls = sz != null && sz >= HEAVY_BYTES ? 'heavy' : (sz != null ? 'light' : '')
+        return `<div class="preview-row" data-idx="${i}" data-size="${sz == null ? -1 : sz}">
+          <input type="checkbox" class="pr-check" onchange="updateSelCount()">
+          <div class="pr-num">${i + 1}</div>
+          <div class="pr-name">${esc(nameLines[i])}</div>
+          <div class="pr-path" title="Click to copy" onclick="copyPath(this, ${i})">${esc(p)}</div>
+          <div class="pr-size ${cls}">${fmtSize(sz)}</div>
+        </div>`
+      }).join('')
       box.innerHTML = `
     <div class="preview-head">
-      <span>${d.previewLabel} — ${pathLines.length.toLocaleString()} paths${pathLines.length > 300 ? ' ' + d.showingFirst.replace('{n}', '300') : ''}</span>
+      <span>${d.previewLabel} — ${pathLines.length.toLocaleString()} paths</span>
       <span class="acc">${LS.scanHandle.name}</span>
     </div>
-    <div class="preview-list">
-      ${preview.map((p, i) => `<div class="preview-row"><div class="pr-num">${i + 1}</div><div class="pr-name">${esc(nameLines[i])}</div><div class="pr-path">${esc(p)}</div></div>`).join('')}
-      ${moreMsg}
-    </div>`
+    <div class="preview-toolbar">
+      <label class="pv-chk-wrap">
+        <input type="checkbox" id="pv-select-all" onchange="toggleSelectAllPreview(this.checked)">
+        <span>Select all</span>
+      </label>
+      <div class="pv-filter">
+        <button class="pv-fbtn active" data-f="all"  onclick="filterPreviewBySize('all')">All <em>${pathLines.length}</em></button>
+        <button class="pv-fbtn"        data-f="heavy" onclick="filterPreviewBySize('heavy')">Heavy <em>${heavyCount}</em></button>
+        <button class="pv-fbtn"        data-f="light" onclick="filterPreviewBySize('light')">Light <em>${lightCount}</em></button>
+      </div>
+      <span class="pv-selcount" id="pv-selcount">0 selected</span>
+      <button class="btn-copy" onclick="downloadSelected()">⬇ Download selected</button>
+    </div>
+    <div class="preview-list" id="preview-list">${rowsHtml}</div>`
       area.appendChild(box)
+    }
+
+    /* ── Preview row helpers ─────────────────────────────────── */
+    async function copyPath(el, idx) {
+      const p = LS.pathLines[idx]
+      try { await navigator.clipboard.writeText(p); el.classList.add('path-copied'); setTimeout(() => el.classList.remove('path-copied'), 1100) }
+      catch (e) { toast('Copy failed', e.message) }
+    }
+    function toggleSelectAllPreview(on) {
+      document.querySelectorAll('#preview-list .preview-row:not(.hidden) .pr-check').forEach(cb => cb.checked = on)
+      updateSelCount()
+    }
+    function updateSelCount() {
+      const n = document.querySelectorAll('#preview-list .pr-check:checked').length
+      const el = document.getElementById('pv-selcount')
+      if (el) el.textContent = `${n} selected`
+    }
+    function filterPreviewBySize(mode) {
+      LS.sizeFilter = mode
+      document.querySelectorAll('.pv-fbtn').forEach(b => b.classList.toggle('active', b.dataset.f === mode))
+      document.querySelectorAll('#preview-list .preview-row').forEach(row => {
+        const sz = parseInt(row.dataset.size, 10)
+        let show = true
+        if (mode === 'heavy') show = sz >= HEAVY_BYTES
+        else if (mode === 'light') show = sz >= 0 && sz < HEAVY_BYTES
+        row.classList.toggle('hidden', !show)
+      })
+      // Reapply name filter if any
+      filterPreview(document.getElementById('name-filter').value)
+      const sa = document.getElementById('pv-select-all')
+      if (sa) sa.checked = false
+      updateSelCount()
+    }
+    async function downloadSelected() {
+      const checks = Array.from(document.querySelectorAll('#preview-list .pr-check:checked'))
+      if (!checks.length) { toast('Nothing selected', 'Tick rows first'); return }
+      if (!('showDirectoryPicker' in window)) { toast('Not supported', 'Use Chrome / Edge'); return }
+      let destDir
+      try { destDir = await window.showDirectoryPicker({ mode: 'readwrite' }) }
+      catch (e) { if (e.name !== 'AbortError') toast('Pick failed', e.message); return }
+      let ok = 0, fail = 0
+      toast('Copying…', `0 / ${checks.length}`)
+      for (const cb of checks) {
+        const idx = +cb.closest('.preview-row').dataset.idx
+        const handle = LS.handles[idx]
+        const name = LS.nameLines[idx]
+        try {
+          const f = await handle.getFile()
+          const newH = await destDir.getFileHandle(name, { create: true })
+          const w = await newH.createWritable()
+          await w.write(f); await w.close()
+          ok++
+        } catch (e) { fail++ }
+        if ((ok + fail) % 5 === 0) toast('Copying…', `${ok + fail} / ${checks.length}`)
+      }
+      toast('Done', `${ok} copied${fail ? ' · ' + fail + ' failed' : ''}`)
     }
 
     async function toggleStripExt() {
@@ -1964,14 +2221,16 @@
 
     function filterPreview(q) {
       q = (q || '').trim().toLowerCase()
-      let visible = 0, total = 0
+      const mode = LS.sizeFilter || 'all'
       document.querySelectorAll('.preview-row').forEach(row => {
         const nameEl = row.querySelector('.pr-name')
         if (!nameEl) return
-        total++
-        const show = !q || nameEl.textContent.toLowerCase().includes(q)
-        row.style.display = show ? '' : 'none'
-        if (show) visible++
+        const sz = parseInt(row.dataset.size, 10)
+        let sizeOk = true
+        if (mode === 'heavy') sizeOk = sz >= HEAVY_BYTES
+        else if (mode === 'light') sizeOk = sz >= 0 && sz < HEAVY_BYTES
+        const nameOk = !q || nameEl.textContent.toLowerCase().includes(q)
+        row.classList.toggle('hidden', !(sizeOk && nameOk))
       })
     }
 

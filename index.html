@@ -1694,7 +1694,9 @@
       loader.innerHTML = `<div class="loader-icon"></div><div class="loader-label">Loading ${TOOLS[key].label}…</div>`;
 
       const iframe = document.createElement('iframe');
-      iframe.src = TOOLS[key].file;
+      // Cache-bust per session so reloads don't serve a stale tool
+      const sep = TOOLS[key].file.includes('?') ? '&' : '?';
+      iframe.src = TOOLS[key].file + sep + 'v=' + Date.now();
       iframe.title = TOOLS[key].label;
       iframe.setAttribute('allow', 'same-origin');
       iframe.addEventListener('load', () => {
