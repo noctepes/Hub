@@ -43,7 +43,7 @@
       background: var(--bg);
       color: var(--txt);
       font-family: var(--font);
-      font-size: 13px;
+      font-size: 15px;
       display: flex;
       flex-direction: column;
     }
@@ -90,7 +90,7 @@
     .tab-btn {
       padding: 6px 18px;
       font-family: var(--font);
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: .04em;
       color: var(--muted);
@@ -139,7 +139,7 @@
 
     .lang-btn {
       padding: 3px 8px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--muted);
       border-radius: 2px;
@@ -257,7 +257,7 @@
       border: 1px solid var(--b2);
       color: var(--txt);
       font-family: var(--font);
-      font-size: 12px;
+      font-size: 14px;
       padding: 5px 9px;
       border-radius: 5px;
       outline: none;
@@ -347,7 +347,7 @@
     }
 
     .scan-card .sc-lbl {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: .14em;
       text-transform: uppercase;
@@ -379,7 +379,7 @@
     }
 
     .opt-label {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: .14em;
       text-transform: uppercase;
@@ -394,7 +394,7 @@
     }
 
     .opt-hint {
-      font-size: 10px;
+      font-size: 12px;
       color: var(--muted2);
       line-height: 1.5;
     }
@@ -414,7 +414,7 @@
       border: 1px solid var(--b1);
       border-radius: 8px;
       padding: 8px 14px;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .stat-card strong {
@@ -479,7 +479,7 @@
       padding: 8px 12px;
       background: var(--s2);
       border-bottom: 1px solid var(--b1);
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: .14em;
       text-transform: uppercase;
@@ -504,7 +504,7 @@
       gap: 10px;
       padding: 5px 12px;
       border-top: 1px solid var(--b1);
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .preview-row:first-child {
@@ -1524,6 +1524,16 @@
     .pv-fbtn.active { background: var(--acc); color: #fff; }
     .pv-fbtn.active em { opacity: 1; color: #fff; }
     .pv-selcount { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+    /* ── Match mode toggle (Contains / Exact) ─────────────── */
+    .match-toggle { display: inline-flex; gap: 3px; background: rgba(255,255,255,0.05); border-radius: 9999px; padding: 3px; }
+    .mt-btn {
+      background: transparent; border: none; color: var(--muted);
+      padding: 4px 12px; font-family: 'DM Sans', sans-serif; font-size: 11px;
+      border-radius: 9999px; cursor: pointer; white-space: nowrap;
+    }
+    .mt-btn:hover { color: var(--txt); }
+    .mt-btn.active { background: var(--acc); color: #fff; }
     .preview-toolbar .btn-copy { padding: 7px 18px !important; font-size: 13px !important; }
 
     /* New preview row layout — flex with checkbox + size col */
@@ -1625,16 +1635,24 @@
         <div class="scan-options">
           <div class="opt-label" data-i18n="scanOptTitle">Tùy chọn</div>
           <div>
-            <div id="ext-filter-lbl" style="font-size:11px;color:var(--muted);margin-bottom:5px;"></div>
+            <div id="ext-filter-lbl" style="font-size:12px;color:var(--muted);margin-bottom:5px;"></div>
             <input type="text" class="full-w" id="ext-filter">
           </div>
           <div>
             <div id="name-filter-lbl" style="font-size:11px;color:var(--muted);margin-bottom:5px;"></div>
             <input type="text" class="full-w" id="name-filter" oninput="filterPreview(this.value)">
           </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span id="scan-match-lbl" style="font-size:12px;color:var(--muted);"></span>
+            <div class="match-toggle" id="scan-match-toggle">
+              <button type="button" class="mt-btn active" data-mode="contains" onclick="setMatchMode('scan','contains')">Contains</button>
+              <button type="button" class="mt-btn" data-mode="exact" onclick="setMatchMode('scan','exact')">Exact</button>
+            </div>
+          </div>
+          <div id="scan-match-hint" style="font-size:12px;color:var(--muted2);line-height:1.5;"></div>
           <div class="opt-row">
             <input type="checkbox" id="scan-skip-hidden" checked>
-            <label for="scan-skip-hidden" id="skip-hidden-lbl" style="font-size:11px;cursor:pointer;"></label>
+            <label for="scan-skip-hidden" id="skip-hidden-lbl" style="font-size:12px;cursor:pointer;"></label>
           </div>
           <div class="opt-hint" id="opt-hint-box"></div>
         </div>
@@ -1691,6 +1709,13 @@
           <div class="cfg-row">
             <span class="cfg-lbl" data-i18n="skipHidden">Ignore Hidden Files</span>
             <input type="checkbox" id="skip-hidden" checked>
+          </div>
+          <div class="cfg-row">
+            <span class="cfg-lbl" data-i18n="matchModeLbl">Name match</span>
+            <div class="match-toggle" id="find-match-toggle">
+              <button type="button" class="mt-btn active" data-mode="contains" onclick="setMatchMode('find','contains')">Contains</button>
+              <button type="button" class="mt-btn" data-mode="exact" onclick="setMatchMode('find','exact')">Exact</button>
+            </div>
           </div>
         </div>
         <span id="kw-count" style="display:none">0</span>
@@ -1790,7 +1815,7 @@
         scanHintInit: 'Chọn folder để bắt đầu', scanReadyMsg: 'Sẵn sàng scan',
         scanFolderLbl: 'Folder cần quét', scanFolderClick: 'Click để chọn folder',
         scanOptTitle: 'Tùy chọn', extFilterLbl: 'Lọc đuôi file',
-        extFilterHint: '(vd: jpg ai png)', extFilterPlaceholder: 'Để trống = lấy tất cả file',
+        extFilterHint: '(vd: jpg, ai, png)', extFilterPlaceholder: 'Để trống = lấy tất cả file',
         skipHiddenLbl: 'Bỏ qua file ẩn (. prefix)',
         optHint: 'Kết quả tạo 2 file trong folder đã chọn:<br><strong>list_kem_path.txt</strong> — đường dẫn tương đối<br><strong>list_ten_sach.txt</strong> — tên file sạch (dùng cho Tab Tìm File)',
         listEmptyP: 'Chọn folder và nhấn SCAN<br>để tạo danh sách file',
@@ -1800,8 +1825,15 @@
         filesFoundLabel: 'files tìm thấy', useForFindBtn: '→ Dùng để Tìm File',
         useForFindToast: 'Đã tải danh sách', useForFindHint: 'keywords · Chọn folder tìm kiếm',
         stripExtBtn: 'Xoá đuôi file', restoreExtBtn: 'Giữ đuôi file',
-        nameFilterLbl: 'Tìm tên file', nameFilterHint: '(vd: logo banner)',
+        nameFilterLbl: 'Tìm tên file', nameFilterHint: '(nhiều từ khóa cách nhau dấu phẩy, vd: logo_banner, intro)',
         nameFilterPlaceholder: 'Để trống = hiện tất cả',
+        matchModeLbl: 'Chế độ khớp tên',
+        matchContains: 'Chứa', matchExact: 'Đúng tên',
+        matchHintContains: '<strong>Chứa:</strong> tên file chứa từ khóa là khớp (vd: "logo" khớp "logo_banner.png").',
+        matchHintExact: '<strong>Đúng tên:</strong> tên file (bỏ đuôi) phải trùng 100% từ khóa (vd: "logo_banner" chỉ khớp "logo_banner.png", không khớp "logo_banner_v2.png").',
+        exactTag: 'đúng tên',
+        scanStatusTitle: 'Đang quét...', toastScanErr: 'Lỗi scan',
+        dupRemoved: ' · đã bỏ {n} tên trùng lặp',
         resultFilterPlaceholder: 'Lọc tên file trong kết quả...',
         filterCount: 'Hiển thị {v} / {t}'
       },
@@ -1832,7 +1864,7 @@
         scanHintInit: 'Select a folder to begin', scanReadyMsg: 'Ready to scan',
         scanFolderLbl: 'Folder to scan', scanFolderClick: 'Click to select folder',
         scanOptTitle: 'Options', extFilterLbl: 'Filter by extension',
-        extFilterHint: '(e.g. jpg ai png)', extFilterPlaceholder: 'Leave empty = all files',
+        extFilterHint: '(e.g. jpg, ai, png)', extFilterPlaceholder: 'Leave empty = all files',
         skipHiddenLbl: 'Skip hidden files (. prefix)',
         optHint: 'Results save 2 files in the selected folder:<br><strong>list_kem_path.txt</strong> — relative paths<br><strong>list_ten_sach.txt</strong> — clean filenames (use in File Finder tab)',
         listEmptyP: 'Select folder and click SCAN<br>to generate file list',
@@ -1842,8 +1874,15 @@
         filesFoundLabel: 'files found', useForFindBtn: '→ Use for File Finder',
         useForFindToast: 'List loaded', useForFindHint: 'keywords · Select search folder',
         stripExtBtn: 'Strip extensions', restoreExtBtn: 'Keep extensions',
-        nameFilterLbl: 'Search filename', nameFilterHint: '(e.g. logo banner)',
+        nameFilterLbl: 'Search filename', nameFilterHint: '(separate keywords with commas, e.g. logo_banner, intro)',
         nameFilterPlaceholder: 'Leave empty = show all',
+        matchModeLbl: 'Name match',
+        matchContains: 'Contains', matchExact: 'Exact',
+        matchHintContains: '<strong>Contains:</strong> filename containing the keyword matches (e.g. "logo" matches "logo_banner.png").',
+        matchHintExact: '<strong>Exact:</strong> filename (extension ignored) must equal the keyword 100% (e.g. "logo_banner" matches "logo_banner.png" only, not "logo_banner_v2.png").',
+        exactTag: 'exact',
+        scanStatusTitle: 'Scanning...', toastScanErr: 'Scan error',
+        dupRemoved: ' · {n} duplicates removed',
         resultFilterPlaceholder: 'Filter results by filename...',
         filterCount: 'Showing {v} / {t}'
       }
@@ -1881,6 +1920,19 @@
       if (nameFilterLbl) nameFilterLbl.innerHTML = `${dict.nameFilterLbl} <span style="color:var(--muted2)">${dict.nameFilterHint}</span>`
       const nameFilterInput = document.getElementById('name-filter')
       if (nameFilterInput) nameFilterInput.placeholder = dict.nameFilterPlaceholder
+      // Dynamic buttons rendered after scan (strip ext / use for find)
+      const stripExtBtn = document.getElementById('btn-strip-ext')
+      if (stripExtBtn && typeof LS !== 'undefined') stripExtBtn.textContent = LS.stripExt ? dict.restoreExtBtn : dict.stripExtBtn
+      const useFindBtn = document.getElementById('btn-use-find')
+      if (useFindBtn) useFindBtn.textContent = dict.useForFindBtn
+      const statSpan = document.querySelector('#list-results .stat-card span')
+      if (statSpan) statSpan.textContent = dict.filesFoundLabel
+      // Match mode toggles (Contains / Exact)
+      const scanMatchLbl = document.getElementById('scan-match-lbl')
+      if (scanMatchLbl) scanMatchLbl.textContent = dict.matchModeLbl
+      document.querySelectorAll('.mt-btn[data-mode="contains"]').forEach(b => b.textContent = dict.matchContains)
+      document.querySelectorAll('.mt-btn[data-mode="exact"]').forEach(b => b.textContent = dict.matchExact)
+      updateMatchHint()
       const rfInput = document.getElementById('result-filter')
       if (rfInput) rfInput.placeholder = dict.resultFilterPlaceholder
       // Part 1 dynamic elements
@@ -1993,6 +2045,36 @@
       }
     }
 
+    // ── Match mode (Contains / Exact) ──────────────────────────────────────
+    const MATCH = { scan: 'contains', find: 'contains' }
+    function setMatchMode(scope, mode) {
+      MATCH[scope] = mode
+      document.querySelectorAll(`#${scope}-match-toggle .mt-btn`).forEach(b => b.classList.toggle('active', b.dataset.mode === mode))
+      updateMatchHint()
+      if (scope === 'scan') filterPreview(document.getElementById('name-filter').value)
+    }
+    function updateMatchHint() {
+      const dict = LANG[currentLang]
+      const el = document.getElementById('scan-match-hint')
+      if (el) el.innerHTML = MATCH.scan === 'exact' ? dict.matchHintExact : dict.matchHintContains
+      const ft = document.getElementById('find-match-toggle')
+      if (ft) ft.title = (MATCH.find === 'exact' ? dict.matchHintExact : dict.matchHintContains).replace(/<[^>]+>/g, '')
+    }
+    // Split multi-keyword input by comma/semicolon ONLY (spaces stay inside a keyword)
+    function splitTerms(raw) {
+      return (raw || '').split(/[,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean)
+    }
+    function stripExtName(n) {
+      const i = n.lastIndexOf('.')
+      return i > 0 ? n.slice(0, i) : n
+    }
+    // exact: filename (with or without extension) must equal keyword · contains: substring
+    function nameMatches(fileName, q, mode) {
+      const low = fileName.toLowerCase()
+      if (mode === 'exact') return low === q || stripExtName(low) === q
+      return low.includes(q)
+    }
+
     async function doScan() {
       if (LS.scanning || !LS.scanHandle) return
       LS.scanning = true
@@ -2003,8 +2085,7 @@
 
       const extRaw = document.getElementById('ext-filter').value.trim()
       const exts = extRaw ? extRaw.split(/[\s,;]+/).map(e => e.replace(/^\./, '').toLowerCase()).filter(Boolean) : []
-      const nameQueryRaw = document.getElementById('name-filter').value.trim().toLowerCase()
-      const nameQueries = nameQueryRaw ? nameQueryRaw.split(/[\s,;]+/).filter(Boolean) : []
+      const nameQueries = splitTerms(document.getElementById('name-filter').value)
       const skipHidden = document.getElementById('scan-skip-hidden').checked
 
       // Show scanning status in results area
@@ -2013,7 +2094,7 @@
     <div class="scan-status-card">
       <div class="scan-status-spinner"></div>
       <div>
-        <div class="scan-status-title" id="scan-status-title">Đang quét...</div>
+        <div class="scan-status-title" id="scan-status-title">${LANG[currentLang].scanStatusTitle}</div>
         <div class="scan-status-sub" id="scan-status-sub">${LS.scanHandle.name}</div>
       </div>
       <div class="scan-status-count" id="scan-status-count">0</div>
@@ -2028,7 +2109,7 @@
             const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
             if (!exts.includes(ext)) continue
           }
-          if (nameQueries.length && !nameQueries.some(q => name.toLowerCase().includes(q))) continue
+          if (nameQueries.length && !nameQueries.some(q => nameMatches(name, q, MATCH.scan))) continue
           count++
           pathLines.push('./' + relPath)
           nameLines.push(name)
@@ -2045,7 +2126,7 @@
             await new Promise(r => setTimeout(r, 0))
           }
         }
-      } catch (e) { toast('Lỗi scan', e.message) }
+      } catch (e) { toast(LANG[currentLang].toastScanErr, e.message) }
 
       prog.classList.remove('running'); prog.style.width = '0%'
       LS.scanning = false; btn.disabled = false
@@ -2063,8 +2144,8 @@
 
       LS.pathLines = pathLines; LS.nameLines = nameLines; LS.sizes = sizes; LS.handles = handles
       LS.stripExt = false; LS.sizeFilter = 'all'
-      const filterSuffix = (nameQueries.length ? ` · "${nameQueries.join(' | ')}"` : '') + (exts.length ? ` · ${exts.join(', ')}` : '')
-      hint.textContent = `${count.toLocaleString()} files found${filterSuffix}`
+      const filterSuffix = (nameQueries.length ? ` · "${nameQueries.join(' | ')}"${MATCH.scan === 'exact' ? ` (${LANG[currentLang].exactTag})` : ''}` : '') + (exts.length ? ` · ${exts.join(', ')}` : '')
+      hint.textContent = `${count.toLocaleString()} ${LANG[currentLang].filesFoundLabel}${filterSuffix}`
       renderScanResults(count, pathLines, nameLines, pathContent, nameContent)
     }
 
@@ -2089,7 +2170,7 @@
     <a href="${url1}" download="list_kem_path.txt" class="btn-dl">📥 list_kem_path.txt</a>
     <a href="${url2}" download="list_ten_sach.txt" class="btn-dl" id="dl-names-link">📥 list_ten_sach.txt</a>
     <button class="btn-secondary" id="btn-strip-ext" onclick="toggleStripExt()">${d.stripExtBtn}</button>
-    <button class="btn-secondary" onclick="useListForFind()">${d.useForFindBtn}</button>`
+    <button class="btn-secondary" id="btn-use-find" onclick="useListForFind()">${d.useForFindBtn}</button>`
       area.appendChild(dlRow)
 
       // Preview — render ALL rows with checkbox, size, click-to-copy path
@@ -2220,7 +2301,7 @@
     }
 
     function filterPreview(q) {
-      q = (q || '').trim().toLowerCase()
+      const terms = splitTerms(q)
       const mode = LS.sizeFilter || 'all'
       document.querySelectorAll('.preview-row').forEach(row => {
         const nameEl = row.querySelector('.pr-name')
@@ -2229,7 +2310,7 @@
         let sizeOk = true
         if (mode === 'heavy') sizeOk = sz >= HEAVY_BYTES
         else if (mode === 'light') sizeOk = sz >= 0 && sz < HEAVY_BYTES
-        const nameOk = !q || nameEl.textContent.toLowerCase().includes(q)
+        const nameOk = !terms.length || terms.some(t => nameMatches(nameEl.textContent, t, MATCH.scan))
         row.classList.toggle('hidden', !(sizeOk && nameOk))
       })
     }
@@ -2309,10 +2390,14 @@
       if (!S.rawRows.length) return
       const colIdx = colToIdx(document.getElementById('col-input').value || 'A')
       const skipH = document.getElementById('skip-header').checked
-      S.keywords = S.rawRows.slice(skipH ? 1 : 0).map(r => (r[colIdx] || '').toString().trim()).filter(v => v.length > 0)
+      const allKw = S.rawRows.slice(skipH ? 1 : 0).map(r => (r[colIdx] || '').toString().trim()).filter(v => v.length > 0)
+      // Dedupe (case-insensitive) — duplicate keywords cause duplicated result groups
+      const seenKw = new Set()
+      S.keywords = allKw.filter(k => { const lo = k.toLowerCase(); if (seenKw.has(lo)) return false; seenKw.add(lo); return true })
+      const dups = allKw.length - S.keywords.length
       const cnt = document.getElementById('kw-count'); if (cnt) cnt.textContent = S.keywords.length
       const nameEl = document.getElementById('excel-name')
-      nameEl.textContent = `✓ ${S.excelName} — ${S.keywords.length} keywords`
+      nameEl.textContent = `✓ ${S.excelName} — ${S.keywords.length} keywords${dups > 0 ? LANG[currentLang].dupRemoved.replace('{n}', dups) : ''}`
       nameEl.style.display = 'block'
       checkReady()
     }
@@ -2389,7 +2474,13 @@
       const prog = document.getElementById('progress')
       const hint = document.getElementById('search-hint')
       btn.disabled = true; prog.classList.add('running')
-      const kwLower = S.keywords.map(k => ({ orig: k, low: k.toLowerCase() }))
+      // Dedupe keywords (case-insensitive) to avoid duplicated result groups/rows
+      const kwSeen = new Set(); const kwLower = []
+      for (const k of S.keywords) {
+        const low = k.toLowerCase()
+        if (kwSeen.has(low)) continue
+        kwSeen.add(low); kwLower.push({ orig: k, low })
+      }
       const resMap = new Map(); kwLower.forEach(k => resMap.set(k.orig, []))
       let scanned = 0
       try {
@@ -2399,26 +2490,25 @@
             hint.textContent = `${LANG[currentLang].scanningHint} ${scanned.toLocaleString()} files...`
             await new Promise(r => setTimeout(r, 0))
           }
-          const lName = file.name.toLowerCase()
           for (const kw of kwLower) {
-            if (lName.includes(kw.low)) {
+            if (nameMatches(file.name, kw.low, MATCH.find)) {
               const id = ++S.fileCounter
               S.fileMap.set(id, { name: file.name, relPath: file.relPath, handle: file.handle, size: null })
               resMap.get(kw.orig).push({ name: file.name, relPath: file.relPath, id })
             }
           }
         }
-      } catch (e) { toast('Lỗi scan', e.message) }
+      } catch (e) { toast(LANG[currentLang].toastScanErr, e.message) }
       prog.classList.remove('running'); prog.style.width = '0%'
       S.searching = false; btn.disabled = false
       S.results = []; S.missing = []
-      for (const kw of S.keywords) {
-        const files = resMap.get(kw) || []
-        if (files.length) S.results.push({ keyword: kw, files })
-        else S.missing.push(kw)
+      for (const { orig } of kwLower) {
+        const files = resMap.get(orig) || []
+        if (files.length) S.results.push({ keyword: orig, files })
+        else S.missing.push(orig)
       }
       const dd = LANG[currentLang]
-      hint.textContent = `${S.results.reduce((a, g) => a + g.files.length, 0)} ${dd.foundHint} ${S.results.length}/${S.keywords.length} ${dd.scannedHint} ${scanned.toLocaleString()} ${dd.filesUnit}`
+      hint.textContent = `${S.results.reduce((a, g) => a + g.files.length, 0)} ${dd.foundHint} ${S.results.length}/${kwLower.length} ${dd.scannedHint} ${scanned.toLocaleString()} ${dd.filesUnit}`
       renderResults(); updateSelectedSize(); fetchSizesInBackground()
     }
 
@@ -2711,6 +2801,7 @@
       try {
         sessionStorage.setItem(_SK, JSON.stringify({
           lang: currentLang,
+          match: MATCH,
           tab: document.querySelector('.tab-content.active')?.id || 'tab-list',
           ls: {
             pathLines: LS.pathLines,
@@ -2747,6 +2838,12 @@
           currentLang = st.lang
           document.getElementById('btn-vi').classList.toggle('active', st.lang === 'vi')
           document.getElementById('btn-en').classList.toggle('active', st.lang === 'en')
+        }
+
+        // ── Match mode (Contains / Exact) ──
+        if (st.match) {
+          if (st.match.scan) setMatchMode('scan', st.match.scan)
+          if (st.match.find) setMatchMode('find', st.match.find)
         }
 
         // ── Part 1: scan results ──
