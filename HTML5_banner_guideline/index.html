@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML5 Banner Creation Guide - Adobe Animate CC</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <style>
         /* ── RESET ──────────────────────────────────────────────── */
         *,
@@ -18,36 +20,36 @@
 
         :root {
             /* ── Glass Dark Surfaces ── */
-            --bg:      #0a0908;
-            --surface: rgba(255,255,255,0.025);
-            --surface2:rgba(255,255,255,0.04);
-            --surface3:rgba(255,255,255,0.07);
-            --border:  rgba(255,255,255,0.07);
-            --border2: rgba(255,255,255,0.12);
+            --bg: #0a0908;
+            --surface: rgba(255, 255, 255, 0.025);
+            --surface2: rgba(255, 255, 255, 0.04);
+            --surface3: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.07);
+            --border2: rgba(255, 255, 255, 0.12);
 
             /* ── Text ── */
-            --text:  #fff;
-            --dim:   #E5D2B8;
-            --muted: rgba(185,185,177,0.55);
+            --text: #fff;
+            --dim: #E5D2B8;
+            --muted: rgba(185, 185, 177, 0.55);
 
             /* ── Brand ── */
-            --accent:   #FF3700;
-            --accent-d: rgba(255,55,0,0.09);
-            --accent-d2:rgba(255,55,0,0.18);
-            --accent-glow: rgba(255,55,0,0.25);
+            --accent: #FF3700;
+            --accent-d: rgba(255, 55, 0, 0.09);
+            --accent-d2: rgba(255, 55, 0, 0.18);
+            --accent-glow: rgba(255, 55, 0, 0.25);
 
             /* ── Semantic Status ── */
-            --clr-ok:      #2DB87D;
-            --clr-ok-dim:  rgba(45,184,125,0.12);
-            --clr-err:     #E05252;
-            --clr-info:    #5B9BD4;
-            --clr-info-dim:rgba(91,155,212,0.12);
-            --warn:        #f0a84c;
-            --warn-bg:     rgba(240,168,76,0.1);
+            --clr-ok: #2DB87D;
+            --clr-ok-dim: rgba(45, 184, 125, 0.12);
+            --clr-err: #E05252;
+            --clr-info: #5B9BD4;
+            --clr-info-dim: rgba(91, 155, 212, 0.12);
+            --warn: #f0a84c;
+            --warn-bg: rgba(240, 168, 76, 0.1);
 
             --mono: 'DM Mono', monospace;
             --sans: 'DM Sans', sans-serif;
-            --r:    6px;
+            --r: 6px;
             --r-lg: 10px;
         }
 
@@ -69,19 +71,24 @@
 
         /* ── VIDEO BACKGROUND ─────────────────────────────────────── */
         .bg-video {
-            position: fixed; inset: 0;
-            width: 100%; height: 100%;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             z-index: -2;
             opacity: 0.35;
         }
+
         .bg-glow {
-            position: fixed; inset: 0;
-            z-index: -1; pointer-events: none;
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
             background:
-                radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
-                radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.11)  0%, transparent 70%);
+                radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255, 55, 0, 0.16) 0%, transparent 60%),
+                radial-gradient(ellipse 45% 50% at 100% 0%, rgba(255, 55, 0, 0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(80, 40, 0, 0.11) 0%, transparent 70%);
         }
 
         /* ── CUSTOM SCROLLBARS ──────────────────────────────────── */
@@ -89,25 +96,46 @@
             width: 8px;
             height: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: rgba(10, 9, 8, 0.5);
         }
+
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 55, 0, 0.25);
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 55, 0, 0.5);
         }
 
         /* ── ENTRANCE ANIMATIONS ─────────────────────────────────── */
         @keyframes fadeUpIn {
-            from { opacity: 0; filter: blur(10px); transform: translateY(20px); }
-            to   { opacity: 1; filter: blur(0);   transform: translateY(0); }
+            from {
+                opacity: 0;
+                filter: blur(10px);
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                filter: blur(0);
+                transform: translateY(0);
+            }
         }
-        header { animation: fadeUpIn .5s ease-out both; }
-        nav { animation: fadeUpIn .5s ease-out .1s both; }
-        main { animation: fadeUpIn .6s ease-out .18s both; }
+
+        header {
+            animation: fadeUpIn .5s ease-out both;
+        }
+
+        nav {
+            animation: fadeUpIn .5s ease-out .1s both;
+        }
+
+        main {
+            animation: fadeUpIn .6s ease-out .18s both;
+        }
 
         /* ── CONTAINER ──────────────────────────────────────────── */
         .container {
@@ -121,16 +149,16 @@
         header {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             gap: 12px;
-            padding: 3.5rem 2rem 2.5rem;
-            background: rgba(10,9,8,0.55);
+            padding: 1.5rem 2rem 2.5rem;
+            background: rgba(10, 9, 8, 0.55);
             backdrop-filter: blur(32px) saturate(160%);
             -webkit-backdrop-filter: blur(32px) saturate(160%);
             box-shadow:
-                0 1px 0 rgba(255,255,255,0.08),
-                0 2px 16px rgba(0,0,0,0.4);
+                0 1px 0 rgba(255, 255, 255, 0.08),
+                0 2px 16px rgba(0, 0, 0, 0.4);
             position: relative;
             overflow: hidden;
             text-align: center;
@@ -155,7 +183,7 @@
 
         /* ── NAVIGATION ─────────────────────────────────────────── */
         nav {
-            background: rgba(10,9,8,0.75);
+            background: rgba(10, 9, 8, 0.75);
             backdrop-filter: blur(32px) saturate(160%);
             -webkit-backdrop-filter: blur(32px) saturate(160%);
             border: 1px solid var(--border);
@@ -265,8 +293,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h2 {
@@ -277,6 +312,7 @@
             position: relative;
             display: inline-block;
         }
+
         h2::after {
             content: '';
             position: absolute;
@@ -291,7 +327,7 @@
 
         /* ── STEP CARDS ─────────────────────────────────────────── */
         .step {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(28px) saturate(160%);
             -webkit-backdrop-filter: blur(28px) saturate(160%);
             border-radius: var(--r-lg);
@@ -302,18 +338,18 @@
             position: relative;
             overflow: hidden;
             box-shadow:
-                0 4px 24px rgba(0,0,0,0.35),
-                inset 0 1px 0   rgba(255,255,255,0.12),
-                inset 0 -1px 0  rgba(0,0,0,0.18);
+                0 4px 24px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.18);
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-left-color 0.3s ease;
         }
 
         .step:hover {
             transform: translateX(8px);
             box-shadow:
-                0 8px 32px rgba(255,55,0,0.12),
-                0 4px 24px rgba(0,0,0,0.35),
-                inset 0 1px 0 rgba(255,255,255,0.16);
+                0 8px 32px rgba(255, 55, 0, 0.12),
+                0 4px 24px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16);
             border-left-color: #ff5522;
         }
 
@@ -351,7 +387,7 @@
 
         /* ── CODE BLOCKS ────────────────────────────────────────── */
         .code-block {
-            background: rgba(10,9,8,0.7);
+            background: rgba(10, 9, 8, 0.7);
             border: 1px solid var(--border);
             color: #E5D2B8;
             font-family: var(--mono);
@@ -391,7 +427,7 @@
             border-left: 4px solid var(--accent);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
         }
 
         .highlight h3 {
@@ -459,7 +495,7 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             transition: all 0.3s ease;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .workflow-step h4 {
@@ -482,7 +518,8 @@
         }
 
         .workflow-step::after {
-            display: none; /* remove legacy arrows */
+            display: none;
+            /* remove legacy arrows */
         }
 
         /* ── SEMANTIC STATUS BOXES ──────────────────────────────── */
@@ -576,7 +613,7 @@
 
         /* ── FOOTER ─────────────────────────────────────────────── */
         footer {
-            background: rgba(10,9,8,0.75);
+            background: rgba(10, 9, 8, 0.75);
             backdrop-filter: blur(32px) saturate(160%);
             -webkit-backdrop-filter: blur(32px) saturate(160%);
             color: var(--muted);
@@ -660,7 +697,9 @@
 <body>
     <!-- Fixed Background Video -->
     <video class="bg-video" autoplay loop muted playsinline>
-        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4" type="video/mp4">
+        <source
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4"
+            type="video/mp4">
     </video>
     <div class="bg-glow"></div>
 
@@ -909,17 +948,24 @@
                             export vào thư mục [filename]-assets</span>
                         <br>
                         4. <span data-vi="Chỉnh sửa chất lượng bằng cách thêm suffix"
-                            data-en="Adjust quality by adding suffix">Chỉnh sửa chất lượng bằng cách thêm suffix</span><br>
+                            data-en="Adjust quality by adding suffix">Chỉnh sửa chất lượng bằng cách thêm
+                            suffix</span><br>
                         &nbsp;&nbsp;&nbsp;- background.jpg5<br>
                         &nbsp;&nbsp;&nbsp;- background.jpg50%<br>
-                        <span data-vi="Thêm kích thước hình ảnh đầu ra mong muốn (tương đối hoặc theo các định dạng được hỗ trợ: px, in, cm và mm) làm tiền tố cho tên asset. Photoshop sẽ tự động điều chỉnh tỷ lệ hình ảnh cho phù hợp. Ví dụ:"
-                            data-en="Add the desired output image size (relative or in supported formats: px, in, cm, and mm) as a prefix to the asset name. Photoshop scales the image accordingly. For example:">Thêm kích thước hình ảnh đầu ra mong muốn (tương đối hoặc theo các định dạng được hỗ trợ: px, in, cm và mm) làm tiền tố cho tên asset. Photoshop sẽ tự động điều chỉnh tỷ lệ hình ảnh cho phù hợp. Ví dụ:</span><br>
+                        <span
+                            data-vi="Thêm kích thước hình ảnh đầu ra mong muốn (tương đối hoặc theo các định dạng được hỗ trợ: px, in, cm và mm) làm tiền tố cho tên asset. Photoshop sẽ tự động điều chỉnh tỷ lệ hình ảnh cho phù hợp. Ví dụ:"
+                            data-en="Add the desired output image size (relative or in supported formats: px, in, cm, and mm) as a prefix to the asset name. Photoshop scales the image accordingly. For example:">Thêm
+                            kích thước hình ảnh đầu ra mong muốn (tương đối hoặc theo các định dạng được hỗ trợ: px, in,
+                            cm và mm) làm tiền tố cho tên asset. Photoshop sẽ tự động điều chỉnh tỷ lệ hình ảnh cho phù
+                            hợp. Ví dụ:</span><br>
                         &nbsp;&nbsp;&nbsp;- 200% logo.png<br>
                         &nbsp;&nbsp;&nbsp;- 300 x 200 Rounded_rectangle_3.jpg<br>
                         &nbsp;&nbsp;&nbsp;- 10in x 200mm Rounded_rectangle_3.jpg<br>
                         <span
                             data-vi="Lưu ý: Nhớ thêm một ký tự khoảng trắng giữa tiền tố và tên asset. Nếu bạn chỉ định kích thước tính bằng pixel, bạn có thể bỏ qua đơn vị. Ví dụ: 300x200."
-                            data-en="Note: Remember to add a space character between the prefix and the asset name. If you're specifying the size in pixels, you can omit the unit. For example, 300x200.">Lưu ý: Nhớ thêm một ký tự khoảng trắng giữa tiền tố và tên asset. Nếu bạn chỉ định kích thước tính bằng pixel, bạn có thể bỏ qua đơn vị. Ví dụ: 300x200.
+                            data-en="Note: Remember to add a space character between the prefix and the asset name. If you're specifying the size in pixels, you can omit the unit. For example, 300x200.">Lưu
+                            ý: Nhớ thêm một ký tự khoảng trắng giữa tiền tố và tên asset. Nếu bạn chỉ định kích thước
+                            tính bằng pixel, bạn có thể bỏ qua đơn vị. Ví dụ: 300x200.
                         </span>
                     </div>
 
@@ -1641,7 +1687,7 @@
                 outline: none;
                 transition: all 0.25s ease;
             `;
-            
+
             searchInput.addEventListener('focus', () => {
                 searchInput.style.borderColor = 'var(--accent)';
                 searchInput.style.boxShadow = '0 0 8px var(--accent-glow)';

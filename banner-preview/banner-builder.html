@@ -55,14 +55,20 @@
       display: flex;
       align-items: center;
       gap: 14px;
+      position: relative;
     }
 
     .header h1 {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       font-size: 20px;
       letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--accent);
       font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
     }
 
     .header-stats {
