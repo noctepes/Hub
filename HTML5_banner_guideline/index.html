@@ -1502,12 +1502,11 @@
             }
         }
 
-        // Smooth scrolling for navigation
+        // Smooth scrolling for navigation — offset by sticky nav height
         function smoothScrollTo(element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+            const navH = document.querySelector('nav')?.offsetHeight || 0;
+            const top = element.getBoundingClientRect().top + window.scrollY - navH;
+            window.scrollTo({ top, behavior: 'smooth' });
         }
 
         // Initialize event listeners
@@ -1529,10 +1528,8 @@
                     const sectionId = href.substring(1);
                     showSection(sectionId);
 
-                    // Smooth scroll to top of main content
-                    document.querySelector('main').scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    // Smooth scroll to top of main content, offset by sticky nav
+                    smoothScrollTo(document.querySelector('main'));
                 });
             });
 

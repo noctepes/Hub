@@ -594,45 +594,24 @@
       color: #E5D2B8;
     }
 
-    /* Stat cards slider */
+    /* Stat cards — full-width stretch */
     .stats-slider {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
       width: 100%;
     }
 
     .hero-stats {
       display: flex;
       align-items: stretch;
-      gap: 14px;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-      cursor: grab;
-      padding: 6px 0 4px;
+      gap: 10px;
       width: 100%;
-    }
-
-    .hero-stats:active {
-      cursor: grabbing;
-    }
-
-    .hero-stats::-webkit-scrollbar {
-      width: 0;
-      height: 0;
+      flex-wrap: wrap;
     }
 
     .stat-card {
-      scroll-snap-align: start;
-    }
-
-    .stat-card {
+      flex: 1 1 0;
+      min-width: 120px;
       border-radius: 20px;
       padding: 20px;
-      width: 190px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -691,31 +670,8 @@
       display: inline-block;
     }
 
-    /* Slider dots */
-    .stats-dots {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .stats-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(229, 210, 184, 0.2);
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      transition: background .2s, transform .2s, width .2s;
-      flex-shrink: 0;
-    }
-
-    .stats-dot.active {
-      background: #FF3700;
-      transform: scale(1.25);
-      width: 16px;
-      border-radius: 3px;
-    }
+    /* Slider dots — hidden (replaced by full-width stretch) */
+    .stats-dots { display: none; }
 
     /* Hero footer — partner strip */
     .hero-footer {
@@ -1043,22 +999,16 @@
         min-width: 200px;
       }
 
-      /* Stat cards slider — 1.15 cards visible, hint of next */
-      .stats-slider {
-        width: 100%;
-      }
-
+      /* Stat cards — wrap to 2 columns on mobile */
       .hero-stats {
-        gap: 10px;
-        width: 100%;
+        gap: 8px;
       }
 
       .stat-card {
-        width: calc(87vw - 40px);
-        flex-shrink: 0;
+        flex: 1 1 calc(50% - 4px);
+        min-width: calc(50% - 4px);
         padding: 16px;
         border-radius: 16px;
-        scroll-snap-align: start;
       }
 
       .stat-card-value {
