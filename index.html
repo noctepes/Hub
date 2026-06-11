@@ -637,14 +637,17 @@
     }
 
     .stat-card-value {
-      margin-top: auto;
-      padding-top: 24px;
+      padding-top: 14px;
       font-family: 'DM Sans', sans-serif;
-      font-size: 32px;
+      font-size: clamp(18px, 1.5vw, 24px);
       font-weight: 700;
       line-height: 1;
       letter-spacing: -.03em;
       color: #E5D2B8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     .stat-card-label {
@@ -652,6 +655,7 @@
       color: rgba(229, 210, 184, 0.6);
       font-weight: 400;
       margin-top: 6px;
+      margin-bottom: 10px;
       line-height: 1.35;
     }
 
@@ -666,8 +670,10 @@
       padding: 2px 8px;
       border-radius: 99px;
       border: 1px solid rgba(255, 55, 0, .2);
-      margin-top: 10px;
+      margin-top: auto;
+      padding-top: 2px;
       display: inline-block;
+      align-self: flex-start;
     }
 
     /* Slider dots — hidden (replaced by full-width stretch) */
@@ -1012,8 +1018,8 @@
       }
 
       .stat-card-value {
-        font-size: 26px;
-        padding-top: 16px;
+        font-size: 18px;
+        padding-top: 12px;
       }
 
       /* Hero footer */
