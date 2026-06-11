@@ -286,11 +286,14 @@
       flex-direction: column;
     }
 
-    /* Animation stage behind everything */
+    /* Animation stage behind everything — fades out at the bottom so the
+       hero dissolves into the tools section instead of cutting off */
     #hero-stage {
       position: absolute;
       inset: 0;
       z-index: 0;
+      -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
     }
 
     #hero-stage canvas,
@@ -731,13 +734,15 @@
       /* no overflow:hidden — would create stacking context that clips video */
     }
 
-    /* Ambient orange glow only — no dark overlay so video shows through */
+    /* Ambient orange glow + top gradient that picks up exactly where the hero
+       overlay ends (.85 dark) and gently lifts — seamless hero → tools blend */
     .tools-bg {
       position: absolute;
       inset: 0;
       z-index: 0;
       pointer-events: none;
       background:
+        linear-gradient(to bottom, rgba(10, 9, 8, .85) 0%, rgba(10, 9, 8, .45) 28%, rgba(10, 9, 8, 0) 58%),
         radial-gradient(ellipse 60% 50% at 90% 90%, rgba(255, 55, 0, .16) 0%, transparent 60%),
         radial-gradient(ellipse 40% 40% at 10% 10%, rgba(255, 55, 0, .08) 0%, transparent 60%);
     }
@@ -1566,7 +1571,7 @@
       HTML5_guide: { file: 'HTML5_banner_guideline/index.html', label: 'HTML5 Guide' },
       Banner_Preview: { file: 'Banner_Preview.html', label: 'Banner Preview' },
       File_finder: { file: 'File_finder.html', label: 'File Finder' },
-      PDF_overview: { file: '../Overview_Qa_PDF_builder/index.html', label: 'PDF Overview' },
+      PDF_overview: { file: 'Overview_Qa_PDF_builder.html', label: 'PDF Overview' },
     };
 
     const frames = {};

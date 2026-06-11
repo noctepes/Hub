@@ -314,10 +314,12 @@
       display: flex;
       gap: 14px;
       align-items: stretch;
+      flex-wrap: wrap;
     }
 
     .scan-card {
-      flex: 1;
+      flex: 1 1 320px;
+      min-width: 0;
       background: var(--s1);
       border: 1.5px dashed var(--b2);
       border-radius: 12px;
@@ -368,11 +370,12 @@
     }
 
     .scan-options {
+      flex: 1 1 320px;
+      min-width: 0;
       background: var(--s1);
       border: 1px solid var(--b1);
       border-radius: 12px;
       padding: 16px 18px;
-      min-width: 268px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -539,6 +542,14 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    /* Folder rows in preview list */
+    .preview-row.is-dir .pr-dir-name {
+      color: var(--acc) !important;
+      cursor: pointer;
+    }
+    .preview-row.is-dir .pr-dir-name:hover { text-decoration: underline; }
+    .preview-row.is-dir .pr-dir-name.path-copied { opacity: .5; }
 
     /* ── PART 2: FIND FILE ── */
     .find-layout {
@@ -1654,6 +1665,15 @@
             <input type="checkbox" id="scan-skip-hidden" checked>
             <label for="scan-skip-hidden" id="skip-hidden-lbl" style="font-size:12px;cursor:pointer;"></label>
           </div>
+          <div class="opt-row">
+            <input type="checkbox" id="scan-include-dirs" checked>
+            <label for="scan-include-dirs" id="include-dirs-lbl" style="font-size:12px;cursor:pointer;"></label>
+          </div>
+          <!-- Absolute-path base input — hidden for now, logic kept (remove style to re-enable) -->
+          <div style="display:none">
+            <div id="scan-base-lbl" style="font-size:12px;color:var(--muted);margin-bottom:5px;"></div>
+            <input type="text" class="full-w" id="scan-base-path" oninput="saveBasePath('scan', this.value)">
+          </div>
           <div class="opt-hint" id="opt-hint-box"></div>
         </div>
       </div>
@@ -1745,6 +1765,11 @@
               </div>
             </div>
           </div>
+          <!-- Absolute-path base input — hidden for now, logic kept (remove display:none to re-enable) -->
+          <div style="margin-top:10px;display:none">
+            <div id="find-base-lbl" style="font-size:11px;color:var(--muted);margin-bottom:5px;"></div>
+            <input type="text" class="full-w" id="find-base-path" oninput="saveBasePath('find', this.value)">
+          </div>
         </div>
         <div class="action-bar">
           <button class="btn-primary" id="btn-search" disabled onclick="doSearch()" data-i18n="search">⚡ SEARCH</button>
@@ -1817,6 +1842,10 @@
         scanOptTitle: 'Tùy chọn', extFilterLbl: 'Lọc đuôi file',
         extFilterHint: '(vd: jpg, ai, png)', extFilterPlaceholder: 'Để trống = lấy tất cả file',
         skipHiddenLbl: 'Bỏ qua file ẩn (. prefix)',
+        includeDirsLbl: '📁 Tìm cả folder trùng keyword (khi có "Tìm tên file")',
+        foldersFoundLabel: 'folders tìm thấy', dirFilesUnit: 'files',
+        basePathLbl: '📍 Path thật của folder đã chọn — để copy path tuyệt đối (tự nhớ)',
+        basePathPh: 'vd: /Users/ten/Desktop/Projects · Mac: ⌥Option+chuột phải folder → Copy as Pathname',
         optHint: 'Kết quả tạo 2 file trong folder đã chọn:<br><strong>list_kem_path.txt</strong> — đường dẫn tương đối<br><strong>list_ten_sach.txt</strong> — tên file sạch (dùng cho Tab Tìm File)',
         listEmptyP: 'Chọn folder và nhấn SCAN<br>để tạo danh sách file',
         scanningMsg: 'Đang scan:', noFilesFound: 'Không tìm thấy file nào', noFilesMsg: 'Không có file nào',
@@ -1866,6 +1895,10 @@
         scanOptTitle: 'Options', extFilterLbl: 'Filter by extension',
         extFilterHint: '(e.g. jpg, ai, png)', extFilterPlaceholder: 'Leave empty = all files',
         skipHiddenLbl: 'Skip hidden files (. prefix)',
+        includeDirsLbl: '📁 Also match folder names (needs "Search filename")',
+        foldersFoundLabel: 'folders found', dirFilesUnit: 'files',
+        basePathLbl: '📍 Real path of selected folder — for absolute-path copy (remembered)',
+        basePathPh: 'e.g. C:\\Projects · Win: Shift+right-click folder → Copy as path',
         optHint: 'Results save 2 files in the selected folder:<br><strong>list_kem_path.txt</strong> — relative paths<br><strong>list_ten_sach.txt</strong> — clean filenames (use in File Finder tab)',
         listEmptyP: 'Select folder and click SCAN<br>to generate file list',
         scanningMsg: 'Scanning:', noFilesFound: 'No files found', noFilesMsg: 'No files',
@@ -1914,6 +1947,16 @@
       if (extInput) extInput.placeholder = dict.extFilterPlaceholder
       const skipLbl = document.getElementById('skip-hidden-lbl')
       if (skipLbl) skipLbl.textContent = dict.skipHiddenLbl
+      const incDirsLbl = document.getElementById('include-dirs-lbl')
+      if (incDirsLbl) incDirsLbl.textContent = dict.includeDirsLbl
+      const scanBaseLbl = document.getElementById('scan-base-lbl')
+      if (scanBaseLbl) scanBaseLbl.textContent = dict.basePathLbl
+      const scanBaseInput = document.getElementById('scan-base-path')
+      if (scanBaseInput) scanBaseInput.placeholder = dict.basePathPh
+      const findBaseLbl = document.getElementById('find-base-lbl')
+      if (findBaseLbl) findBaseLbl.textContent = dict.basePathLbl
+      const findBaseInput = document.getElementById('find-base-path')
+      if (findBaseInput) findBaseInput.placeholder = dict.basePathPh
       const optHintBox = document.getElementById('opt-hint-box')
       if (optHintBox) optHintBox.innerHTML = dict.optHint
       const nameFilterLbl = document.getElementById('name-filter-lbl')
@@ -2000,14 +2043,14 @@
     // ═══════════════════════════════════════════════════════════════
     // PART 1 — LIST GENERATOR
     // ═══════════════════════════════════════════════════════════════
-    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], sizes: [], handles: [], stripExt: false, sizeFilter: 'all' }
+    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], sizes: [], handles: [], isDirs: [], stripExt: false, sizeFilter: 'all', dirSizeToken: 0 }
 
     /* ── Hard reset — wipes scan state + UI, hot-reloads the iframe ── */
     function hardReset() {
       // Clear in-memory state
       LS.scanHandle = null; LS.scanning = false; LS.lastNameLines = []
-      LS.pathLines = []; LS.nameLines = []; LS.sizes = []; LS.handles = []
-      LS.stripExt = false; LS.sizeFilter = 'all'
+      LS.pathLines = []; LS.nameLines = []; LS.sizes = []; LS.handles = []; LS.isDirs = []
+      LS.stripExt = false; LS.sizeFilter = 'all'; LS.dirSizeToken++
       // Clear any cached storage we may have set
       try { localStorage.clear(); sessionStorage.clear() } catch (_) {}
       // Force a fresh reload bypassing cache
@@ -2024,11 +2067,46 @@
       return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB'
     }
 
+    // ── Absolute path support ──────────────────────────────────────────────
+    // Browsers hide real disk paths (File System Access API only exposes folder
+    // names), so the user pastes the absolute path of the picked folder once.
+    // It is remembered per folder name in localStorage.
+    function cleanBaseInput(v) {
+      return (v || '').trim().replace(/^["']+|["']+$/g, '').replace(/[\\/]+$/, '')
+    }
+    function basePathKey(scope) {
+      const h = scope === 'scan' ? LS.scanHandle : (typeof S !== 'undefined' ? S.srcHandle : null)
+      return h && h.name ? `ffbase:${h.name}` : null
+    }
+    function saveBasePath(scope, v) {
+      const key = basePathKey(scope)
+      if (key) { try { localStorage.setItem(key, cleanBaseInput(v)) } catch (_) {} }
+    }
+    function loadBasePath(scope) {
+      const key = basePathKey(scope)
+      if (!key) return ''
+      try { return localStorage.getItem(key) || '' } catch (_) { return '' }
+    }
+    function refreshBaseInput(scope) {
+      const el = document.getElementById(scope === 'scan' ? 'scan-base-path' : 'find-base-path')
+      if (el) el.value = loadBasePath(scope)
+    }
+    function buildAbsPath(scope, relPath) {
+      const el = document.getElementById(scope === 'scan' ? 'scan-base-path' : 'find-base-path')
+      const base = cleanBaseInput(el ? el.value : '')
+      if (!base) return relPath // no base set — copy relative path as before
+      const rel = (relPath || '').replace(/^\.\//, '')
+      const isWin = /^[A-Za-z]:/.test(base) || base.startsWith('\\\\')
+      if (isWin) return base + '\\' + rel.replace(/\//g, '\\').replace(/\\+$/, '')
+      return base + '/' + rel
+    }
+
     async function pickScanFolder() {
       if (!('showDirectoryPicker' in window)) { toast('Not supported', 'Please use Chrome or Edge'); return }
       try {
         const handle = await window.showDirectoryPicker({ mode: 'readwrite' })
         LS.scanHandle = handle
+        refreshBaseInput('scan')
         document.getElementById('scan-folder-path').textContent = handle.name
         document.getElementById('scan-folder-card').classList.add('ok')
         document.getElementById('btn-scan').disabled = false
@@ -2041,7 +2119,10 @@
         if (skipHidden && name.startsWith('.')) continue
         const path = relPath ? relPath + '/' + name : name
         if (entry.kind === 'file') yield { name, relPath: path, fileHandle: entry }
-        else yield* walkDirList(entry, path, skipHidden)
+        else {
+          yield { name, relPath: path, dirHandle: entry, isDir: true }
+          yield* walkDirList(entry, path, skipHidden)
+        }
       }
     }
 
@@ -2087,6 +2168,8 @@
       const exts = extRaw ? extRaw.split(/[\s,;]+/).map(e => e.replace(/^\./, '').toLowerCase()).filter(Boolean) : []
       const nameQueries = splitTerms(document.getElementById('name-filter').value)
       const skipHidden = document.getElementById('scan-skip-hidden').checked
+      const includeDirs = document.getElementById('scan-include-dirs').checked && nameQueries.length > 0
+      LS.dirSizeToken++ // cancel any folder-size computation from a previous scan
 
       // Show scanning status in results area
       const resultsArea = document.getElementById('list-results')
@@ -2100,27 +2183,41 @@
       <div class="scan-status-count" id="scan-status-count">0</div>
     </div>`
 
-      const pathLines = [], nameLines = [], sizes = [], handles = []
-      let count = 0, scanned = 0
+      const pathLines = [], nameLines = [], sizes = [], handles = [], isDirs = []
+      let count = 0, dirCount = 0, scanned = 0
       try {
-        for await (const { name, relPath, fileHandle } of walkDirList(LS.scanHandle, '', skipHidden)) {
+        for await (const item of walkDirList(LS.scanHandle, '', skipHidden)) {
+          const { name, relPath } = item
           scanned++
-          if (exts.length) {
-            const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
-            if (!exts.includes(ext)) continue
+          if (item.isDir) {
+            // Folder matching: ignores extension filter, requires a name keyword match
+            if (includeDirs && nameQueries.some(q => nameMatches(name, q, MATCH.scan))) {
+              dirCount++
+              pathLines.push('./' + relPath + '/')
+              nameLines.push(name)
+              handles.push(item.dirHandle)
+              sizes.push(null) // computed in background after render
+              isDirs.push(true)
+            }
+          } else {
+            if (exts.length) {
+              const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : ''
+              if (!exts.includes(ext)) continue
+            }
+            if (nameQueries.length && !nameQueries.some(q => nameMatches(name, q, MATCH.scan))) continue
+            count++
+            pathLines.push('./' + relPath)
+            nameLines.push(name)
+            handles.push(item.fileHandle)
+            isDirs.push(false)
+            let sz = null
+            try { const f = await item.fileHandle.getFile(); sz = f.size } catch (_) {}
+            sizes.push(sz)
           }
-          if (nameQueries.length && !nameQueries.some(q => nameMatches(name, q, MATCH.scan))) continue
-          count++
-          pathLines.push('./' + relPath)
-          nameLines.push(name)
-          handles.push(fileHandle)
-          let sz = null
-          try { const f = await fileHandle.getFile(); sz = f.size } catch (_) {}
-          sizes.push(sz)
-          if (scanned % 100 === 0 || count % 50 === 0) {
+          if (scanned % 100 === 0 || (count + dirCount) % 50 === 0) {
             const cntEl = document.getElementById('scan-status-count')
             const subEl = document.getElementById('scan-status-sub')
-            if (cntEl) cntEl.textContent = count.toLocaleString() + ' files'
+            if (cntEl) cntEl.textContent = count.toLocaleString() + ' files' + (dirCount ? ` · ${dirCount} 📁` : '')
             if (subEl) subEl.textContent = relPath.length > 60 ? '…' + relPath.slice(-60) : relPath
             hint.textContent = `${LANG[currentLang].scanningMsg} ${scanned.toLocaleString()} mục...`
             await new Promise(r => setTimeout(r, 0))
@@ -2132,7 +2229,7 @@
       LS.scanning = false; btn.disabled = false
       LS.lastNameLines = nameLines
 
-      if (!count) {
+      if (!count && !dirCount) {
         const dd = LANG[currentLang]
         hint.textContent = dd.noFilesFound
         document.getElementById('list-results').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>${dd.noFilesMsg}${exts.length ? ` · ${exts.join(', ')}` : ''}</p></div>`
@@ -2142,14 +2239,15 @@
       const pathContent = pathLines.join('\n')
       const nameContent = nameLines.join('\n')
 
-      LS.pathLines = pathLines; LS.nameLines = nameLines; LS.sizes = sizes; LS.handles = handles
+      LS.pathLines = pathLines; LS.nameLines = nameLines; LS.sizes = sizes; LS.handles = handles; LS.isDirs = isDirs
       LS.stripExt = false; LS.sizeFilter = 'all'
       const filterSuffix = (nameQueries.length ? ` · "${nameQueries.join(' | ')}"${MATCH.scan === 'exact' ? ` (${LANG[currentLang].exactTag})` : ''}` : '') + (exts.length ? ` · ${exts.join(', ')}` : '')
-      hint.textContent = `${count.toLocaleString()} ${LANG[currentLang].filesFoundLabel}${filterSuffix}`
-      renderScanResults(count, pathLines, nameLines, pathContent, nameContent)
+      hint.textContent = `${count.toLocaleString()} ${LANG[currentLang].filesFoundLabel}${dirCount ? ` · ${dirCount} ${LANG[currentLang].foldersFoundLabel}` : ''}${filterSuffix}`
+      renderScanResults(count, pathLines, nameLines, pathContent, nameContent, dirCount)
+      if (dirCount) computeFolderSizes()
     }
 
-    function renderScanResults(count, pathLines, nameLines, pathContent, nameContent) {
+    function renderScanResults(count, pathLines, nameLines, pathContent, nameContent, dirCount = 0) {
       const area = document.getElementById('list-results')
       const d = LANG[currentLang]
       area.innerHTML = ''
@@ -2158,7 +2256,9 @@
       const stats = document.createElement('div')
       stats.className = 'stats-row'
       stats.innerHTML = `
-    <div class="stat-card"><strong>${count.toLocaleString()}</strong><span>${d.filesFoundLabel}</span></div>`
+    <div class="stat-card"><strong>${count.toLocaleString()}</strong><span>${d.filesFoundLabel}</span></div>` +
+        (dirCount ? `
+    <div class="stat-card"><strong>📁 ${dirCount.toLocaleString()}</strong><span>${d.foldersFoundLabel}</span></div>` : '')
       area.appendChild(stats)
 
       // Download + use buttons
@@ -2181,12 +2281,22 @@
       const lightCount = sizes.filter(s => s != null && s < HEAVY_BYTES).length
       const rowsHtml = pathLines.map((p, i) => {
         const sz = sizes[i]
+        const isDir = LS.isDirs[i]
         const cls = sz != null && sz >= HEAVY_BYTES ? 'heavy' : (sz != null ? 'light' : '')
+        if (isDir) {
+          return `<div class="preview-row is-dir" data-idx="${i}" data-size="-1">
+          <input type="checkbox" class="pr-check" onchange="updateSelCount()">
+          <div class="pr-num">${i + 1}</div>
+          <div class="pr-name pr-dir-name" title="Click to copy path" onclick="copyScanPath(this, ${i})">📁 ${esc(nameLines[i])}</div>
+          <div class="pr-path" title="Click to copy" onclick="copyScanPath(this, ${i})">${esc(p)}</div>
+          <div class="pr-size" id="pr-dirsize-${i}">…</div>
+        </div>`
+        }
         return `<div class="preview-row" data-idx="${i}" data-size="${sz == null ? -1 : sz}">
           <input type="checkbox" class="pr-check" onchange="updateSelCount()">
           <div class="pr-num">${i + 1}</div>
           <div class="pr-name">${esc(nameLines[i])}</div>
-          <div class="pr-path" title="Click to copy" onclick="copyPath(this, ${i})">${esc(p)}</div>
+          <div class="pr-path" title="Click to copy" onclick="copyScanPath(this, ${i})">${esc(p)}</div>
           <div class="pr-size ${cls}">${fmtSize(sz)}</div>
         </div>`
       }).join('')
@@ -2212,9 +2322,45 @@
       area.appendChild(box)
     }
 
+    /* ── Folder size — computed in background after render ───── */
+    async function computeFolderSizes() {
+      const token = LS.dirSizeToken
+      const d = LANG[currentLang]
+      for (let i = 0; i < LS.isDirs.length; i++) {
+        if (!LS.isDirs[i]) continue
+        let files = 0, bytes = 0, processed = 0
+        try {
+          for await (const it of walkDirList(LS.handles[i], '', true)) {
+            if (token !== LS.dirSizeToken) return // a new scan started — abort
+            if (it.isDir) continue
+            files++
+            try { bytes += (await it.fileHandle.getFile()).size } catch (_) {}
+            if (++processed % 50 === 0) {
+              paintDirSize(i, files, bytes, false)
+              await new Promise(r => setTimeout(r, 0))
+            }
+          }
+        } catch (_) {}
+        if (token !== LS.dirSizeToken) return
+        LS.sizes[i] = bytes
+        paintDirSize(i, files, bytes, true)
+      }
+      updateSelCount()
+    }
+    function paintDirSize(i, files, bytes, done) {
+      const el = document.getElementById(`pr-dirsize-${i}`)
+      if (!el) return
+      el.textContent = `${files.toLocaleString()} ${LANG[currentLang].dirFilesUnit} · ${fmtSize(bytes)}${done ? '' : '…'}`
+      el.className = 'pr-size ' + (done && bytes >= HEAVY_BYTES ? 'heavy' : (done ? 'light' : ''))
+      if (done) {
+        const row = el.closest('.preview-row')
+        if (row) row.dataset.size = bytes
+      }
+    }
+
     /* ── Preview row helpers ─────────────────────────────────── */
-    async function copyPath(el, idx) {
-      const p = LS.pathLines[idx]
+    async function copyScanPath(el, idx) {
+      const p = buildAbsPath('scan', LS.pathLines[idx])
       try { await navigator.clipboard.writeText(p); el.classList.add('path-copied'); setTimeout(() => el.classList.remove('path-copied'), 1100) }
       catch (e) { toast('Copy failed', e.message) }
     }
@@ -2251,21 +2397,48 @@
       try { destDir = await window.showDirectoryPicker({ mode: 'readwrite' }) }
       catch (e) { if (e.name !== 'AbortError') toast('Pick failed', e.message); return }
       let ok = 0, fail = 0
+      const prog = { files: 0 }
       toast('Copying…', `0 / ${checks.length}`)
       for (const cb of checks) {
         const idx = +cb.closest('.preview-row').dataset.idx
         const handle = LS.handles[idx]
         const name = LS.nameLines[idx]
         try {
-          const f = await handle.getFile()
-          const newH = await destDir.getFileHandle(name, { create: true })
-          const w = await newH.createWritable()
-          await w.write(f); await w.close()
+          if (LS.isDirs[idx]) {
+            // Folder — copy recursively, preserving structure
+            const destSub = await destDir.getDirectoryHandle(name, { create: true })
+            await copyDirRecursive(handle, destSub, prog, checks.length)
+          } else {
+            const f = await handle.getFile()
+            const newH = await destDir.getFileHandle(name, { create: true })
+            const w = await newH.createWritable()
+            await w.write(f); await w.close()
+            prog.files++
+          }
           ok++
         } catch (e) { fail++ }
-        if ((ok + fail) % 5 === 0) toast('Copying…', `${ok + fail} / ${checks.length}`)
+        if ((ok + fail) % 5 === 0) toast('Copying…', `${ok + fail} / ${checks.length} · ${prog.files} files`)
       }
-      toast('Done', `${ok} copied${fail ? ' · ' + fail + ' failed' : ''}`)
+      toast('Done', `${ok} copied (${prog.files.toLocaleString()} files)${fail ? ' · ' + fail + ' failed' : ''}`)
+    }
+
+    async function copyDirRecursive(srcDir, destDir, prog, totalItems) {
+      for await (const [name, entry] of srcDir.entries()) {
+        if (entry.kind === 'file') {
+          const f = await entry.getFile()
+          const nh = await destDir.getFileHandle(name, { create: true })
+          const w = await nh.createWritable()
+          await w.write(f); await w.close()
+          prog.files++
+          if (prog.files % 20 === 0) {
+            toast('Copying…', `${prog.files.toLocaleString()} files…`)
+            await new Promise(r => setTimeout(r, 0))
+          }
+        } else {
+          const nd = await destDir.getDirectoryHandle(name, { create: true })
+          await copyDirRecursive(entry, nd, prog, totalItems)
+        }
+      }
     }
 
     async function toggleStripExt() {
@@ -2273,7 +2446,7 @@
       LS.stripExt = !LS.stripExt
       const d = LANG[currentLang]
       const activeNames = LS.stripExt
-        ? LS.nameLines.map(n => n.includes('.') ? n.slice(0, n.lastIndexOf('.')) : n)
+        ? LS.nameLines.map((n, i) => (!LS.isDirs[i] && n.includes('.')) ? n.slice(0, n.lastIndexOf('.')) : n)
         : LS.nameLines
       const nameContent = activeNames.join('\n')
 
@@ -2292,6 +2465,7 @@
 
       // Update preview name column
       document.querySelectorAll('.preview-row').forEach((row, i) => {
+        if (row.classList.contains('is-dir')) return // folders have no extension to strip
         const nameEl = row.querySelector('.pr-name')
         if (nameEl && activeNames[i] !== undefined) nameEl.textContent = activeNames[i]
       })
@@ -2408,6 +2582,7 @@
         const handle = await window.showDirectoryPicker({ mode: 'readwrite' })
         if (type === 'src') {
           S.srcHandle = handle
+          refreshBaseInput('find')
           document.getElementById('src-path').textContent = handle.name
           document.getElementById('src-card').classList.add('ok')
           document.getElementById('step2').classList.add('done')
@@ -2632,10 +2807,11 @@
     }
 
     function copyPath(el, path) {
-      navigator.clipboard.writeText(path).then(() => {
+      const abs = buildAbsPath('find', path)
+      navigator.clipboard.writeText(abs).then(() => {
         el.classList.add('path-copied')
         const orig = el.textContent
-        el.textContent = '✓ ' + path
+        el.textContent = '✓ ' + abs
         setTimeout(() => {
           el.classList.remove('path-copied')
           el.textContent = orig
@@ -2643,7 +2819,7 @@
       }).catch(() => {
         // fallback for older browsers
         const ta = document.createElement('textarea')
-        ta.value = path; ta.style.position = 'fixed'; ta.style.opacity = '0'
+        ta.value = abs; ta.style.position = 'fixed'; ta.style.opacity = '0'
         document.body.appendChild(ta); ta.select(); document.execCommand('copy')
         document.body.removeChild(ta)
         el.classList.add('path-copied')
