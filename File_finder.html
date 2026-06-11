@@ -1395,6 +1395,22 @@
       padding: 8px 22px !important;
     }
     .btn-primary:hover:not(:disabled) { background: #CC2C00 !important; }
+    .btn-stop {
+      background: #e5484d;
+      color: #fff;
+      border: none;
+      padding: 8px 22px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      border-radius: 9999px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all .15s;
+      box-shadow: 0 4px 16px rgba(229,72,77,0.30);
+    }
+    .btn-stop:hover { background: #c93b40; }
     .btn-secondary {
       background: rgba(255,55,0,0.08) !important;
       border-color: var(--acc) !important;
@@ -1629,6 +1645,7 @@
   <div id="tab-list" class="tab-content active">
     <div class="action-bar">
       <button class="btn-primary" id="btn-scan" disabled onclick="doScan()">⚡ SCAN</button>
+      <button class="btn-stop" id="btn-stop-scan" style="display:none" onclick="stopScan()">⏹ STOP</button>
       <span class="hint-text" id="scan-hint"></span>
     </div>
     <div class="progress-wrap">
@@ -1773,6 +1790,7 @@
         </div>
         <div class="action-bar">
           <button class="btn-primary" id="btn-search" disabled onclick="doSearch()" data-i18n="search">⚡ SEARCH</button>
+          <button class="btn-stop" id="btn-stop-search" style="display:none" onclick="stopSearch()">⏹ STOP</button>
           <span class="hint-text" id="search-hint" data-i18n="selectItemsNeeded">Complete all 3 steps above</span>
         </div>
         <div class="filter-bar" id="result-filter-bar" style="display:none">
@@ -1862,6 +1880,7 @@
         matchHintExact: '<strong>Đúng tên:</strong> tên file (bỏ đuôi) phải trùng 100% từ khóa (vd: "logo_banner" chỉ khớp "logo_banner.png", không khớp "logo_banner_v2.png").',
         exactTag: 'đúng tên',
         scanStatusTitle: 'Đang quét...', toastScanErr: 'Lỗi scan',
+        stopBtn: '⏹ DỪNG', stoppedNote: '⏹ Đã dừng — hiển thị kết quả đã tìm được · ', foundSoFar: 'đã thấy',
         dupRemoved: ' · đã bỏ {n} tên trùng lặp',
         resultFilterPlaceholder: 'Lọc tên file trong kết quả...',
         filterCount: 'Hiển thị {v} / {t}'
@@ -1915,6 +1934,7 @@
         matchHintExact: '<strong>Exact:</strong> filename (extension ignored) must equal the keyword 100% (e.g. "logo_banner" matches "logo_banner.png" only, not "logo_banner_v2.png").',
         exactTag: 'exact',
         scanStatusTitle: 'Scanning...', toastScanErr: 'Scan error',
+        stopBtn: '⏹ STOP', stoppedNote: '⏹ Stopped — showing results found so far · ', foundSoFar: 'found',
         dupRemoved: ' · {n} duplicates removed',
         resultFilterPlaceholder: 'Filter results by filename...',
         filterCount: 'Showing {v} / {t}'
@@ -1975,7 +1995,9 @@
       if (scanMatchLbl) scanMatchLbl.textContent = dict.matchModeLbl
       document.querySelectorAll('.mt-btn[data-mode="contains"]').forEach(b => b.textContent = dict.matchContains)
       document.querySelectorAll('.mt-btn[data-mode="exact"]').forEach(b => b.textContent = dict.matchExact)
-      updateMatchHint()
+      // Guard: updateMatchHint is defined in a later <script> block — calling it
+      // unguarded crashes this script on first load (kills toast/_toastTimer too)
+      if (typeof updateMatchHint === 'function') updateMatchHint()
       const rfInput = document.getElementById('result-filter')
       if (rfInput) rfInput.placeholder = dict.resultFilterPlaceholder
       // Part 1 dynamic elements
@@ -2020,7 +2042,7 @@
     if (!('showDirectoryPicker' in window)) document.getElementById('browser-warn').style.display = 'block'
 
     // ── TOAST ─────────────────────────────────────────────────────────────────────
-    let _toastTimer
+    var _toastTimer // var (hoisted) — avoids TDZ crash if an earlier line throws
     function toast(title, msg, pct) {
       const el = document.getElementById('toast')
       document.getElementById('toast-title').textContent = title
@@ -2156,13 +2178,16 @@
       return low.includes(q)
     }
 
+    function stopScan() { LS.stopRequested = true }
     async function doScan() {
       if (LS.scanning || !LS.scanHandle) return
-      LS.scanning = true
+      LS.scanning = true; LS.stopRequested = false
       const btn = document.getElementById('btn-scan')
+      const stopBtn = document.getElementById('btn-stop-scan')
       const prog = document.getElementById('scan-progress')
       const hint = document.getElementById('scan-hint')
       btn.disabled = true; prog.classList.add('running')
+      if (stopBtn) { stopBtn.style.display = ''; stopBtn.textContent = LANG[currentLang].stopBtn }
 
       const extRaw = document.getElementById('ext-filter').value.trim()
       const exts = extRaw ? extRaw.split(/[\s,;]+/).map(e => e.replace(/^\./, '').toLowerCase()).filter(Boolean) : []
@@ -2187,6 +2212,7 @@
       let count = 0, dirCount = 0, scanned = 0
       try {
         for await (const item of walkDirList(LS.scanHandle, '', skipHidden)) {
+          if (LS.stopRequested) break
           const { name, relPath } = item
           scanned++
           if (item.isDir) {
@@ -2227,6 +2253,8 @@
 
       prog.classList.remove('running'); prog.style.width = '0%'
       LS.scanning = false; btn.disabled = false
+      if (stopBtn) stopBtn.style.display = 'none'
+      const wasStopped = LS.stopRequested
       LS.lastNameLines = nameLines
 
       if (!count && !dirCount) {
@@ -2242,7 +2270,7 @@
       LS.pathLines = pathLines; LS.nameLines = nameLines; LS.sizes = sizes; LS.handles = handles; LS.isDirs = isDirs
       LS.stripExt = false; LS.sizeFilter = 'all'
       const filterSuffix = (nameQueries.length ? ` · "${nameQueries.join(' | ')}"${MATCH.scan === 'exact' ? ` (${LANG[currentLang].exactTag})` : ''}` : '') + (exts.length ? ` · ${exts.join(', ')}` : '')
-      hint.textContent = `${count.toLocaleString()} ${LANG[currentLang].filesFoundLabel}${dirCount ? ` · ${dirCount} ${LANG[currentLang].foldersFoundLabel}` : ''}${filterSuffix}`
+      hint.textContent = `${wasStopped ? LANG[currentLang].stoppedNote : ''}${count.toLocaleString()} ${LANG[currentLang].filesFoundLabel}${dirCount ? ` · ${dirCount} ${LANG[currentLang].foldersFoundLabel}` : ''}${filterSuffix}`
       renderScanResults(count, pathLines, nameLines, pathContent, nameContent, dirCount)
       if (dirCount) computeFolderSizes()
     }
@@ -2639,16 +2667,19 @@
       return ''
     }
 
+    function stopSearch() { S.stopRequested = true }
     async function doSearch() {
       if (S.searching) return
-      S.searching = true; S.fileMap.clear(); S.fileCounter = 0
+      S.searching = true; S.stopRequested = false; S.fileMap.clear(); S.fileCounter = 0
       const rf = document.getElementById('result-filter'); if (rf) rf.value = ''
       const rfBar = document.getElementById('result-filter-bar'); if (rfBar) rfBar.style.display = 'none'
       const rfCnt = document.getElementById('result-filter-count'); if (rfCnt) rfCnt.style.display = 'none'
       const btn = document.getElementById('btn-search')
+      const stopBtn = document.getElementById('btn-stop-search')
       const prog = document.getElementById('progress')
       const hint = document.getElementById('search-hint')
       btn.disabled = true; prog.classList.add('running')
+      if (stopBtn) { stopBtn.style.display = ''; stopBtn.textContent = LANG[currentLang].stopBtn }
       // Dedupe keywords (case-insensitive) to avoid duplicated result groups/rows
       const kwSeen = new Set(); const kwLower = []
       for (const k of S.keywords) {
@@ -2657,12 +2688,13 @@
         kwSeen.add(low); kwLower.push({ orig: k, low })
       }
       const resMap = new Map(); kwLower.forEach(k => resMap.set(k.orig, []))
-      let scanned = 0
+      let scanned = 0, foundCount = 0
       try {
         for await (const file of walkDir(S.srcHandle, '')) {
+          if (S.stopRequested) break
           scanned++
           if (scanned % 50 === 0) {
-            hint.textContent = `${LANG[currentLang].scanningHint} ${scanned.toLocaleString()} files...`
+            hint.textContent = `${LANG[currentLang].scanningHint} ${scanned.toLocaleString()} files... · ✓ ${foundCount.toLocaleString()} ${LANG[currentLang].foundSoFar}`
             await new Promise(r => setTimeout(r, 0))
           }
           for (const kw of kwLower) {
@@ -2670,12 +2702,14 @@
               const id = ++S.fileCounter
               S.fileMap.set(id, { name: file.name, relPath: file.relPath, handle: file.handle, size: null })
               resMap.get(kw.orig).push({ name: file.name, relPath: file.relPath, id })
+              foundCount++
             }
           }
         }
       } catch (e) { toast(LANG[currentLang].toastScanErr, e.message) }
       prog.classList.remove('running'); prog.style.width = '0%'
       S.searching = false; btn.disabled = false
+      if (stopBtn) stopBtn.style.display = 'none'
       S.results = []; S.missing = []
       for (const { orig } of kwLower) {
         const files = resMap.get(orig) || []
@@ -2683,7 +2717,7 @@
         else S.missing.push(orig)
       }
       const dd = LANG[currentLang]
-      hint.textContent = `${S.results.reduce((a, g) => a + g.files.length, 0)} ${dd.foundHint} ${S.results.length}/${kwLower.length} ${dd.scannedHint} ${scanned.toLocaleString()} ${dd.filesUnit}`
+      hint.textContent = `${S.stopRequested ? dd.stoppedNote : ''}${S.results.reduce((a, g) => a + g.files.length, 0)} ${dd.foundHint} ${S.results.length}/${kwLower.length} ${dd.scannedHint} ${scanned.toLocaleString()} ${dd.filesUnit}`
       renderResults(); updateSelectedSize(); fetchSizesInBackground()
     }
 

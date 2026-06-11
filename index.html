@@ -1691,7 +1691,9 @@
       const sep = TOOLS[key].file.includes('?') ? '&' : '?';
       iframe.src = TOOLS[key].file + sep + 'v=' + Date.now();
       iframe.title = TOOLS[key].label;
-      iframe.setAttribute('allow', 'same-origin');
+      // (removed invalid allow="same-origin" — it's a sandbox token, not a
+      // Permissions-Policy feature; non-sandboxed same-origin iframes already
+      // have full access, the attribute only triggered a console warning)
       iframe.addEventListener('load', () => {
         loader.classList.add('hidden');
         setTimeout(() => loader.remove(), 350);
