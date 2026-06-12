@@ -326,7 +326,8 @@
       padding: 18px 20px;
       cursor: pointer;
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: stretch;
       gap: 14px;
       transition: all .2s;
       min-height: 80px;
@@ -341,6 +342,25 @@
       border-style: solid;
       border-color: var(--ok);
       background: var(--ok2);
+    }
+
+    .scan-card .sc-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .scan-card .sc-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      cursor: default;
+      border-top: 1px dashed var(--b2);
+      padding-top: 14px;
+      margin-top: auto;
     }
 
     .scan-card .sc-icon {
@@ -498,7 +518,9 @@
     }
 
     .preview-list {
-      max-height: 450px;
+      /* Adapts to browser height — portrait screens get a much taller list */
+      max-height: calc(100vh - 230px);
+      min-height: 300px;
       overflow-y: auto;
     }
 
@@ -550,6 +572,70 @@
     }
     .preview-row.is-dir .pr-dir-name:hover { text-decoration: underline; }
     .preview-row.is-dir .pr-dir-name.path-copied { opacity: .5; }
+
+    /* Expand button on folder rows */
+    .pr-expand {
+      background: none;
+      border: 1px solid var(--b1);
+      color: var(--acc);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 9px;
+      width: 18px;
+      height: 18px;
+      line-height: 1;
+      padding: 0;
+      flex-shrink: 0;
+      transition: transform .15s;
+    }
+    .pr-expand:hover { background: var(--s2); border-color: var(--acc); }
+    .pr-expand.open { transform: rotate(90deg); }
+
+    /* Sub-list of files inside an expanded folder */
+    .dir-sublist { display: none; background: var(--s1); }
+    .dir-sublist.open { display: block; }
+    .dir-sublist.hidden { display: none !important; }
+    .dir-sub-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 12px 5px 52px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px dashed var(--b1);
+      position: sticky;
+      top: 0;
+      background: var(--s1);
+    }
+    .dir-sub-head label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .dir-sub-rows { max-height: max(260px, 45vh); overflow-y: auto; }
+    .dir-sub-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 3px 12px 3px 52px;
+      font-size: 11.5px;
+      border-top: 1px solid var(--b1);
+    }
+    .dir-sub-row:hover { background: var(--s2); }
+    .dir-sub-row.hidden { display: none !important; }
+    .ds-name {
+      color: var(--txt);
+      flex-shrink: 0;
+      max-width: 230px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ds-rel {
+      color: var(--muted);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ds-size { color: var(--muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .ds-loading { padding: 6px 12px 6px 52px; font-size: 11px; color: var(--muted); border-top: 1px dashed var(--b1); }
 
     /* ── PART 2: FIND FILE ── */
     .find-layout {
@@ -1643,21 +1729,23 @@
      TAB 1 — TẠO DANH SÁCH
 ══════════════════════════════════════════ -->
   <div id="tab-list" class="tab-content active">
-    <div class="action-bar">
-      <button class="btn-primary" id="btn-scan" disabled onclick="doScan()">⚡ SCAN</button>
-      <button class="btn-stop" id="btn-stop-scan" style="display:none" onclick="stopScan()">⏹ STOP</button>
-      <span class="hint-text" id="scan-hint"></span>
-    </div>
     <div class="progress-wrap">
       <div class="progress-fill" id="scan-progress"></div>
     </div>
     <div class="list-body">
       <div class="list-top">
         <div class="scan-card" id="scan-folder-card" onclick="pickScanFolder()">
-          <div class="sc-icon">📂</div>
-          <div style="flex:1;min-width:0">
-            <div class="sc-lbl" data-i18n="scanFolderLbl">Folder cần quét</div>
-            <div class="sc-path" id="scan-folder-path"></div>
+          <div class="sc-top">
+            <div class="sc-icon">📂</div>
+            <div style="flex:1;min-width:0">
+              <div class="sc-lbl" data-i18n="scanFolderLbl">Folder cần quét</div>
+              <div class="sc-path" id="scan-folder-path"></div>
+            </div>
+          </div>
+          <div class="sc-actions" onclick="event.stopPropagation()">
+            <button class="btn-primary" id="btn-scan" disabled onclick="doScan()">⚡ SCAN</button>
+            <button class="btn-stop" id="btn-stop-scan" style="display:none" onclick="stopScan()">⏹ STOP</button>
+            <span class="hint-text" id="scan-hint"></span>
           </div>
         </div>
         <div class="scan-options">
@@ -1862,6 +1950,11 @@
         skipHiddenLbl: 'Bỏ qua file ẩn (. prefix)',
         includeDirsLbl: '📁 Tìm cả folder trùng keyword (khi có "Tìm tên file")',
         foldersFoundLabel: 'folders tìm thấy', dirFilesUnit: 'files',
+        expandDirTitle: 'Xem files bên trong để chọn từng file',
+        dirLoadingMsg: 'Đang đọc files trong folder…',
+        dirSelectAll: 'Chọn tất cả trong folder',
+        dirFilterPh: 'Lọc theo tên…',
+        reselectFolderMsg: 'Chọn lại folder scan để xem nội dung',
         basePathLbl: '📍 Path thật của folder đã chọn — để copy path tuyệt đối (tự nhớ)',
         basePathPh: 'vd: /Users/ten/Desktop/Projects · Mac: ⌥Option+chuột phải folder → Copy as Pathname',
         optHint: 'Kết quả tạo 2 file trong folder đã chọn:<br><strong>list_kem_path.txt</strong> — đường dẫn tương đối<br><strong>list_ten_sach.txt</strong> — tên file sạch (dùng cho Tab Tìm File)',
@@ -1916,6 +2009,11 @@
         skipHiddenLbl: 'Skip hidden files (. prefix)',
         includeDirsLbl: '📁 Also match folder names (needs "Search filename")',
         foldersFoundLabel: 'folders found', dirFilesUnit: 'files',
+        expandDirTitle: 'Browse files inside to pick individual files',
+        dirLoadingMsg: 'Reading files in folder…',
+        dirSelectAll: 'Select all in folder',
+        dirFilterPh: 'Filter by name…',
+        reselectFolderMsg: 'Re-select the scan folder to browse contents',
         basePathLbl: '📍 Real path of selected folder — for absolute-path copy (remembered)',
         basePathPh: 'e.g. C:\\Projects · Win: Shift+right-click folder → Copy as path',
         optHint: 'Results save 2 files in the selected folder:<br><strong>list_kem_path.txt</strong> — relative paths<br><strong>list_ten_sach.txt</strong> — clean filenames (use in File Finder tab)',
@@ -2065,13 +2163,13 @@
     // ═══════════════════════════════════════════════════════════════
     // PART 1 — LIST GENERATOR
     // ═══════════════════════════════════════════════════════════════
-    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], sizes: [], handles: [], isDirs: [], stripExt: false, sizeFilter: 'all', dirSizeToken: 0 }
+    const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], sizes: [], handles: [], isDirs: [], stripExt: false, sizeFilter: 'all', dirSizeToken: 0, dirChildren: {} }
 
     /* ── Hard reset — wipes scan state + UI, hot-reloads the iframe ── */
     function hardReset() {
       // Clear in-memory state
       LS.scanHandle = null; LS.scanning = false; LS.lastNameLines = []
-      LS.pathLines = []; LS.nameLines = []; LS.sizes = []; LS.handles = []; LS.isDirs = []
+      LS.pathLines = []; LS.nameLines = []; LS.sizes = []; LS.handles = []; LS.isDirs = []; LS.dirChildren = {}
       LS.stripExt = false; LS.sizeFilter = 'all'; LS.dirSizeToken++
       // Clear any cached storage we may have set
       try { localStorage.clear(); sessionStorage.clear() } catch (_) {}
@@ -2313,12 +2411,14 @@
         const cls = sz != null && sz >= HEAVY_BYTES ? 'heavy' : (sz != null ? 'light' : '')
         if (isDir) {
           return `<div class="preview-row is-dir" data-idx="${i}" data-size="-1">
-          <input type="checkbox" class="pr-check" onchange="updateSelCount()">
+          <input type="checkbox" class="pr-check" onchange="onDirCheck(this, ${i})">
           <div class="pr-num">${i + 1}</div>
+          <button class="pr-expand" id="pr-exp-${i}" onclick="toggleDirExpand(${i})" title="${LANG[currentLang].expandDirTitle}">▶</button>
           <div class="pr-name pr-dir-name" title="Click to copy path" onclick="copyScanPath(this, ${i})">📁 ${esc(nameLines[i])}</div>
           <div class="pr-path" title="Click to copy" onclick="copyScanPath(this, ${i})">${esc(p)}</div>
           <div class="pr-size" id="pr-dirsize-${i}">…</div>
-        </div>`
+        </div>
+        <div class="dir-sublist" id="dir-sub-${i}" data-idx="${i}"></div>`
         }
         return `<div class="preview-row" data-idx="${i}" data-size="${sz == null ? -1 : sz}">
           <input type="checkbox" class="pr-check" onchange="updateSelCount()">
@@ -2394,12 +2494,102 @@
     }
     function toggleSelectAllPreview(on) {
       document.querySelectorAll('#preview-list .preview-row:not(.hidden) .pr-check').forEach(cb => cb.checked = on)
+      if (on) document.querySelectorAll('#preview-list .pr-subcheck').forEach(cb => cb.checked = false) // parent covers everything inside
       updateSelCount()
     }
     function updateSelCount() {
-      const n = document.querySelectorAll('#preview-list .pr-check:checked').length
+      const rows = document.querySelectorAll('#preview-list .pr-check:checked').length
+      const subs = document.querySelectorAll('#preview-list .pr-subcheck:checked').length
       const el = document.getElementById('pv-selcount')
-      if (el) el.textContent = `${n} selected`
+      if (el) el.textContent = subs ? `${rows + subs} selected (${subs} in 📁)` : `${rows} selected`
+    }
+
+    /* ── Expandable folder rows ──────────────────────────────── */
+    async function toggleDirExpand(i) {
+      const sub = document.getElementById(`dir-sub-${i}`)
+      const btn = document.getElementById(`pr-exp-${i}`)
+      if (!sub || !btn) return
+      const opening = !sub.classList.contains('open')
+      sub.classList.toggle('open', opening)
+      btn.classList.toggle('open', opening)
+      if (!opening) return
+      if (LS.dirChildren[i]) return // already loaded
+      const handle = LS.handles[i]
+      if (!handle) { sub.classList.remove('open'); btn.classList.remove('open'); toast('Handle lost', LANG[currentLang].reselectFolderMsg); return }
+      sub.innerHTML = `<div class="ds-loading">⏳ ${LANG[currentLang].dirLoadingMsg}</div>`
+      const children = []
+      try {
+        for await (const it of walkDirList(handle, '', true)) {
+          if (it.isDir) continue
+          let size = null
+          try { size = (await it.fileHandle.getFile()).size } catch (_) {}
+          children.push({ name: it.name, relPath: it.relPath, fileHandle: it.fileHandle, size })
+          if (children.length % 100 === 0) {
+            const l = sub.querySelector('.ds-loading')
+            if (l) l.textContent = `⏳ ${children.length.toLocaleString()}…`
+            await new Promise(r => setTimeout(r, 0))
+          }
+        }
+      } catch (e) { sub.innerHTML = `<div class="ds-loading">⚠ ${esc(e.message)}</div>`; return }
+      children.sort((a, b) => a.relPath.localeCompare(b.relPath))
+      LS.dirChildren[i] = children
+      renderDirSublist(i)
+    }
+    function renderDirSublist(i) {
+      const sub = document.getElementById(`dir-sub-${i}`)
+      const children = LS.dirChildren[i] || []
+      const d = LANG[currentLang]
+      const rows = children.map((c, j) => `
+        <div class="dir-sub-row">
+          <input type="checkbox" class="pr-subcheck" data-dir="${i}" data-sub="${j}" onchange="onSubCheck(this, ${i})">
+          <div class="ds-name">${esc(c.name)}</div>
+          <div class="ds-rel">${esc(c.relPath)}</div>
+          <div class="ds-size">${c.size == null ? '—' : fmtSize(c.size)}</div>
+        </div>`).join('')
+      sub.innerHTML = `
+        <div class="dir-sub-head">
+          <label><input type="checkbox" id="ds-all-${i}" onchange="toggleSelectAllDir(${i}, this.checked)"><span>${d.dirSelectAll}</span></label>
+          <span>${children.length.toLocaleString()} ${d.dirFilesUnit}</span>
+          <input type="text" class="ds-filter" placeholder="${d.dirFilterPh}" oninput="filterDirSublist(${i}, this.value)" style="margin-left:auto;background:var(--s2);border:1px solid var(--b1);border-radius:4px;color:var(--txt);font-size:11px;padding:2px 8px;width:160px">
+        </div>
+        <div class="dir-sub-rows" id="ds-rows-${i}">${rows}</div>`
+    }
+    function filterDirSublist(i, q) {
+      const terms = splitTerms(q)
+      document.querySelectorAll(`#ds-rows-${i} .dir-sub-row`).forEach(row => {
+        const rel = row.querySelector('.ds-rel').textContent
+        const ok = !terms.length || terms.some(t => rel.toLowerCase().includes(t.toLowerCase()))
+        row.classList.toggle('hidden', !ok)
+      })
+    }
+    function onDirCheck(cb, i) {
+      if (cb.checked) { // whole folder selected — individual picks redundant
+        document.querySelectorAll(`#dir-sub-${i} .pr-subcheck`).forEach(c => c.checked = false)
+        const sa = document.getElementById(`ds-all-${i}`)
+        if (sa) sa.checked = false
+      }
+      updateSelCount()
+    }
+    function onSubCheck(cb, i) {
+      if (cb.checked) { // picking individual files — uncheck whole-folder
+        const row = document.querySelector(`#preview-list .preview-row[data-idx="${i}"] .pr-check`)
+        if (row) row.checked = false
+      }
+      updateSelCount()
+    }
+    function toggleSelectAllDir(i, on) {
+      document.querySelectorAll(`#dir-sub-${i} .dir-sub-row:not(.hidden) .pr-subcheck`).forEach(c => c.checked = on)
+      if (on) {
+        const row = document.querySelector(`#preview-list .preview-row[data-idx="${i}"] .pr-check`)
+        if (row) row.checked = false
+      }
+      updateSelCount()
+    }
+    function syncSublists() {
+      document.querySelectorAll('#preview-list .dir-sublist').forEach(sub => {
+        const row = document.querySelector(`#preview-list .preview-row[data-idx="${sub.dataset.idx}"]`)
+        sub.classList.toggle('hidden', !!row && row.classList.contains('hidden'))
+      })
     }
     function filterPreviewBySize(mode) {
       LS.sizeFilter = mode
@@ -2419,14 +2609,20 @@
     }
     async function downloadSelected() {
       const checks = Array.from(document.querySelectorAll('#preview-list .pr-check:checked'))
-      if (!checks.length) { toast('Nothing selected', 'Tick rows first'); return }
+      const checkedDirIdx = new Set(checks.map(cb => +cb.closest('.preview-row').dataset.idx))
+      // Individually picked files inside folders (skip if whole folder already selected)
+      const subJobs = Array.from(document.querySelectorAll('#preview-list .pr-subcheck:checked'))
+        .map(cb => ({ dir: +cb.dataset.dir, child: LS.dirChildren[+cb.dataset.dir]?.[+cb.dataset.sub] }))
+        .filter(j => j.child && !checkedDirIdx.has(j.dir))
+      const total = checks.length + subJobs.length
+      if (!total) { toast('Nothing selected', 'Tick rows first'); return }
       if (!('showDirectoryPicker' in window)) { toast('Not supported', 'Use Chrome / Edge'); return }
       let destDir
       try { destDir = await window.showDirectoryPicker({ mode: 'readwrite' }) }
       catch (e) { if (e.name !== 'AbortError') toast('Pick failed', e.message); return }
       let ok = 0, fail = 0
       const prog = { files: 0 }
-      toast('Copying…', `0 / ${checks.length}`)
+      toast('Copying…', `0 / ${total}`)
       for (const cb of checks) {
         const idx = +cb.closest('.preview-row').dataset.idx
         const handle = LS.handles[idx]
@@ -2445,7 +2641,22 @@
           }
           ok++
         } catch (e) { fail++ }
-        if ((ok + fail) % 5 === 0) toast('Copying…', `${ok + fail} / ${checks.length} · ${prog.files} files`)
+        if ((ok + fail) % 5 === 0) toast('Copying…', `${ok + fail} / ${total} · ${prog.files} files`)
+      }
+      // Picked files inside folders — preserve structure: <folder name>/<relative path>
+      for (const job of subJobs) {
+        try {
+          const parts = [LS.nameLines[job.dir], ...job.child.relPath.split('/')]
+          const fileName = parts.pop()
+          let dir = destDir
+          for (const p of parts) dir = await dir.getDirectoryHandle(p, { create: true })
+          const f = await job.child.fileHandle.getFile()
+          const newH = await dir.getFileHandle(fileName, { create: true })
+          const w = await newH.createWritable()
+          await w.write(f); await w.close()
+          prog.files++; ok++
+        } catch (e) { fail++ }
+        if ((ok + fail) % 5 === 0) toast('Copying…', `${ok + fail} / ${total} · ${prog.files} files`)
       }
       toast('Done', `${ok} copied (${prog.files.toLocaleString()} files)${fail ? ' · ' + fail + ' failed' : ''}`)
     }
@@ -2515,6 +2726,7 @@
         const nameOk = !terms.length || terms.some(t => nameMatches(nameEl.textContent, t, MATCH.scan))
         row.classList.toggle('hidden', !(sizeOk && nameOk))
       })
+      syncSublists()
     }
 
     function useListForFind() {
