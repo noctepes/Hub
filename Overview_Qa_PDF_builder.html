@@ -58,7 +58,7 @@
       overflow: hidden;
       background: transparent;
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
     }
@@ -114,7 +114,7 @@
     }
 
     #bar h1 {
-      font-size: 12px;
+      font-size: 15px;
       font-weight: 700;
       letter-spacing: .14em;
       color: var(--accent);
@@ -133,7 +133,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 16px;
+      font-size: 14px;
+      padding: 9px 18px;
       border: none;
       border-radius: 9999px;
       background: rgba(255, 255, 255, .06);
@@ -278,9 +279,9 @@
     .lang button {
       border: none;
       background: transparent;
-      color: var(--mute);
+      color: var(--dim);
       font-family: 'DM Mono', monospace;
-      font-size: 10px;
+      font-size: 11.5px;
       font-weight: 500;
       letter-spacing: .08em;
       padding: 3px 9px;
@@ -297,6 +298,59 @@
       background: var(--accent);
       color: #fff
     }
+
+    /* ── TABS ── */
+    .tabs { display:flex; gap:2px; border-radius:9999px; padding:4px;
+      background:rgba(255,255,255,.05); box-shadow:inset 0 1px 1px rgba(255,255,255,.1) }
+    .tabbtn { border:none; background:transparent; color:var(--dim);
+      font-family:'DM Mono',monospace; font-size:13px; font-weight:700; letter-spacing:.05em;
+      padding:8px 20px; border-radius:9999px; cursor:pointer; transition:color .15s, background .15s; white-space:nowrap }
+    .tabbtn:hover { color:var(--text) }
+    .tabbtn.active { background:var(--accent); color:#fff }
+    #main.hidden { display:none }
+
+    /* ── FINAL OUTPUT ── */
+    #view-final { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative }
+    #view-final.hidden { display:none }
+    #finalDrop { position:absolute; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+      background:rgba(10,9,8,.82); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px) }
+    #finalDrop.hidden { display:none }
+    #finalDrop.dragover .drop-border { border-color:var(--accent) }
+    #finalGrid { flex:1; overflow-y:auto; padding:16px }
+    .fo-sec { margin-bottom:24px }
+    .fo-band { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:600; font-size:13px; color:var(--text) }
+    .fo-band .gcount { color:var(--dim) }
+    .fo-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px }
+    .fo-card { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.02) }
+    .fo-card .img-wrap { aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.25); overflow:hidden }
+    .fo-card img { max-width:100%; max-height:100%; object-fit:contain }
+    .fo-meta { padding:8px 10px; font-size:11px }
+    .fo-name { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+    .fo-size { font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:var(--text); margin-top:4px }
+    .fo-target { color:var(--text); font-family:'DM Mono',monospace; font-size:13px; font-weight:600 }
+    .fo-kb { width:56px; background:rgba(255,255,255,.08); border:1px solid var(--line); color:var(--text);
+      font-family:'DM Mono',monospace; font-size:13px; font-weight:700; border-radius:6px; padding:2px 6px;
+      text-align:right; margin-right:3px }
+    .fo-kb:focus { outline:none; border-color:var(--accent); background:rgba(255,55,0,.08) }
+    .fo-kb::-webkit-inner-spin-button, .fo-kb::-webkit-outer-spin-button { -webkit-appearance:none; margin:0 }
+    .fo-kb { -moz-appearance:textfield; appearance:textfield }
+    /* add-more-images zone (Final Output) */
+    #finalAdd { flex-shrink:0; margin:10px 16px 14px; padding:14px 12px; border:1.5px dashed var(--line);
+      border-radius:12px; background:rgba(255,255,255,.02); display:flex; flex-direction:column; align-items:center;
+      justify-content:center; gap:5px; cursor:pointer; transition:background .15s,border-color .15s,color .15s;
+      color:var(--dim); text-align:center }
+    #finalAdd:hover, #finalAdd.dragover { border-color:var(--accent); background:rgba(255,55,0,.07); color:var(--text) }
+    #finalAdd .add-ico { font-size:18px; opacity:.85 }
+    #finalAdd .add-h { font-size:12px; font-weight:600; letter-spacing:.02em }
+    #finalAdd .add-p { font-family:'DM Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:.02em }
+    #finalAdd.hidden { display:none }
+    .fo-badge { display:inline-block; font-family:'DM Mono',monospace; font-size:12px; font-weight:700; padding:3px 10px;
+      border-radius:99px; margin-top:6px; letter-spacing:.02em }
+    .b-wait { background:rgba(255,255,255,.10); color:var(--dim) }
+    .b-ok   { background:rgba(91,191,138,.16); color:#7fd6a6 }
+    .b-warn { background:rgba(240,176,75,.18); color:#f0c14b }
+    .b-skip { background:rgba(91,154,191,.16); color:#86bfe0 }
 
     /* ── LAYOUT ── */
     #main {
@@ -811,9 +865,20 @@
       <button id="langVi" onclick="setLang('vi')">VI</button>
     </div>
     <div class="sep"></div>
-    <input type="text" id="pdfName" placeholder="PDF filename…" value="Overview">
-    <button class="btn btn-accent" id="exportBtn" onclick="exportPDF()" disabled>⬇ Export PDF</button>
-    <button class="btn btn-reset" id="resetBtn" onclick="resetAll()" disabled>↺ Reset</button>
+    <div class="tabs">
+      <button id="tabPdf" class="tabbtn active" onclick="switchTab('pdf')">PDF Builder</button>
+      <button id="tabFinal" class="tabbtn" onclick="switchTab('final')">Final Output</button>
+    </div>
+    <div class="sep"></div>
+    <span id="pdfControls" style="display:flex;align-items:center;gap:12px">
+      <input type="text" id="pdfName" placeholder="PDF filename…" value="Overview">
+      <button class="btn btn-accent" id="exportBtn" onclick="exportPDF()" disabled>⬇ Export PDF</button>
+      <button class="btn btn-reset" id="resetBtn" onclick="resetAll()" disabled>↺ Reset</button>
+    </span>
+    <span id="finalControls" class="hidden" style="align-items:center;gap:12px">
+      <button class="btn btn-accent" id="finalExportBtn" onclick="compressExport()" disabled>🗜 Compress &amp; Export</button>
+      <button class="btn btn-reset" id="finalResetBtn" onclick="finalReset()" disabled>↺ Reset</button>
+    </span>
     <div id="status">Select a folder to begin</div>
   </div>
   <div id="main">
@@ -852,6 +917,25 @@
     </div>
   </div>
 
+  <!-- ── FINAL OUTPUT VIEW ── -->
+  <div id="view-final" class="hidden">
+    <div id="finalDrop" ondragover="onFinalDragOver(event)" ondragleave="onFinalDragLeave(event)" ondrop="onFinalDrop(event)">
+      <div class="drop-border">
+        <div class="drop-ico">🗜</div>
+        <div class="drop-h">Drop campaign folder here</div>
+        <div class="drop-p">Compresses the designated folders to their target file sizes,<br>then writes results into a <b>_JPG</b> folder in the root.</div>
+        <div class="drop-or">or</div>
+        <button class="btn" onclick="pickFinalFolder()">Browse folder</button>
+      </div>
+    </div>
+    <div id="finalGrid"></div>
+    <div id="finalAdd" class="hidden" onclick="pickImages()" ondragover="onFinalAddDragOver(event)" ondragleave="onFinalAddDragLeave(event)" ondrop="onFinalAddDrop(event)">
+      <div class="add-ico">＋</div>
+      <div class="add-h">Add more images</div>
+      <div class="add-p">Click or drop images here · set a KB target on each (blank = no limit)</div>
+    </div>
+  </div>
+
   <script>
     // Folder detection order. Folders not listed here are appended last (natural sort).
     // Edit this list manually if your folder names differ.
@@ -859,6 +943,15 @@
     const SUBS = ['Review', 'JPG'];
     const IMG_EXT = new Set(['.jpg', '.jpeg', '.png']);
     const IGNORE = new Set(['_Links', '__MACOSX', '.DS_Store']);
+    // AEM: from the JPG subfolder, the PDF should include ONLY these two files
+    // (interleaved with their Review counterparts). All other AEM images come from Review only.
+    const AEM_JPG_ONLY = new Set(['HN-working_AR', 'HN-working_EN']);
+    function aemJpgAllowed(camp, fname) {
+      if (camp !== 'AEM') return true;
+      const dot = fname.lastIndexOf('.');
+      const base = dot > 0 ? fname.slice(0, dot) : fname;
+      return AEM_JPG_ONLY.has(base);
+    }
     // Per-folder colours (assigned in detection order, stays with the folder when reordered)
     const PALETTE = ['#FF3700', '#5b9abf', '#5bbf8a', '#c98bff', '#f0c14b', '#ff7eb6', '#4fd1c5', '#e0857a'];
 
@@ -939,7 +1032,7 @@
       else { renderList(); updateCount(); setStatus(t('begin')); }
     }
     function updateCount() { document.getElementById('count').textContent = `${totalCount()} ${t('images')}`; }
-    window.addEventListener('DOMContentLoaded', () => setLang('en'));
+    window.addEventListener('DOMContentLoaded', () => { setLang('en'); switchTab('pdf'); });
 
     function naturalCmp(a, b) {
       return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
@@ -1215,6 +1308,7 @@
         const list = [];
         for (const name of sorted) {
           for (const sub of SUBS) {
+            if (sub === 'JPG' && !aemJpgAllowed(camp, name)) continue;
             if (subs[sub]?.[name]) {
               list.push({
                 id: `${camp}/${sub}/${name}`, camp, sub, name,
@@ -1469,6 +1563,283 @@
       } catch (e) { setStatus('❌ ' + e.message); console.error(e); }
       exporting = false;
       btn.disabled = false; btn.textContent = t('export');
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  FINAL OUTPUT — per-folder image compression to target size
+    // ════════════════════════════════════════════════════════════
+    // For each campaign we read ONE designated subfolder and compress the
+    // listed images (quality-only, original dimensions kept) so each file
+    // lands at/under its KB target. Results are written to _JPG/<Camp>/ in
+    // the dropped root. "no limit" folders are copied through unchanged.
+    const FINAL_CFG = {
+      'Adbuilder':    { sub: 'JPG',    all: 24 },
+      'AEM':          { sub: 'JPG',    files: {
+        'Card-686x832': 100, 'h2': 250, 'h3-705x528': 100,
+        'HN-working_AR': 250, 'HN-working_EN': 250,
+        'm H hero EN 480x310_': 80, 'm H hero EN AR 480x310_': 80,
+        'm H Subpage EN 480x310': 80, 's-528x528': 100 } },
+      'ENL':          { sub: 'Review', files: { 'e-h-example': 100, 'e-ss-example': 40 } },
+      'I-contact':    { sub: 'Review', noLimit: true },
+      'SM':           { sub: 'Review', all: 1024 },
+      'TRADE PORTAL': { sub: 'Review', files: { 'h3-705x528': 100, 'HN_1600x480': 250, 'pop-up banner_943x440': 100 } },
+    };
+    const FINAL_ORDER = ['Adbuilder', 'AEM', 'ENL', 'I-contact', 'SM', 'TRADE PORTAL'];
+
+    let finalRootHandle = null;
+    let finalGroups = [];     // [{camp, color, items:[{name,file,limitKB,url,origSize,status,newSize,quality}]}]
+
+    function baseName(fname) { const d = fname.lastIndexOf('.'); return d > 0 ? fname.slice(0, d) : fname; }
+    // KB limit for a file: number = compress to that, null = no limit (copy), undefined = skip (not listed)
+    function limitFor(cfg, fname) {
+      if (cfg.noLimit) return null;
+      if (cfg.all != null) return cfg.all;
+      if (cfg.files) return cfg.files[baseName(fname)];
+      return undefined;
+    }
+    function fmtKB(bytes) { return (bytes / 1000).toFixed(1) + ' KB'; }  // decimal KB to match macOS Finder
+
+    // ── Tab switching ──────────────────────────────────────────
+    function switchTab(tab) {
+      const pdf = tab === 'pdf';
+      document.getElementById('tabPdf').classList.toggle('active', pdf);
+      document.getElementById('tabFinal').classList.toggle('active', !pdf);
+      document.getElementById('main').classList.toggle('hidden', !pdf);
+      document.getElementById('view-final').classList.toggle('hidden', pdf);
+      const pc = document.getElementById('pdfControls');
+      const fc = document.getElementById('finalControls');
+      pc.classList.toggle('hidden', !pdf); pc.style.display = pdf ? 'flex' : 'none';
+      fc.classList.toggle('hidden', pdf);  fc.style.display = pdf ? 'none' : 'flex';
+      if (pdf) { if (!groups.length) setStatus(t('begin')); }
+      else { if (!finalGroups.length) setStatus('Drop a campaign folder to compress'); }
+    }
+
+    // ── Drop / pick (Final Output) ─────────────────────────────
+    function onFinalDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; document.getElementById('finalDrop').classList.add('dragover'); }
+    function onFinalDragLeave(e) { if (!e.currentTarget.contains(e.relatedTarget)) document.getElementById('finalDrop').classList.remove('dragover'); }
+    async function onFinalDrop(e) {
+      e.preventDefault();
+      document.getElementById('finalDrop').classList.remove('dragover');
+      for (const item of e.dataTransfer.items) {
+        if (item.kind !== 'file') continue;
+        try {
+          const handle = await item.getAsFileSystemHandle();
+          if (handle.kind === 'directory') { await loadFinalFromHandle(handle); return; }
+        } catch (_) { }
+      }
+      if (e.dataTransfer.files && e.dataTransfer.files.length) { addImages(e.dataTransfer.files); return; }
+      setStatus('❌ Drop a campaign folder, or image files (Chrome/Edge needed to write _JPG)');
+    }
+    async function pickFinalFolder() {
+      try {
+        const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+        await loadFinalFromHandle(handle);
+      } catch (e) { if (e.name !== 'AbortError') setStatus('❌ ' + e.message); }
+    }
+
+    async function loadFinalFromHandle(handle) {
+      finalRootHandle = handle;
+      await ensureWritable(handle);
+      setStatus('⏳ Reading folder…');
+      // Detect single-campaign (has Review/JPG inside) vs a root of many campaigns.
+      const children = [];
+      for await (const [n, h] of handle.entries()) if (h.kind === 'directory') children.push([n, h]);
+      const isSingle = children.some(([n]) => SUBS.includes(n));
+      const campHandles = {};
+      if (isSingle) campHandles[handle.name] = handle;
+      else for (const [n, h] of children) campHandles[n] = h;
+
+      finalGroups.forEach(g => g.items.forEach(it => URL.revokeObjectURL(it.url)));
+      finalGroups = [];
+      let colorI = 0;
+
+      for (const camp of FINAL_ORDER) {
+        const cfg = FINAL_CFG[camp];
+        const campHandle = campHandles[camp];
+        if (!campHandle) continue;
+        let subHandle = null;
+        try { subHandle = await campHandle.getDirectoryHandle(cfg.sub); } catch (_) { continue; }
+        const items = [];
+        for await (const [fname, fHandle] of subHandle.entries()) {
+          if (fHandle.kind !== 'file') continue;
+          const ext = fname.slice(fname.lastIndexOf('.')).toLowerCase();
+          if (!IMG_EXT.has(ext)) continue;
+          const limitKB = limitFor(cfg, fname);
+          if (limitKB === undefined) continue;   // not listed for this folder
+          const file = await fHandle.getFile();
+          items.push({
+            camp, sub: cfg.sub, name: fname, file, limitKB,
+            origSize: file.size, url: URL.createObjectURL(file),
+            status: 'wait', newSize: null, quality: null
+          });
+        }
+        items.sort((a, b) => naturalCmp(a.name, b.name));
+        if (items.length) finalGroups.push({ camp, color: PALETTE[colorI++ % PALETTE.length], items });
+      }
+
+      document.getElementById('finalDrop').classList.add('hidden');
+      document.getElementById('finalAdd').classList.remove('hidden');
+      const total = finalGroups.reduce((n, g) => n + g.items.length, 0);
+      document.getElementById('finalExportBtn').disabled = !total;
+      document.getElementById('finalResetBtn').disabled = !total;
+      renderFinal();
+      setStatus(total ? `✅ ${total} images ready · ${finalGroups.length} folders — press Compress & Export`
+                      : '⚠️ No matching images found in the designated folders');
+    }
+
+    function finalReset() {
+      finalGroups.forEach(g => g.items.forEach(it => URL.revokeObjectURL(it.url)));
+      finalGroups = [];
+      finalRootHandle = null;
+      document.getElementById('finalExportBtn').disabled = true;
+      document.getElementById('finalResetBtn').disabled = true;
+      document.getElementById('finalDrop').classList.remove('hidden');
+      document.getElementById('finalAdd').classList.add('hidden');
+      renderFinal();
+      setStatus('Drop a campaign folder to compress');
+    }
+
+    function foBadge(it) {
+      if (it.status === 'ok')   return `<span class="fo-badge b-ok">✓ ${fmtKB(it.newSize)}</span>`;
+      if (it.status === 'warn') return `<span class="fo-badge b-warn">⚠ ${fmtKB(it.newSize)} · over target</span>`;
+      if (it.status === 'skip') return `<span class="fo-badge b-skip">original · ${fmtKB(it.newSize)} · max quality</span>`;
+      return `<span class="fo-badge b-wait">pending</span>`;
+    }
+    function renderFinal() {
+      const el = document.getElementById('finalGrid');
+      if (!finalGroups.length) { el.innerHTML = ''; return; }
+      let html = '';
+      finalGroups.forEach((grp, gi) => {
+        html += `<div class="fo-sec" style="--fc:${grp.color}">
+          <div class="fo-band"><span class="fdot"></span><span>${grp.camp} · ${grp.items[0].sub}</span>
+          <span class="gcount">${grp.items.length} imgs</span></div><div class="fo-cards">`;
+        grp.items.forEach((it, ii) => {
+          const val = it.limitKB == null ? '' : it.limitKB;
+          html += `<div class="fo-card">
+            <div class="img-wrap"><img src="${it.url}" loading="lazy"></div>
+            <div class="fo-meta">
+              <div class="fo-name" title="${it.name}">${it.name}</div>
+              <div class="fo-size">${fmtKB(it.origSize)} &rarr;
+                <span class="fo-target">&le; <input type="number" min="1" step="1" class="fo-kb"
+                  value="${val}" placeholder="∞" title="KB target — type a number to compress, or clear it (∞) to keep the original at maximum quality"
+                  onchange="setLimit(${gi},${ii},this.value)"> KB</span></div>
+              ${foBadge(it)}
+            </div></div>`;
+        });
+        html += `</div></div>`;
+      });
+      el.innerHTML = html;
+    }
+
+    // Edit a per-image KB target (blank/invalid = no limit, copy through)
+    function setLimit(gi, ii, val) {
+      const v = parseFloat(val);
+      finalGroups[gi].items[ii].limitKB = (String(val).trim() === '' || isNaN(v) || v <= 0) ? null : v;
+    }
+
+    // ── Add extra request images (any folder, set KB per image) ──
+    const ADDED_GROUP = '_Added';
+    function addImages(fileList) {
+      let grp = finalGroups.find(g => g.camp === ADDED_GROUP);
+      if (!grp) {
+        grp = { camp: ADDED_GROUP, sub: 'request', color: PALETTE[finalGroups.length % PALETTE.length], items: [] };
+        finalGroups.push(grp);
+      }
+      let added = 0;
+      for (const file of fileList) {
+        const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+        if (!IMG_EXT.has(ext)) continue;
+        grp.items.push({
+          camp: ADDED_GROUP, sub: 'request', name: file.name, file, limitKB: null,
+          origSize: file.size, url: URL.createObjectURL(file), status: 'wait', newSize: null, quality: null
+        });
+        added++;
+      }
+      if (!added) { setStatus('⚠️ No image files added'); return; }
+      document.getElementById('finalDrop').classList.add('hidden');
+      document.getElementById('finalAdd').classList.remove('hidden');
+      document.getElementById('finalExportBtn').disabled = false;
+      document.getElementById('finalResetBtn').disabled = false;
+      renderFinal();
+      const total = finalGroups.reduce((n, g) => n + g.items.length, 0);
+      setStatus(`✅ Added ${added} image(s) · set a KB target on each, then Compress & Export · ${total} total`);
+    }
+    function pickImages() {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.multiple = true; inp.accept = 'image/*';
+      inp.onchange = () => { if (inp.files.length) addImages(inp.files); };
+      inp.click();
+    }
+    function onFinalAddDragOver(e) { e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect = 'copy'; document.getElementById('finalAdd').classList.add('dragover'); }
+    function onFinalAddDragLeave(e) { if (!e.currentTarget.contains(e.relatedTarget)) document.getElementById('finalAdd').classList.remove('dragover'); }
+    function onFinalAddDrop(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('finalAdd').classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files.length) addImages(e.dataTransfer.files);
+    }
+
+    // ── Compress one image: quality-only, original dimensions kept ──
+    function blobAtQuality(canvas, q) { return new Promise(res => canvas.toBlob(res, 'image/jpeg', q)); }
+    async function compressToLimit(file, limitBytes) {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width; canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bitmap, 0, 0);
+      if (bitmap.close) bitmap.close();
+      // Best quality already fits → keep it (near-lossless).
+      const hi = await blobAtQuality(canvas, 0.95);
+      if (hi.size <= limitBytes) return { blob: hi, quality: 0.95, ok: true };
+      // Binary-search the highest quality that stays under the limit.
+      let lo = 0.05, hiQ = 0.95, best = null, bestQ = 0.05;
+      for (let i = 0; i < 9; i++) {
+        const mid = (lo + hiQ) / 2;
+        const b = await blobAtQuality(canvas, mid);
+        if (b.size <= limitBytes) { best = b; bestQ = mid; lo = mid; }
+        else { hiQ = mid; }
+      }
+      if (best) return { blob: best, quality: bestQ, ok: true };
+      // Even lowest quality is too big (dimensions kept per request) → warn.
+      const lowest = await blobAtQuality(canvas, 0.05);
+      return { blob: lowest, quality: 0.05, ok: false };
+    }
+
+    // ── Compress all + write to _JPG/<Camp>/ ───────────────────
+    async function compressExport() {
+      if (!finalRootHandle) {
+        try { finalRootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); }
+        catch (e) { if (e.name !== 'AbortError') setStatus('❌ ' + e.message); else setStatus('❌ Choose an output folder for _JPG'); return; }
+      }
+      if (!(await ensureWritable(finalRootHandle))) { setStatus('❌ Write permission denied'); return; }
+      const btn = document.getElementById('finalExportBtn');
+      btn.disabled = true; btn.textContent = '⏳ Compressing…';
+      let done = 0, warn = 0;
+      const total = finalGroups.reduce((n, g) => n + g.items.length, 0);
+      try {
+        const outRoot = await finalRootHandle.getDirectoryHandle('_JPG', { create: true });
+        for (const grp of finalGroups) {
+          const campDir = await outRoot.getDirectoryHandle(grp.camp, { create: true });
+          for (const it of grp.items) {
+            done++;
+            setStatus(`${done} / ${total} — ${it.camp}/${it.name}`);
+            let blob, q = null, ok = true, copied = false;
+            if (it.limitKB == null) { blob = it.file; copied = true; }   // no limit → copy as-is
+            else { const limitBytes = Math.max(1000, it.limitKB * 1000 - 1024); const r = await compressToLimit(it.file, limitBytes); blob = r.blob; q = r.quality; ok = r.ok; }
+            let outName = it.name;
+            if (!copied && !/\.jpe?g$/i.test(outName)) outName = baseName(outName) + '.jpg';
+            const fh = await campDir.getFileHandle(outName, { create: true });
+            const w = await fh.createWritable(); await w.write(blob); await w.close();
+            it.newSize = blob.size; it.quality = q;
+            it.status = copied ? 'skip' : (ok ? 'ok' : 'warn');
+            if (it.status === 'warn') warn++;
+            renderFinal();
+          }
+        }
+        setStatus(`✅ Done · ${total} images → ${finalRootHandle.name}/_JPG`
+          + (warn ? ` · ⚠ ${warn} could not reach target at min quality` : ''));
+      } catch (e) { setStatus('❌ ' + e.message); console.error(e); }
+      btn.disabled = false; btn.textContent = '🗜 Compress & Export';
     }
 
     function setStatus(msg) { document.getElementById('status').textContent = msg }
