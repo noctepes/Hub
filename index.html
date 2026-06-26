@@ -1205,6 +1205,9 @@
         <button class="nav-tab" data-tool="PDF_overview" onclick="switchTab(this)">
           <span class="nav-tab-icon">📑</span> PDF
         </button>
+        <button class="nav-tab" data-tool="Base64_converter" onclick="switchTab(this)">
+          <span class="nav-tab-icon">🖼️</span> Base64
+        </button>
       </div>
 
       <!-- Env badge -->
@@ -1308,6 +1311,12 @@
                 <div class="stat-card-label">Build QA overview PDFs from campaign folders</div>
                 <span class="stat-card-tag">Local</span>
               </div>
+              <div class="stat-card liquid-glass" onclick="openTool('Base64_converter')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">🖼️</div>
+                <div class="stat-card-value">Base64</div>
+                <div class="stat-card-label">Convert images to base64 — fully offline, no upload</div>
+                <span class="stat-card-tag">Offline</span>
+              </div>
             </div><!-- /hero-stats -->
             <div class="stats-dots">
               <button class="stats-dot active" data-idx="0"></button>
@@ -1337,6 +1346,7 @@
             <span class="hero-footer-name" onclick="openTool('Banner_Preview')">BannerPreview</span>
             <span class="hero-footer-name" onclick="openTool('File_finder')">FileFinder</span>
             <span class="hero-footer-name" onclick="openTool('PDF_overview')">PDFOverview</span>
+            <span class="hero-footer-name" onclick="openTool('Base64_converter')">Base64</span>
           </div>
         </div>
 
@@ -1506,6 +1516,24 @@
               <span class="card-arrow">↗</span>
             </div>
 
+            <div class="tool-card liquid-glass on-view" onclick="openTool('Base64_converter')"
+              style="transition-delay:1.06s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">🖼️</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">Multi-file</span>
+                  <span class="card-tag-pill liquid-glass">4 formats</span>
+                  <span class="card-tag-pill liquid-glass">Offline</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">Base64<br />Converter</div>
+                <div class="card-desc">Convert images to base64 — data URL, CSS bg, img tag. Fully offline, no upload.</div>
+              </div>
+              <span class="card-arrow">↗</span>
+            </div>
+
           </div><!-- /tools-grid -->
 
           <footer class="tools-footer">
@@ -1572,6 +1600,7 @@
       Banner_Preview: { file: 'Banner_Preview.html', label: 'Banner Preview' },
       File_finder: { file: 'File_finder.html', label: 'File Finder' },
       PDF_overview: { file: 'Overview_Qa_PDF_builder.html', label: 'PDF Overview' },
+      Base64_converter: { file: 'base64-converter.html', label: 'Base64 Converter' },
     };
 
     const frames = {};

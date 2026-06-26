@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image → Base64 · Spring CC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sc-orange:   #FF3700;
+    --sc-beige:    #E5D2B8;
+    --sc-offblack: #282828;
+    --sc-grey:     #B9B9B1;
+    --sc-white:    #FFFFFF;
+    --sc-grad-dark: linear-gradient(135deg, #282828 60%, #FF3700 100%);
+    --sc-font: 'DM Sans', sans-serif;
+    --sc-r-sm: 6px;
+    --sc-r-md: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sc-font);
+    background: #f0ece5;
+    color: var(--sc-offblack);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    background: var(--sc-grad-dark);
+    padding: 72px 40px 32px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sc-beige);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .logo-dot { width:6px; height:6px; background:var(--sc-orange); border-radius:50%; }
+  .header h1 {
+    font-size: 32px; font-weight: 700; color: var(--sc-white);
+    line-height: 1.1; letter-spacing: -0.5px;
+  }
+  .header h1 span { color: var(--sc-orange); }
+  .header-sub { font-size: 13px; color: var(--sc-grey); margin-top: 6px; }
+  .offline-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,55,0,0.15); border: 1px solid rgba(255,55,0,0.3);
+    border-radius: 4px; padding: 5px 12px; font-size: 12px; font-weight: 500;
+    color: #ff8060; white-space: nowrap; flex-shrink: 0; align-self: flex-start;
+  }
+  .offline-dot {
+    width:6px; height:6px; background:var(--sc-orange); border-radius:50%;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Main ── */
+  .main {
+    width: 100%; max-width: 820px;
+    padding: 32px 20px 60px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  /* ── Drop zone ── */
+  .dropzone {
+    border: 2px dashed var(--sc-beige); border-radius: var(--sc-r-md);
+    padding: 52px 24px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+    background: var(--sc-white); position: relative;
+    box-shadow: 0 4px 20px rgba(40,40,40,.06);
+  }
+  .dropzone:hover, .dropzone.drag-over {
+    border-color: var(--sc-orange); background: #fff8f5;
+  }
+  .dropzone input[type="file"] {
+    position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
+  }
+  .drop-icon {
+    width:52px; height:52px;
+    background: linear-gradient(135deg,#fff0eb,#ffe4d6);
+    border-radius:14px; display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px; border:1px solid #ffd0be;
+  }
+  .drop-icon svg { width:24px; height:24px; }
+  .drop-label { font-size:15px; font-weight:500; color:var(--sc-offblack); }
+  .drop-label em { color:var(--sc-orange); font-style:normal; font-weight:700; }
+  .drop-sub { font-size:12px; color:var(--sc-grey); margin-top:6px; }
+
+  /* ── File card (single & multi) ── */
+  .file-card {
+    background: var(--sc-white);
+    border-radius: var(--sc-r-md);
+    box-shadow: 0 4px 20px rgba(40,40,40,.06);
+    overflow: hidden;
+  }
+
+  /* top row: thumb + meta */
+  .fc-header {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 18px 20px 16px;
+    border-bottom: 1px solid #f0ece5;
+  }
+  .fc-thumb {
+    width:72px; height:72px; object-fit:contain;
+    border-radius:8px; border:1px solid #ede8e0;
+    background:#faf8f5; flex-shrink:0;
+  }
+  .fc-meta { flex:1; }
+  .fc-name {
+    font-size:13px; font-weight:700; color:var(--sc-offblack);
+    word-break:break-all; margin-bottom:5px;
+  }
+  .fc-info { font-size:11.5px; color:var(--sc-grey); line-height:1.9; }
+  .fc-info b { color:var(--sc-offblack); font-weight:500; }
+  .fc-warn {
+    display:none; font-size:11.5px; font-weight:500; color:#c23000;
+    padding:4px 8px; background:#fff4f0;
+    border-radius:4px; border:1px solid #ffd0be;
+    margin-top:6px; width:fit-content;
+  }
+  .fc-warn.on { display:block; }
+
+  /* 4-tab strip */
+  .fc-tabs {
+    display: flex; gap: 4px; padding: 8px 10px;
+    border-bottom: 1px solid #f0ece5;
+    background: #faf8f5;
+  }
+  .fc-tab {
+    flex:1; padding:6px 8px; font-family:var(--sc-font);
+    font-size:11px; font-weight:600; border-radius:6px; border:none;
+    background:transparent; color:var(--sc-grey); cursor:pointer;
+    transition:all .12s; text-align:center; white-space:nowrap;
+  }
+  .fc-tab:hover { color:var(--sc-offblack); background:#eee8df; }
+  .fc-tab.active { background:var(--sc-offblack); color:var(--sc-white); }
+
+  /* output panels — 1 visible at a time */
+  .fc-panels { position:relative; }
+  .fc-panel { display:none; }
+  .fc-panel.active { display:block; }
+
+  .fc-out {
+    width:100%; min-height:90px; max-height:160px;
+    background:transparent; border:none;
+    padding:12px 20px;
+    font-family:'SF Mono','Fira Code','Consolas',monospace;
+    font-size:11px; color:var(--sc-orange); line-height:1.7;
+    resize:none; overflow-y:auto; word-break:break-all; display:block;
+  }
+  .fc-out:focus { outline:none; }
+
+  /* copy bar */
+  .fc-footer {
+    display:flex; justify-content:flex-end; gap:8px;
+    padding:10px 20px; border-top:1px solid #f0ece5;
+  }
+  .btn-sm {
+    padding:6px 16px; font-family:var(--sc-font);
+    font-size:12px; font-weight:700; border-radius:var(--sc-r-sm);
+    cursor:pointer; transition:all .12s; border:2px solid transparent;
+  }
+  .btn-sm:active { transform:scale(.97); }
+  .btn-copy {
+    background:var(--sc-orange); color:var(--sc-white); border-color:var(--sc-orange);
+  }
+  .btn-copy:hover { background:#e03000; border-color:#e03000; }
+  .btn-sel {
+    background:var(--sc-white); color:var(--sc-offblack); border-color:var(--sc-beige);
+    box-shadow:0 1px 4px rgba(40,40,40,.06);
+  }
+  .btn-sel:hover { border-color:var(--sc-grey); }
+
+  /* global reset */
+  .reset-wrap { display:flex; justify-content:flex-end; }
+  .btn-reset {
+    background:transparent; border:2px solid #ddd4c5; border-radius:var(--sc-r-sm);
+    padding:8px 20px; font-family:var(--sc-font); font-size:12px; font-weight:700;
+    color:var(--sc-grey); cursor:pointer; transition:all .12s;
+  }
+  .btn-reset:hover { border-color:var(--sc-orange); color:#c23000; background:#fff4f0; }
+
+  /* size warn global */
+  .size-warn-bar {
+    display:none; font-size:12px; font-weight:500; color:#c23000;
+    padding:10px 14px; background:#fff4f0;
+    border-left:3px solid var(--sc-orange); border-radius:0 6px 6px 0;
+  }
+  .size-warn-bar.on { display:block; }
+
+  /* ── Toast ── */
+  .toast {
+    position:fixed; bottom:28px; left:50%;
+    transform:translateX(-50%) translateY(10px);
+    background:var(--sc-offblack); color:var(--sc-white);
+    font-family:var(--sc-font); font-size:13px; font-weight:500;
+    padding:10px 22px; border-radius:100px;
+    border-left:3px solid var(--sc-orange);
+    opacity:0; transition:opacity .2s, transform .2s;
+    pointer-events:none; white-space:nowrap; z-index:999;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── Footer ── */
+  .footer {
+    width:100%; text-align:center; padding:20px;
+    font-size:11.5px; color:var(--sc-grey);
+    border-top:1px solid var(--sc-beige);
+  }
+  .footer span { color:var(--sc-orange); font-weight:700; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-badge">
+      <div class="logo-dot"></div>
+      Spring CC · Internal Tools
+    </div>
+    <h1>Image → <span>Base64</span></h1>
+    <div class="header-sub">Convert ảnh sang base64 ngay trên máy, không cần internet</div>
+  </div>
+  <div class="offline-badge">
+    <div class="offline-dot"></div>
+    100% Offline
+  </div>
+</div>
+
+<div class="main" id="main">
+
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="drop-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#FF3700" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <div class="drop-label"><em>Kéo thả ảnh vào đây</em> hoặc click để chọn</div>
+    <div class="drop-sub">PNG · JPG · GIF · WEBP · SVG · ICO · BMP · Hỗ trợ nhiều file</div>
+  </div>
+
+  <div id="cards"></div>
+
+  <div class="reset-wrap" id="resetWrap" style="display:none">
+    <button class="btn-reset" id="btnReset">Xoá tất cả / Reset</button>
+  </div>
+
+</div>
+
+<div class="footer">
+  Internal tool by <span>Spring CC</span> · Runs fully offline · No data leaves your machine
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const FMTS = [
+    { key:'data-url',    label:'data URL' },
+    { key:'base64-only', label:'Base64 only' },
+    { key:'css-bg',      label:'CSS bg' },
+    { key:'img-tag',     label:'<img> tag' }
+  ];
+
+  function fmtBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n/1024).toFixed(1) + ' KB';
+    return (n/1048576).toFixed(2) + ' MB';
+  }
+
+  function getOutput(dataURL, fmt) {
+    if (fmt === 'data-url')    return dataURL;
+    if (fmt === 'base64-only') return dataURL.split(',')[1];
+    if (fmt === 'css-bg')      return "background-image: url('" + dataURL + "');";
+    if (fmt === 'img-tag')     return '<img src="' + dataURL + '" alt="">';
+    return dataURL;
+  }
+
+  function buildCard(file, dataURL) {
+    const b64len = dataURL.split(',')[1].length;
+
+    const card = document.createElement('div');
+    card.className = 'file-card';
+
+    // ── header ──
+    const hdr = document.createElement('div');
+    hdr.className = 'fc-header';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'fc-thumb';
+    thumb.src = dataURL;
+    thumb.alt = '';
+
+    const meta = document.createElement('div');
+    meta.className = 'fc-meta';
+    meta.innerHTML =
+      '<div class="fc-name">' + file.name + '</div>' +
+      '<div class="fc-info">' +
+        'Gốc: <b>' + fmtBytes(file.size) + '</b> &nbsp;·&nbsp; ' +
+        'Base64: <b>' + fmtBytes(b64len) + '</b> &nbsp;·&nbsp; ' +
+        '<b>' + (file.type || 'unknown') + '</b>' +
+      '</div>' +
+      (file.size > 102400
+        ? '<div class="fc-warn on">⚠ Ảnh > 100KB — cân nhắc dùng external file</div>'
+        : '');
+
+    hdr.appendChild(thumb);
+    hdr.appendChild(meta);
+
+    // ── tab strip ──
+    const tabStrip = document.createElement('div');
+    tabStrip.className = 'fc-tabs';
+
+    // ── panels ──
+    const panelsWrap = document.createElement('div');
+    panelsWrap.className = 'fc-panels';
+
+    // active tab state per card
+    let activeKey = 'data-url';
+
+    const tabEls = {};
+    const panelEls = {};
+
+    FMTS.forEach(({ key, label }) => {
+      // tab button
+      const tab = document.createElement('button');
+      tab.className = 'fc-tab' + (key === 'data-url' ? ' active' : '');
+      tab.textContent = label;
+      tabEls[key] = tab;
+      tabStrip.appendChild(tab);
+
+      // panel + textarea
+      const panel = document.createElement('div');
+      panel.className = 'fc-panel' + (key === 'data-url' ? ' active' : '');
+      panelEls[key] = panel;
+
+      const ta = document.createElement('textarea');
+      ta.className = 'fc-out';
+      ta.readOnly = true;
+      ta.value = getOutput(dataURL, key);
+      panel.appendChild(ta);
+      panelsWrap.appendChild(panel);
+
+      // click → switch active
+      tab.addEventListener('click', () => {
+        tabEls[activeKey].classList.remove('active');
+        panelEls[activeKey].classList.remove('active');
+        activeKey = key;
+        tabEls[activeKey].classList.add('active');
+        panelEls[activeKey].classList.add('active');
+      });
+    });
+
+    // ── footer: copy + select ──
+    const footer = document.createElement('div');
+    footer.className = 'fc-footer';
+
+    const btnSel = document.createElement('button');
+    btnSel.className = 'btn-sm btn-sel';
+    btnSel.textContent = 'Select';
+    btnSel.addEventListener('click', () => {
+      panelEls[activeKey].querySelector('textarea').select();
+    });
+
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-sm btn-copy';
+    btnCopy.textContent = 'Copy';
+    btnCopy.addEventListener('click', () => {
+      const val = panelEls[activeKey].querySelector('textarea').value;
+      navigator.clipboard.writeText(val)
+        .then(() => showToast('Copied · ' + file.name));
+    });
+
+    footer.appendChild(btnSel);
+    footer.appendChild(btnCopy);
+
+    // assemble
+    card.appendChild(hdr);
+    card.appendChild(tabStrip);
+    card.appendChild(panelsWrap);
+    card.appendChild(footer);
+
+    return card;
+  }
+
+  function processFiles(files) {
+    if (!files || files.length === 0) return;
+    const cardsEl = document.getElementById('cards');
+    const resetWrap = document.getElementById('resetWrap');
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const card = buildCard(file, e.target.result);
+        cardsEl.appendChild(card);
+        resetWrap.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // events
+  const fileInput = document.getElementById('fileInput');
+  const dropzone  = document.getElementById('dropzone');
+
+  fileInput.addEventListener('change', e => processFiles(e.target.files));
+
+  dropzone.addEventListener('dragover', e => {
+    e.preventDefault(); dropzone.classList.add('drag-over');
+  });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault(); dropzone.classList.remove('drag-over');
+    processFiles(e.dataTransfer.files);
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    document.getElementById('cards').innerHTML = '';
+    document.getElementById('resetWrap').style.display = 'none';
+    fileInput.value = '';
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1900);
+  }
+</script>
+</body>
+</html>
