@@ -1877,13 +1877,17 @@
     function remInfo(h, fl, hasData) {
       if (!hasData) return { text: '—', rowCls: '', totalCls: '' };
       if (fl === 0 && h === 0) return { text: '—', rowCls: '', totalCls: '' };
-      if (fl > h) {
-        return { text: '+' + (fl - h).toFixed(2) + ' over', rowCls: 'over', totalCls: 'over' };
+      // Round to 2 decimal places before comparing to avoid floating-point issues
+      // e.g. user fills 2.67 but h = 2.6666... → without rounding shows "+0.00 over"
+      const hR  = Math.round(h  * 100) / 100;
+      const flR = Math.round(fl * 100) / 100;
+      if (flR > hR) {
+        return { text: '+' + (flR - hR).toFixed(2) + ' over', rowCls: 'over', totalCls: 'over' };
       }
-      if (fl >= h) {
+      if (flR >= hR) {
         return { text: '✓ done', rowCls: 'ok', totalCls: 'ok' };
       }
-      return { text: (h - fl).toFixed(2), rowCls: 'err', totalCls: 'err' };
+      return { text: (hR - flR).toFixed(2), rowCls: 'err', totalCls: 'err' };
     }
 
     // ── MATRIX HELPERS ────────────────────────────────────────────
