@@ -300,57 +300,264 @@
     }
 
     /* ── TABS ── */
-    .tabs { display:flex; gap:2px; border-radius:9999px; padding:4px;
-      background:rgba(255,255,255,.05); box-shadow:inset 0 1px 1px rgba(255,255,255,.1) }
-    .tabbtn { border:none; background:transparent; color:var(--dim);
-      font-family:'DM Mono',monospace; font-size:13px; font-weight:700; letter-spacing:.05em;
-      padding:8px 20px; border-radius:9999px; cursor:pointer; transition:color .15s, background .15s; white-space:nowrap }
-    .tabbtn:hover { color:var(--text) }
-    .tabbtn.active { background:var(--accent); color:#fff }
-    #main.hidden { display:none }
+    .tabs {
+      display: flex;
+      gap: 2px;
+      border-radius: 9999px;
+      padding: 4px;
+      background: rgba(255, 255, 255, .05);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, .1)
+    }
+
+    .tabbtn {
+      border: none;
+      background: transparent;
+      color: var(--dim);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 8px 20px;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: color .15s, background .15s;
+      white-space: nowrap
+    }
+
+    .tabbtn:hover {
+      color: var(--text)
+    }
+
+    .tabbtn.active {
+      background: var(--accent);
+      color: #fff
+    }
+
+    #main.hidden {
+      display: none
+    }
 
     /* ── FINAL OUTPUT ── */
-    #view-final { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative }
-    #view-final.hidden { display:none }
-    #finalDrop { position:absolute; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
-      background:rgba(10,9,8,.82); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px) }
-    #finalDrop.hidden { display:none }
-    #finalDrop.dragover .drop-border { border-color:var(--accent) }
-    #finalGrid { flex:1; overflow-y:auto; padding:16px }
-    .fo-sec { margin-bottom:24px }
-    .fo-band { display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:600; font-size:13px; color:var(--text) }
-    .fo-band .gcount { color:var(--dim) }
-    .fo-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px }
-    .fo-card { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.02) }
-    .fo-card .img-wrap { aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;
-      background:rgba(0,0,0,.25); overflow:hidden }
-    .fo-card img { max-width:100%; max-height:100%; object-fit:contain }
-    .fo-meta { padding:8px 10px; font-size:11px }
-    .fo-name { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-    .fo-size { font-family:'DM Mono',monospace; font-size:13px; font-weight:600; color:var(--text); margin-top:4px }
-    .fo-target { color:var(--text); font-family:'DM Mono',monospace; font-size:13px; font-weight:600 }
-    .fo-kb { width:56px; background:rgba(255,255,255,.08); border:1px solid var(--line); color:var(--text);
-      font-family:'DM Mono',monospace; font-size:13px; font-weight:700; border-radius:6px; padding:2px 6px;
-      text-align:right; margin-right:3px }
-    .fo-kb:focus { outline:none; border-color:var(--accent); background:rgba(255,55,0,.08) }
-    .fo-kb::-webkit-inner-spin-button, .fo-kb::-webkit-outer-spin-button { -webkit-appearance:none; margin:0 }
-    .fo-kb { -moz-appearance:textfield; appearance:textfield }
+    #view-final {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative
+    }
+
+    #view-final.hidden {
+      display: none
+    }
+
+    #finalDrop {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 9, 8, .82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px)
+    }
+
+    #finalDrop.hidden {
+      display: none
+    }
+
+    #finalDrop.dragover .drop-border {
+      border-color: var(--accent)
+    }
+
+    #finalGrid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px
+    }
+
+    .fo-sec {
+      margin-bottom: 24px
+    }
+
+    .fo-band {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text)
+    }
+
+    .fo-band .gcount {
+      color: var(--dim)
+    }
+
+    .fo-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px
+    }
+
+    .fo-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .fo-card .img-wrap {
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .25);
+      overflow: hidden
+    }
+
+    .fo-card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain
+    }
+
+    .fo-meta {
+      padding: 8px 10px;
+      font-size: 11px
+    }
+
+    .fo-name {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .fo-size {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 4px
+    }
+
+    .fo-target {
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 600
+    }
+
+    .fo-kb {
+      width: 56px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 2px 6px;
+      text-align: right;
+      margin-right: 3px
+    }
+
+    .fo-kb:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 55, 0, .08)
+    }
+
+    .fo-kb::-webkit-inner-spin-button,
+    .fo-kb::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0
+    }
+
+    .fo-kb {
+      -moz-appearance: textfield;
+      appearance: textfield
+    }
+
     /* add-more-images zone (Final Output) */
-    #finalAdd { flex-shrink:0; margin:10px 16px 14px; padding:14px 12px; border:1.5px dashed var(--line);
-      border-radius:12px; background:rgba(255,255,255,.02); display:flex; flex-direction:column; align-items:center;
-      justify-content:center; gap:5px; cursor:pointer; transition:background .15s,border-color .15s,color .15s;
-      color:var(--dim); text-align:center }
-    #finalAdd:hover, #finalAdd.dragover { border-color:var(--accent); background:rgba(255,55,0,.07); color:var(--text) }
-    #finalAdd .add-ico { font-size:18px; opacity:.85 }
-    #finalAdd .add-h { font-size:12px; font-weight:600; letter-spacing:.02em }
-    #finalAdd .add-p { font-family:'DM Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:.02em }
-    #finalAdd.hidden { display:none }
-    .fo-badge { display:inline-block; font-family:'DM Mono',monospace; font-size:12px; font-weight:700; padding:3px 10px;
-      border-radius:99px; margin-top:6px; letter-spacing:.02em }
-    .b-wait { background:rgba(255,255,255,.10); color:var(--dim) }
-    .b-ok   { background:rgba(91,191,138,.16); color:#7fd6a6 }
-    .b-warn { background:rgba(240,176,75,.18); color:#f0c14b }
-    .b-skip { background:rgba(91,154,191,.16); color:#86bfe0 }
+    #finalAdd {
+      flex-shrink: 0;
+      margin: 10px 16px 14px;
+      padding: 14px 12px;
+      border: 1.5px dashed var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .02);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+      color: var(--dim);
+      text-align: center
+    }
+
+    #finalAdd:hover,
+    #finalAdd.dragover {
+      border-color: var(--accent);
+      background: rgba(255, 55, 0, .07);
+      color: var(--text)
+    }
+
+    #finalAdd .add-ico {
+      font-size: 18px;
+      opacity: .85
+    }
+
+    #finalAdd .add-h {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .02em
+    }
+
+    #finalAdd .add-p {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: .02em
+    }
+
+    #finalAdd.hidden {
+      display: none
+    }
+
+    .fo-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-top: 6px;
+      letter-spacing: .02em
+    }
+
+    .b-wait {
+      background: rgba(255, 255, 255, .10);
+      color: var(--dim)
+    }
+
+    .b-ok {
+      background: rgba(91, 191, 138, .16);
+      color: #7fd6a6
+    }
+
+    .b-warn {
+      background: rgba(240, 176, 75, .18);
+      color: #f0c14b
+    }
+
+    .b-skip {
+      background: rgba(91, 154, 191, .16);
+      color: #86bfe0
+    }
 
     /* ── LAYOUT ── */
     #main {
@@ -876,7 +1083,8 @@
       <button class="btn btn-reset" id="resetBtn" onclick="resetAll()" disabled>↺ Reset</button>
     </span>
     <span id="finalControls" class="hidden" style="align-items:center;gap:12px">
-      <button class="btn btn-accent" id="finalExportBtn" onclick="compressExport()" disabled>🗜 Compress &amp; Export</button>
+      <button class="btn btn-accent" id="finalExportBtn" onclick="compressExport()" disabled>🗜 Compress &amp;
+        Export</button>
       <button class="btn btn-reset" id="finalResetBtn" onclick="finalReset()" disabled>↺ Reset</button>
     </span>
     <div id="status">Select a folder to begin</div>
@@ -919,17 +1127,21 @@
 
   <!-- ── FINAL OUTPUT VIEW ── -->
   <div id="view-final" class="hidden">
-    <div id="finalDrop" ondragover="onFinalDragOver(event)" ondragleave="onFinalDragLeave(event)" ondrop="onFinalDrop(event)">
+    <div id="finalDrop" ondragover="onFinalDragOver(event)" ondragleave="onFinalDragLeave(event)"
+      ondrop="onFinalDrop(event)">
       <div class="drop-border">
         <div class="drop-ico">🗜</div>
         <div class="drop-h">Drop campaign folder here</div>
-        <div class="drop-p">Compresses the designated folders to their target file sizes,<br>then writes results into a <b>_JPG</b> folder in the root.</div>
+        <div class="drop-p">Compresses the designated folders to their target file sizes,<br>then writes results into a
+          <b>_JPG</b> folder in the root.
+        </div>
         <div class="drop-or">or</div>
         <button class="btn" onclick="pickFinalFolder()">Browse folder</button>
       </div>
     </div>
     <div id="finalGrid"></div>
-    <div id="finalAdd" class="hidden" onclick="pickImages()" ondragover="onFinalAddDragOver(event)" ondragleave="onFinalAddDragLeave(event)" ondrop="onFinalAddDrop(event)">
+    <div id="finalAdd" class="hidden" onclick="pickImages()" ondragover="onFinalAddDragOver(event)"
+      ondragleave="onFinalAddDragLeave(event)" ondrop="onFinalAddDrop(event)">
       <div class="add-ico">＋</div>
       <div class="add-h">Add more images</div>
       <div class="add-p">Click or drop images here · set a KB target on each (blank = no limit)</div>
@@ -1573,15 +1785,18 @@
     // lands at/under its KB target. Results are written to _JPG/<Camp>/ in
     // the dropped root. "no limit" folders are copied through unchanged.
     const FINAL_CFG = {
-      'Adbuilder':    { sub: 'JPG',    all: 24 },
-      'AEM':          { sub: 'JPG',    files: {
-        'Card-686x832': 100, 'h2': 250, 'h3-705x528': 100,
-        'HN-working_AR': 250, 'HN-working_EN': 250,
-        'm H hero EN 480x310_': 80, 'm H hero EN AR 480x310_': 80,
-        'm H Subpage EN 480x310': 80, 's-528x528': 100 } },
-      'ENL':          { sub: 'Review', files: { 'e-h-example': 100, 'e-ss-example': 40 } },
-      'I-contact':    { sub: 'Review', noLimit: true },
-      'SM':           { sub: 'Review', all: 1024 },
+      'Adbuilder': { sub: 'JPG', all: 24 },
+      'AEM': {
+        sub: 'JPG', files: {
+          'Card-686x832': 100, 'h2': 250, 'h3-705x528': 100,
+          'HN-working_AR': 250, 'HN-working_EN': 250,
+          'm H hero EN 480x310_': 80, 'm H hero EN AR 480x310_': 80,
+          'm H Subpage EN 480x310': 80, 's-528x528': 100
+        }
+      },
+      'ENL': { sub: 'Review', files: { 'e-h-example': 100, 'e-ss-example': 40 } },
+      'I-contact': { sub: 'Review', files: { 'i-Contact Header Image_600x300': 100, 'i-Contact Pod image_255x100': 40 } },
+      'SM': { sub: 'Review', all: 1024 },
       'TRADE PORTAL': { sub: 'Review', files: { 'h3-705x528': 100, 'HN_1600x480': 250, 'pop-up banner_943x440': 100 } },
     };
     const FINAL_ORDER = ['Adbuilder', 'AEM', 'ENL', 'I-contact', 'SM', 'TRADE PORTAL'];
@@ -1609,7 +1824,7 @@
       const pc = document.getElementById('pdfControls');
       const fc = document.getElementById('finalControls');
       pc.classList.toggle('hidden', !pdf); pc.style.display = pdf ? 'flex' : 'none';
-      fc.classList.toggle('hidden', pdf);  fc.style.display = pdf ? 'none' : 'flex';
+      fc.classList.toggle('hidden', pdf); fc.style.display = pdf ? 'none' : 'flex';
       if (pdf) { if (!groups.length) setStatus(t('begin')); }
       else { if (!finalGroups.length) setStatus('Drop a campaign folder to compress'); }
     }
@@ -1684,7 +1899,7 @@
       document.getElementById('finalResetBtn').disabled = !total;
       renderFinal();
       setStatus(total ? `✅ ${total} images ready · ${finalGroups.length} folders — press Compress & Export`
-                      : '⚠️ No matching images found in the designated folders');
+        : '⚠️ No matching images found in the designated folders');
     }
 
     function finalReset() {
@@ -1700,7 +1915,7 @@
     }
 
     function foBadge(it) {
-      if (it.status === 'ok')   return `<span class="fo-badge b-ok">✓ ${fmtKB(it.newSize)}</span>`;
+      if (it.status === 'ok') return `<span class="fo-badge b-ok">✓ ${fmtKB(it.newSize)}</span>`;
       if (it.status === 'warn') return `<span class="fo-badge b-warn">⚠ ${fmtKB(it.newSize)} · over target</span>`;
       if (it.status === 'skip') return `<span class="fo-badge b-skip">original · ${fmtKB(it.newSize)} · max quality</span>`;
       return `<span class="fo-badge b-wait">pending</span>`;
