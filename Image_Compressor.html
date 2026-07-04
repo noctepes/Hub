@@ -529,10 +529,10 @@
 'use strict';
 
 // ── CONSTANTS ──────────────────────────────────────────────────────────────
-const SUPPORTED = new Set(['jpg','jpeg','png','webp','gif','bmp','tiff','tif']);
+const SUPPORTED = new Set(['jpg','jpeg','png','webp','gif','bmp']);
 
 // Output format per input extension — keeps same family, forces JPEG for old/unsupported formats
-const OUTPUT_FMT = { jpg:'jpg', jpeg:'jpg', png:'png', webp:'webp', gif:'jpg', bmp:'jpg', tiff:'jpg', tif:'jpg' };
+const OUTPUT_FMT = { jpg:'jpg', jpeg:'jpg', png:'png', webp:'webp', gif:'jpg', bmp:'jpg' };
 const MIME = { jpg:'image/jpeg', png:'image/png', webp:'image/webp' };
 
 // ── STATE ──────────────────────────────────────────────────────────────────
@@ -558,6 +558,10 @@ function outputName(origName, fmt) {
   return fmt === 'jpg' ? base + '.jpg' : base + '.' + fmt;
 }
 function hasMime(file) { return file.type.startsWith('image/'); }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 // ── COMPRESSION ENGINE ─────────────────────────────────────────────────────
 async function drawToCanvas(file) {
@@ -569,7 +573,11 @@ async function drawToCanvas(file) {
 }
 
 function blobAt(cv, fmt, q) {
-  return new Promise(res => cv.toBlob(res, MIME[fmt], q));
+  // toBlob yields null when the canvas is too large / out of memory — reject instead of
+  // letting a null blob surface as a generic TypeError downstream.
+  return new Promise((res, rej) => cv.toBlob(
+    b => b ? res(b) : rej(new Error('Image too large to compress')),
+    MIME[fmt], q));
 }
 
 async function compressQuality(file, fmt, quality) {
@@ -699,7 +707,28 @@ function removeItem(id) {
 // ── COMPRESSION TRIGGER ────────────────────────────────────────────────────
 function triggerCompress(item) {
   clearTimeout(debounceTimers[item.id]);
-  debounceTimers[item.id] = setTimeout(() => doCompress(item), 320);
+  debounceTimers[item.id] = setTimeout(() => enqueueCompress(item), 320);
+}
+
+// Simple FIFO queue — at most 3 compression jobs run concurrently
+const MAX_CONCURRENT_JOBS = 3;
+let activeJobs = 0;
+const compressQueue = [];
+
+function enqueueCompress(item) {
+  if (!compressQueue.includes(item)) compressQueue.push(item);
+  pumpCompressQueue();
+}
+
+function pumpCompressQueue() {
+  while (activeJobs < MAX_CONCURRENT_JOBS && compressQueue.length) {
+    const item = compressQueue.shift();
+    activeJobs++;
+    doCompress(item).finally(() => {
+      activeJobs--;
+      pumpCompressQueue();
+    });
+  }
 }
 
 async function doCompress(item) {
@@ -717,13 +746,16 @@ async function doCompress(item) {
       blob = await compressQuality(item.file, item.fmt, item.quality);
     }
 
+    if (!blob) throw new Error('Image too large to compress');
     item.blob = blob;
     item.compSize = blob.size;
     item.warn = warn;
     item.status = 'done';
+    item.errorMsg = null;
   } catch (e) {
     console.error(e);
     item.blob = null; item.compSize = null;
+    item.errorMsg = (e && e.message === 'Image too large to compress') ? e.message : null;
     item.status = 'error';
   }
   syncCardStatus(item);
@@ -773,7 +805,7 @@ function applyGlobalQuality(val) {
 // ── RENDER ─────────────────────────────────────────────────────────────────
 function renderItem(item) {
   const isPng  = item.fmt === 'png';
-  const isGifBmp = ['gif','bmp','tiff','tif'].includes(item.ext);
+  const isGifBmp = ['gif','bmp'].includes(item.ext);
 
   // Format note for GIF/BMP
   let fmtNote = '';
@@ -805,7 +837,7 @@ function renderItem(item) {
         onerror="this.outerHTML='<div class=\\"thumb-ph\\">🖼</div>'">
       <div class="card-body">
         <div class="card-title">
-          <span class="card-name" title="${item.name}">${item.name}</span>
+          <span class="card-name" title="${esc(item.name)}">${esc(item.name)}</span>
           <span class="card-dims" id="dims-${item.id}"></span>
           <button class="btn-remove" onclick="removeItem(${item.id})" title="Remove">✕</button>
         </div>
@@ -892,7 +924,7 @@ function syncCardStatus(item) {
 
   if (item.status === 'error') {
     dlBtn.disabled = true;
-    sznew.textContent = 'error';
+    sznew.textContent = item.errorMsg || 'error';
     sznew.className   = 'sz-new';
     sznew.style.color = 'var(--clr-err)';
   }

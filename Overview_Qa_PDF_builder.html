@@ -42,6 +42,10 @@
       background: #0a0908
     }
 
+    .hidden {
+      display: none !important
+    }
+
     :root {
       --accent: #FF3700;
       --accent-soft: rgba(255, 55, 0, .12);
@@ -1250,6 +1254,12 @@
       return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
     }
 
+    // Escape user-controlled strings (folder/file names) before innerHTML interpolation
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     // ── Drag folder onto dropzone ──────────────────────────────
     function onDragOver(e) {
       e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
@@ -1262,16 +1272,23 @@
     async function onDrop(e) {
       e.preventDefault();
       document.getElementById('dropzone').classList.remove('dragover');
+      // Collect synchronously — DataTransferItems become invalid after the first await.
+      const handlePromises = [];
+      const entries = [];
       for (const item of e.dataTransfer.items) {
         if (item.kind !== 'file') continue;
-        try {
-          const handle = await item.getAsFileSystemHandle();
-          if (handle.kind === 'directory') { await loadFromHandle(handle); return; }
-        } catch (_) {
-          const entry = item.webkitGetAsEntry?.();
-          if (entry?.isDirectory) { await loadFromEntry(entry); return; }
-        }
+        if (item.getAsFileSystemHandle) handlePromises.push(item.getAsFileSystemHandle());
+        const en = item.webkitGetAsEntry?.();
+        if (en?.isDirectory) entries.push(en);
       }
+      try {
+        for (const p of handlePromises) {
+          let handle = null;
+          try { handle = await p; } catch (_) { }
+          if (handle && handle.kind === 'directory') { await loadFromHandle(handle); return; }
+        }
+        for (const en of entries) { await loadFromEntry(en); return; }
+      } catch (err) { setStatus('❌ ' + err.message); console.error(err); return; }
       setStatus(t('needFolder'));
     }
 
@@ -1406,13 +1423,15 @@
       for (const p of handlePromises) {
         try { const h = await p; if (h && h.kind === 'directory') handles.push(h); } catch (_) { }
       }
-      if (handles.length) {
-        for (const h of handles) await appendFromHandle(h);
-      } else if (entries.length) {
-        for (const en of entries) await appendFromEntry(en);
-      } else {
-        setStatus(t('needFolder'));
-      }
+      try {
+        if (handles.length) {
+          for (const h of handles) await appendFromHandle(h);
+        } else if (entries.length) {
+          for (const en of entries) await appendFromEntry(en);
+        } else {
+          setStatus(t('needFolder'));
+        }
+      } catch (err) { setStatus('❌ ' + err.message); console.error(err); }
     }
 
     // Build a tree out of a directory handle. If it has Review/JPG subdirs,
@@ -1586,7 +1605,7 @@
         ondragleave="markLeave(event)" ondrop="fDrop(event,${gi})" ondragend="dEnd()">
         <span class="fchev" onclick="toggleFold(event,${gi})">${grp.collapsed ? '▸' : '▾'}</span>
         <span class="fgrip">⠿</span><span class="fdot"></span>
-        <span class="fname">${grp.camp}</span>
+        <span class="fname">${esc(grp.camp)}</span>
         <span class="fcount">${grp.items.length}</span>
         <span class="fdel" title="${t('delFolder')}" onclick="removeGroup(event,${gi})">✕</span>
       </div>`;
@@ -1600,7 +1619,7 @@
           ondragstart="iStart(event,${gi},${ii})" ondragover="iOver(event,${gi},${ii})"
           ondragleave="markLeave(event)" ondrop="iDrop(event,${gi},${ii})" ondragend="dEnd()">
           <span class="grip">⠿</span><span class="num">${n}</span>
-          <span class="path">${it.name}</span>
+          <span class="path">${esc(it.name)}</span>
           <span class="subtag sub-${it.sub}">${it.sub}</span>
           <span class="idel" title="${t('delImg')}" onclick="removeItem(event,${gi},${ii})">✕</span>
         </div>`;
@@ -1621,7 +1640,7 @@
       let n = 0, html = '';
       groups.forEach((grp, gi) => {
         html += `<div class="gsection" style="--fc:${grp.color}">
-      <div class="gband"><span class="fdot"></span><span class="gname">${grp.camp}</span>
+      <div class="gband"><span class="fdot"></span><span class="gname">${esc(grp.camp)}</span>
         <span class="gcount">${grp.items.length} ${t('imgs')}</span></div>
       <div class="gcards">`;
         grp.items.forEach((it, ii) => {
@@ -1633,7 +1652,7 @@
         <div class="img-wrap"><img src="${it.url}" loading="lazy"></div>
         <div class="meta">
           <div class="m-num">#${n} <span class="m-sub sub-${it.sub}">${it.sub}</span></div>
-          <div class="m-name">${it.name}</div>
+          <div class="m-name">${esc(it.name)}</div>
         </div></div>`;
         });
         html += `</div></div>`;
@@ -1739,15 +1758,22 @@
         const { PDFDocument } = PDFLib;
         const doc = await PDFDocument.create();
         const all = groups.flatMap(g => g.items);
+        const skipped = [];
         for (let i = 0; i < all.length; i++) {
           const it = all[i];
           setStatus(t('prog')(i + 1, all.length, `${it.camp}/${it.sub}/${it.name}`));
-          const bytes = await it.file.arrayBuffer();
-          const ext = it.name.split('.').pop().toLowerCase();
-          const img = ext === 'png' ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
-          const page = doc.addPage([img.width, img.height]);
-          page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+          try {
+            const bytes = await it.file.arrayBuffer();
+            const ext = it.name.split('.').pop().toLowerCase();
+            const img = ext === 'png' ? await doc.embedPng(bytes) : await doc.embedJpg(bytes);
+            const page = doc.addPage([img.width, img.height]);
+            page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+          } catch (imgErr) {
+            skipped.push(it.name);
+            console.warn('Skipped image (could not embed):', it.name, imgErr);
+          }
         }
+        const pages = all.length - skipped.length;
         const pdfBytes = await doc.save();
         let name = document.getElementById('pdfName').value.trim() || '_Overview';
         if (!name.endsWith('.pdf')) name += '.pdf';
@@ -1761,7 +1787,7 @@
             await writable.write(pdfBytes);
             await writable.close();
             const mb = (pdfBytes.byteLength / 1e6).toFixed(1);
-            setStatus(t('saved')(rootDirHandle.name, name, mb, all.length));
+            setStatus(t('saved')(rootDirHandle.name, name, mb, pages));
             savedToFolder = true;
           } catch (e) { console.warn('Direct write failed, fallback to download:', e); }
         }
@@ -1770,7 +1796,11 @@
           const a = document.createElement('a');
           a.href = URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
           a.download = name; a.click();
-          setStatus(t('downloaded')(name, (pdfBytes.byteLength / 1e6).toFixed(1), all.length));
+          setStatus(t('downloaded')(name, (pdfBytes.byteLength / 1e6).toFixed(1), pages));
+        }
+        if (skipped.length) {
+          setStatus(document.getElementById('status').textContent
+            + ` · ⚠ ${skipped.length} skipped (could not embed): ${skipped.join(', ')}`);
         }
       } catch (e) { setStatus('❌ ' + e.message); console.error(e); }
       exporting = false;
@@ -1835,14 +1865,21 @@
     async function onFinalDrop(e) {
       e.preventDefault();
       document.getElementById('finalDrop').classList.remove('dragover');
+      // Collect synchronously — DataTransferItems become invalid after the first await.
+      const handlePromises = [];
       for (const item of e.dataTransfer.items) {
         if (item.kind !== 'file') continue;
-        try {
-          const handle = await item.getAsFileSystemHandle();
-          if (handle.kind === 'directory') { await loadFinalFromHandle(handle); return; }
-        } catch (_) { }
+        if (item.getAsFileSystemHandle) handlePromises.push(item.getAsFileSystemHandle());
       }
-      if (e.dataTransfer.files && e.dataTransfer.files.length) { addImages(e.dataTransfer.files); return; }
+      const files = e.dataTransfer.files ? [...e.dataTransfer.files] : [];
+      try {
+        for (const p of handlePromises) {
+          let handle = null;
+          try { handle = await p; } catch (_) { }
+          if (handle && handle.kind === 'directory') { await loadFinalFromHandle(handle); return; }
+        }
+      } catch (err) { setStatus('❌ ' + err.message); console.error(err); return; }
+      if (files.length) { addImages(files); return; }
       setStatus('❌ Drop a campaign folder, or image files (Chrome/Edge needed to write _JPG)');
     }
     async function pickFinalFolder() {
@@ -1926,14 +1963,14 @@
       let html = '';
       finalGroups.forEach((grp, gi) => {
         html += `<div class="fo-sec" style="--fc:${grp.color}">
-          <div class="fo-band"><span class="fdot"></span><span>${grp.camp} · ${grp.items[0].sub}</span>
+          <div class="fo-band"><span class="fdot"></span><span>${esc(grp.camp)} · ${esc(grp.items[0].sub)}</span>
           <span class="gcount">${grp.items.length} imgs</span></div><div class="fo-cards">`;
         grp.items.forEach((it, ii) => {
           const val = it.limitKB == null ? '' : it.limitKB;
           html += `<div class="fo-card">
             <div class="img-wrap"><img src="${it.url}" loading="lazy"></div>
             <div class="fo-meta">
-              <div class="fo-name" title="${it.name}">${it.name}</div>
+              <div class="fo-name" title="${esc(it.name)}">${esc(it.name)}</div>
               <div class="fo-size">${fmtKB(it.origSize)} &rarr;
                 <span class="fo-target">&le; <input type="number" min="1" step="1" class="fo-kb"
                   value="${val}" placeholder="∞" title="KB target — type a number to compress, or clear it (∞) to keep the original at maximum quality"
@@ -2005,18 +2042,21 @@
       if (bitmap.close) bitmap.close();
       // Best quality already fits → keep it (near-lossless).
       const hi = await blobAtQuality(canvas, 0.95);
+      if (!hi) throw new Error('Image too large to re-encode: ' + file.name);
       if (hi.size <= limitBytes) return { blob: hi, quality: 0.95, ok: true };
       // Binary-search the highest quality that stays under the limit.
       let lo = 0.05, hiQ = 0.95, best = null, bestQ = 0.05;
       for (let i = 0; i < 9; i++) {
         const mid = (lo + hiQ) / 2;
         const b = await blobAtQuality(canvas, mid);
+        if (!b) { hiQ = mid; continue; }
         if (b.size <= limitBytes) { best = b; bestQ = mid; lo = mid; }
         else { hiQ = mid; }
       }
       if (best) return { blob: best, quality: bestQ, ok: true };
       // Even lowest quality is too big (dimensions kept per request) → warn.
       const lowest = await blobAtQuality(canvas, 0.05);
+      if (!lowest) throw new Error('Image too large to re-encode: ' + file.name);
       return { blob: lowest, quality: 0.05, ok: false };
     }
 

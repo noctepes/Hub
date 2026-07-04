@@ -739,7 +739,7 @@
         for (const { node, sz, html } of flatBanners) {
           const lang = resolveVariantLabel({ folderName: node.name, parentName: '' });
           const key = sz.label;
-          const src = (prefix ? prefix + '/' : '') + node.name + '/' + html;
+          const src = encodeSrcPath((prefix ? prefix + '/' : '') + node.name + '/' + html);
           if (!sizeMap[key]) sizeMap[key] = { ...sz, variants: [] };
           sizeMap[key].variants.push({ lang, src, folderName: node.name, parentName: rootName });
         }
@@ -770,7 +770,7 @@
           if (!sgMap[sg]) sgMap[sg] = {};
           const lang = resolveVariantLabel(bf);
           const key = bf.size.label;
-          const src = (prefix ? prefix + '/' : '') + node.name + '/' + bf.relPath + '/' + bf.html;
+          const src = encodeSrcPath((prefix ? prefix + '/' : '') + node.name + '/' + bf.relPath + '/' + bf.html);
           if (!sgMap[sg][key]) sgMap[sg][key] = { ...bf.size, variants: [] };
           sgMap[sg][key].variants.push({
             lang, src, folderName: bf.folderName, parentName: bf.parentName || node.name
@@ -922,7 +922,22 @@
     }
 
     function escapeHtml(s) {
-      return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // Encode từng path segment để `#`, `?`, `%`… trong tên folder không phá iframe URL
+    function encodeSrcPath(p) {
+      return p.split('/').map(encodeURIComponent).join('/');
+    }
+
+    // Thông báo tạm thời trên dropzone (vd: re-drop group đã tồn tại)
+    function showDropStatus(msg) {
+      const hint = document.querySelector('#dropzone .hint');
+      if (!hint) return;
+      if (showDropStatus._orig === undefined) showDropStatus._orig = hint.innerHTML;
+      hint.innerHTML = '<strong style="color:var(--accent)">' + escapeHtml(msg) + '</strong>';
+      clearTimeout(showDropStatus._t);
+      showDropStatus._t = setTimeout(() => { hint.innerHTML = showDropStatus._orig; }, 4000);
     }
 
     function autoWidthInput(input) {
@@ -998,9 +1013,10 @@
         topLevelNodes = root.children.filter(c => c.isDir);
       }
       const newGroups = scanGroups(topLevelNodes, rootName, prefix);
-      mergeIntoScanData(newGroups);
+      const added = mergeIntoScanData(newGroups);
       renderList(SCAN_DATA);
-      if (SCAN_DATA.length === 1) syncProjectInput(rootName);
+      if (added === 0 && newGroups.length > 0) showDropStatus('Group đã tồn tại — bấm Reset để quét lại');
+      if (SCAN_DATA.length) syncProjectInput(rootName !== 'banners' ? rootName : (SCAN_DATA[0].displayName || SCAN_DATA[0].name));
     });
 
     async function processEntries(entries) {
@@ -1027,9 +1043,10 @@
         }
       }
       const newGroups = scanGroups(topLevelNodes, rootName, prefix);
-      mergeIntoScanData(newGroups);
+      const added = mergeIntoScanData(newGroups);
       renderList(SCAN_DATA);
-      if (SCAN_DATA.length === 1) syncProjectInput(rootName);
+      if (added === 0 && newGroups.length > 0) showDropStatus('Group đã tồn tại — bấm Reset để quét lại');
+      if (SCAN_DATA.length) syncProjectInput(rootName !== 'banners' ? rootName : (SCAN_DATA[0].displayName || SCAN_DATA[0].name));
     }
 
     function syncProjectInput(autoName) {
@@ -1046,7 +1063,7 @@
      *  GENERATE & RESET
      * ════════════════════════════════════════════════════════════════════ */
     document.getElementById('generateBtn').addEventListener('click', async () => {
-      if (!SCAN_DATA) return;
+      if (!SCAN_DATA.length) return;
       const html = generatePreviewHTML(SCAN_DATA, CAMPAIGN);
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
 
@@ -1108,7 +1125,7 @@
         g.subGroups.forEach(sg =>
           sg.banners.forEach(b => b.variants.forEach(v => { delete v.parentName; })));
       });
-      const data = JSON.stringify({ campaign, generatedAt: now, groups: cleanGroups });
+      const data = JSON.stringify({ campaign, generatedAt: now, groups: cleanGroups }).replace(/</g, '\\u003c');
 
       return `<!DOCTYPE html>
 <html lang="en">
@@ -1238,6 +1255,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans','Menlo','Conso
 </div>
 <script>
 const DATA = ${data};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let activeGroup=null,activeSubGroup=null,activeLang='all',currentScale=1;
 const iframeMap={};let bannerObs=null;
 function init(){
@@ -1265,12 +1283,12 @@ function buildSidebar(groups){
     const el=document.createElement('div');
     el.className='group-item '+(g.hasSubGroups?'has-children':'no-children');
     el.dataset.id=g.id;
-    el.innerHTML='<span class="chevron">'+(g.hasSubGroups?'▶':'')+'</span><span class="group-name">'+g.name+'</span><span class="group-count">'+g.totalVariants+'</span>';
+    el.innerHTML='<span class="chevron">'+(g.hasSubGroups?'▶':'')+'</span><span class="group-name">'+esc(g.name)+'</span><span class="group-count">'+g.totalVariants+'</span>';
     if(g.hasSubGroups){
       const sgList=document.createElement('div');sgList.className='sg-list collapsed';sgList.dataset.gid=g.id;
       g.subGroups.forEach(sg=>{
         const s=document.createElement('div');s.className='sg-item';s.dataset.gid=g.id;s.dataset.sgid=sg.id;
-        s.innerHTML='<span class="group-name">'+sg.name+'</span><span class="group-count">'+sg.totalVariants+'</span>';
+        s.innerHTML='<span class="group-name">'+esc(sg.name)+'</span><span class="group-count">'+sg.totalVariants+'</span>';
         s.addEventListener('click',e=>{e.stopPropagation();selectSubGroup(g.id,sg.id);});
         sgList.appendChild(s);
       });
@@ -1343,7 +1361,7 @@ function buildSection(b){
     const card=document.createElement('div');
     card.className='banner-card';card.dataset.lang=v.lang||'–';
     const lang=v.lang||'–';
-    card.innerHTML='<div class="card-header"><span class="lang-badge" style="'+badge(lang)+'">'+lang+'</span><button class="btn-replay" data-cid="'+cid+'">↻ Replay</button></div><div class="folder-name" title="'+v.folderName+'">'+v.folderName+'</div><div class="iframe-wrapper" id="wrap_'+cid+'" data-cid="'+cid+'" style="width:'+(b.width*currentScale)+'px;height:'+(b.height*currentScale)+'px"><iframe id="frame_'+cid+'" style="width:'+b.width+'px;height:'+b.height+'px;transform:scale('+currentScale+');transform-origin:top left;display:block;border:none" scrolling="no"></iframe><div class="lazy-placeholder" id="ph_'+cid+'"><div class="lazy-dot"></div></div></div>';
+    card.innerHTML='<div class="card-header"><span class="lang-badge" style="'+badge(lang)+'">'+lang+'</span><button class="btn-replay" data-cid="'+cid+'">↻ Replay</button></div><div class="folder-name" title="'+esc(v.folderName)+'">'+esc(v.folderName)+'</div><div class="iframe-wrapper" id="wrap_'+cid+'" data-cid="'+cid+'" style="width:'+(b.width*currentScale)+'px;height:'+(b.height*currentScale)+'px"><iframe id="frame_'+cid+'" sandbox="allow-scripts allow-popups" style="width:'+b.width+'px;height:'+b.height+'px;transform:scale('+currentScale+');transform-origin:top left;display:block;border:none" scrolling="no"></iframe><div class="lazy-placeholder" id="ph_'+cid+'"><div class="lazy-dot"></div></div></div>';
     card.querySelector('.btn-replay').addEventListener('click',()=>replay(cid));
     row.appendChild(card);
     iframeMap[cid]={src:v.src,loaded:false};

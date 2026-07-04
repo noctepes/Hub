@@ -22,6 +22,15 @@ function slugify(str) {
   return str.toLowerCase().replace(/[^a-z0-9]/g, '_');
 }
 
+// Encode từng path segment để `#`, `?`, `%`… trong tên folder không phá iframe URL
+function encodeSrcPath(p) {
+  return p.split('/').map(encodeURIComponent).join('/');
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function extractSize(str) {
   // Priority 1: 'x' or 'by' — most explicit, e.g. 160x600, 300by250
   let m = str.match(/(?<!\d)(\d{2,4})(?:x|by)(\d{2,4})(?!\d)/i);
@@ -175,7 +184,7 @@ function scanAll(rootDir) {
     for (const { t, sz, html } of flatBanners) {
       const lang = resolveVariantLabel({ folderName: t.name, parentName: '' });
       const key  = sz.label;
-      const src  = `${t.name}/${html}`;
+      const src  = encodeSrcPath(`${t.name}/${html}`);
       if (!sizeMap[key]) sizeMap[key] = { ...sz, variants: [] };
       sizeMap[key].variants.push({ lang, src, folderName: t.name });
     }
@@ -213,7 +222,7 @@ function scanAll(rootDir) {
         if (!sgMap[sg]) sgMap[sg] = {};
         const lang = resolveVariantLabel(bf);
         const key = bf.size.label;
-        const src = `${t.name}/${bf.relPath}/${bf.html}`;
+        const src = encodeSrcPath(`${t.name}/${bf.relPath}/${bf.html}`);
         if (!sgMap[sg][key]) sgMap[sg][key] = { ...bf.size, variants: [] };
         sgMap[sg][key].variants.push({ lang, src, folderName: bf.folderName });
       }
@@ -246,7 +255,7 @@ function scanAll(rootDir) {
 function generateHTML(groups, campaign) {
   const totalV = groups.reduce((s, g) => s + g.totalVariants, 0);
   const totalS = groups.reduce((s, g) => s + g.banners.length, 0);
-  const scanData = JSON.stringify({ campaign, groups }, null, 2);
+  const scanData = JSON.stringify({ campaign, groups }, null, 2).replace(/</g, '\\u003c');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -256,7 +265,7 @@ function generateHTML(groups, campaign) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<title>Preview — ${campaign}</title>
+<title>Preview — ${escapeHtml(campaign)}</title>
 <script>window.SCAN_DATA = ${scanData};<\/script>
 <style>
 :root {
@@ -656,6 +665,7 @@ function buildSizeSection(banner) {
       <div class="folder-name">\${v.folderName || ''}</div>
       <div class="iframe-wrapper" style="width:\${dispW}px;height:\${dispH}px;" id="wrap_\${cid}" data-card="\${cid}">
         <iframe id="frame_\${cid}"
+          sandbox="allow-scripts allow-popups"
           style="width:\${w}px;height:\${h}px;transform:scale(\${currentScale});transform-origin:top left;display:block;border:none;"
           scrolling="no"></iframe>
         <div class="lazy-placeholder" id="ph_\${cid}"><div class="lazy-dot"></div></div>
@@ -765,11 +775,15 @@ function startServer(rootDir, port) {
     '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf',
   };
   const server = http.createServer((req, res) => {
-    let fp = path.join(rootDir, decodeURIComponent(req.url.split('?')[0]));
+    let urlPath;
+    try { urlPath = decodeURIComponent(req.url.split('?')[0]); }
+    catch { res.writeHead(400); res.end('Bad request'); return; }
+    let fp = path.resolve(rootDir, '.' + path.posix.normalize('/' + urlPath));
+    if (!fp.startsWith(path.resolve(rootDir))) { res.writeHead(403); res.end('Forbidden'); return; }
     if (!path.extname(fp)) fp = path.join(fp, 'index.html');
     fs.readFile(fp, (err, data) => {
       if (err) { res.writeHead(404); res.end('Not found'); return; }
-      res.writeHead(200, { 'Content-Type': mime[path.extname(fp).toLowerCase()] || 'application/octet-stream' });
+      res.writeHead(200, { 'Content-Type': mime[path.extname(fp).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(data);
     });
   });

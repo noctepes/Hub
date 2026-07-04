@@ -2166,14 +2166,24 @@
     const LS = { scanHandle: null, scanning: false, lastNameLines: [], pathLines: [], nameLines: [], sizes: [], handles: [], isDirs: [], stripExt: false, sizeFilter: 'all', dirSizeToken: 0, dirChildren: {} }
 
     /* ── Hard reset — wipes scan state + UI, hot-reloads the iframe ── */
+    var skipBeforeUnload = false // set true by hardReset so the "Leave site?" dialog is skipped
     function hardReset() {
       // Clear in-memory state
       LS.scanHandle = null; LS.scanning = false; LS.lastNameLines = []
       LS.pathLines = []; LS.nameLines = []; LS.sizes = []; LS.handles = []; LS.isDirs = []; LS.dirChildren = {}
       LS.stripExt = false; LS.sizeFilter = 'all'; LS.dirSizeToken++
-      // Clear any cached storage we may have set
-      try { localStorage.clear(); sessionStorage.clear() } catch (_) {}
+      // Clear only this tool's own storage keys (never the whole origin)
+      try {
+        const own = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i)
+          if (k && (k.startsWith('ffbase:') || k.startsWith('ff_'))) own.push(k)
+        }
+        own.forEach(k => localStorage.removeItem(k))
+        sessionStorage.removeItem('ff_state_v2')
+      } catch (_) {}
       // Force a fresh reload bypassing cache
+      skipBeforeUnload = true
       const url = new URL(location.href)
       url.searchParams.set('v', Date.now())
       location.replace(url.toString())
@@ -2302,7 +2312,7 @@
       <div class="scan-status-spinner"></div>
       <div>
         <div class="scan-status-title" id="scan-status-title">${LANG[currentLang].scanStatusTitle}</div>
-        <div class="scan-status-sub" id="scan-status-sub">${LS.scanHandle.name}</div>
+        <div class="scan-status-sub" id="scan-status-sub">${esc(LS.scanHandle.name)}</div>
       </div>
       <div class="scan-status-count" id="scan-status-count">0</div>
     </div>`
@@ -2359,7 +2369,7 @@
       if (!count && !dirCount) {
         const dd = LANG[currentLang]
         hint.textContent = dd.noFilesFound
-        document.getElementById('list-results').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>${dd.noFilesMsg}${exts.length ? ` · ${exts.join(', ')}` : ''}</p></div>`
+        document.getElementById('list-results').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>${dd.noFilesMsg}${exts.length ? ` · ${esc(exts.join(', '))}` : ''}</p></div>`
         return
       }
 
@@ -2432,7 +2442,7 @@
       box.innerHTML = `
     <div class="preview-head">
       <span>${d.previewLabel} — ${pathLines.length.toLocaleString()} paths</span>
-      <span class="acc">${LS.scanHandle?.name || LS.restoredFolderName || ''}</span>
+      <span class="acc">${esc(LS.scanHandle?.name || LS.restoredFolderName || '')}</span>
     </div>
     <div class="preview-toolbar">
       <label class="pv-chk-wrap">
@@ -2775,6 +2785,7 @@
         reader.onload = ev => { S.rawRows = ev.target.result.split(/\r?\n/).map(line => [line]); onFileLoaded(file.name) }
         reader.readAsText(file, 'UTF-8'); return
       }
+      if (typeof XLSX === 'undefined') { alert('Excel library failed to load — check internet'); return }
       const reader = new FileReader()
       reader.onload = ev => {
         try {
@@ -2994,7 +3005,7 @@
         <div class="file-row" id="row-${f.id}">
           <input type="checkbox" checked data-id="${f.id}" onchange="updateSelectedSize()">
           <div class="f-name" title="${esc(f.name)}">${esc(f.name)}</div>
-          <div class="f-relpath" title="${esc(f.relPath)}" onclick="copyPath(this,'${esc(f.relPath)}')">${esc(f.relPath)}</div>
+          <div class="f-relpath" title="${esc(f.relPath)}" data-relpath="${esc(f.relPath)}">${esc(f.relPath)}</div>
           <div class="f-size loading">...</div>
           <div class="f-prog" id="fp-${f.id}"><div class="f-prog-fill" id="fpf-${f.id}"></div></div>
           <div class="f-st" id="fst-${f.id}"></div>
@@ -3053,6 +3064,11 @@
       else if (bytes >= 209715200) wrap.classList.add('heavy')
     }
 
+    // Delegated click for path cells — avoids inline onclick breaking on ' in filenames
+    document.addEventListener('click', e => {
+      const el = e.target.closest('.f-relpath[data-relpath]')
+      if (el) copyPath(el, el.dataset.relpath)
+    })
     function copyPath(el, path) {
       const abs = buildAbsPath('find', path)
       navigator.clipboard.writeText(abs).then(() => {
@@ -3172,6 +3188,7 @@
     }
 
     function exportPaths() {
+      if (typeof XLSX === 'undefined') { alert('Excel library failed to load — check internet'); return }
       const de = LANG[currentLang]
       const checked = [...document.querySelectorAll('.file-row input[type=checkbox]:checked')]
       if (!checked.length) { toast(de.toastExportNoFile, de.toastExportNoFileMsg); return }
@@ -3351,6 +3368,7 @@
 
     // ── Warn on accidental refresh / close when there's active data ──
     window.addEventListener('beforeunload', e => {
+      if (skipBeforeUnload) return
       if (LS.pathLines.length || S.results.length || S.keywords.length) {
         e.preventDefault()
         e.returnValue = ''

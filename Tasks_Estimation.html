@@ -1939,7 +1939,12 @@
         clientName: document.getElementById('clientName').value,
         lang: currentLang
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('saveState failed', e);
+        return;
+      }
       const ind = document.getElementById('saveIndicator');
       if (ind) {
         ind.style.opacity = '1';
@@ -1953,8 +1958,18 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) { applyLang(); addTask(); return; }
         const st = JSON.parse(raw);
-        tasks = st.tasks || [];
-        taskCounter = st.taskCounter || 0;
+        // Normalize each task so a stale/foreign schema can't propagate NaN into totals
+        tasks = (Array.isArray(st.tasks) ? st.tasks : []).map(t => ({
+          id: Number(t.id) || 0,
+          name: String(t.name ?? ''),
+          type: String(t.type ?? 'custom'),
+          masterQty: Number(t.masterQty) || 0,
+          minMaster: Number(t.minMaster) || 0,
+          versionQty: Number(t.versionQty) || 0,
+          minVersion: Number(t.minVersion) || 0,
+          notes: String(t.notes ?? '')
+        }));
+        taskCounter = Math.max(Number(st.taskCounter) || 0, 0, ...tasks.map(t => t.id));
         currentPreset = st.currentPreset || null;
 
         // Restore language (saved state wins over LANG_DEFAULT)
@@ -2016,10 +2031,34 @@
           t.minMaster = PRESETS[value].minMaster;
           t.minVersion = PRESETS[value].minVersion;
         }
+        render(); // type changes min/master inputs → needs full re-render
+        return;
       } else {
         t[field] = value;
       }
-      render();
+      // In-place update (keeps input focus): refresh this row's computed cells + summary
+      const i = tasks.indexOf(t);
+      const tr = document.getElementById('taskBody').querySelectorAll('tr')[i];
+      const card = document.getElementById('mobileCards').querySelectorAll('.m-card')[i];
+      if (!tr || !card) { render(); return; }
+      const mh = (t.masterQty * t.minMaster) / 60;
+      const vh = (t.versionQty * t.minVersion) / 60;
+      const vals = [mh, vh, mh + vh];
+      tr.querySelectorAll('td.computed').forEach((td, ci) => {
+        td.innerHTML = `${vals[ci].toFixed(2)}<span class="cm">${Math.round(vals[ci] * 60)} min</span>`;
+      });
+      card.querySelectorAll('.m-res b').forEach((b, ci) => { b.textContent = vals[ci].toFixed(2) + 'h'; });
+      card.querySelectorAll('.m-res .cm').forEach((sp, ci) => { sp.textContent = Math.round(vals[ci] * 60) + ' min'; });
+      // Keep the twin input (desktop row ↔ mobile card) in sync for the edited field
+      const NUM_ORDER = ['masterQty', 'minMaster', 'versionQty', 'minVersion'];
+      const fi = NUM_ORDER.indexOf(field);
+      const twins = fi !== -1
+        ? [tr.querySelectorAll('input.t-input.num')[fi], card.querySelectorAll('.m-card-grid input')[fi]]
+        : field === 'name'
+          ? [tr.querySelector('input.task-name'), card.querySelector('.m-card-head input')]
+          : [];
+      twins.forEach(inp => { if (inp && inp !== document.activeElement) inp.value = t[field]; });
+      recalc();
     }
 
     function applyPreset(key) {
@@ -2292,6 +2331,11 @@
 
     /* ── Export XLSX ───────────────────────────────────────────────── */
     async function exportXLSX() {
+      if (typeof ExcelJS === 'undefined') {
+        alert('Export is unavailable: the ExcelJS library failed to load. Please check your internet connection and reload the page.');
+        return;
+      }
+      try {
       const buffer = parseInt(document.getElementById('bufferRange').value);
       const corrRounds = parseInt(document.getElementById('correctionRange').value);
       const corrMin = parseInt(document.getElementById('corrMinRange').value);
@@ -2442,6 +2486,10 @@
       const safe = (projName || 'estimation').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       a.download = `${safe}_${new Date().toISOString().slice(0, 10)}.xlsx`;
       a.click();
+      } catch (err) {
+        console.error('exportXLSX failed', err);
+        alert('Export failed: ' + (err && err.message ? err.message : err));
+      }
     }
 
     /* ── Arrow key stepping (number inputs in table) ──────────────────

@@ -316,16 +316,29 @@
 
     const meta = document.createElement('div');
     meta.className = 'fc-meta';
-    meta.innerHTML =
-      '<div class="fc-name">' + file.name + '</div>' +
-      '<div class="fc-info">' +
-        'Gốc: <b>' + fmtBytes(file.size) + '</b> &nbsp;·&nbsp; ' +
-        'Base64: <b>' + fmtBytes(b64len) + '</b> &nbsp;·&nbsp; ' +
-        '<b>' + (file.type || 'unknown') + '</b>' +
-      '</div>' +
-      (file.size > 102400
-        ? '<div class="fc-warn on">⚠ Ảnh > 100KB — cân nhắc dùng external file</div>'
-        : '');
+
+    // file.name / file.type are user-controlled → set via textContent, never innerHTML
+    const nameEl = document.createElement('div');
+    nameEl.className = 'fc-name';
+    nameEl.textContent = file.name;
+    meta.appendChild(nameEl);
+
+    const infoEl = document.createElement('div');
+    infoEl.className = 'fc-info';
+    infoEl.innerHTML =
+      'Gốc: <b>' + fmtBytes(file.size) + '</b> &nbsp;·&nbsp; ' +
+      'Base64: <b>' + fmtBytes(b64len) + '</b> &nbsp;·&nbsp; ';
+    const typeEl = document.createElement('b');
+    typeEl.textContent = file.type || 'unknown';
+    infoEl.appendChild(typeEl);
+    meta.appendChild(infoEl);
+
+    if (file.size > 102400) {
+      const warnEl = document.createElement('div');
+      warnEl.className = 'fc-warn on';
+      warnEl.textContent = '⚠ Ảnh > 100KB — cân nhắc dùng external file';
+      meta.appendChild(warnEl);
+    }
 
     hdr.appendChild(thumb);
     hdr.appendChild(meta);
@@ -389,9 +402,19 @@
     btnCopy.className = 'btn-sm btn-copy';
     btnCopy.textContent = 'Copy';
     btnCopy.addEventListener('click', () => {
-      const val = panelEls[activeKey].querySelector('textarea').value;
-      navigator.clipboard.writeText(val)
-        .then(() => showToast('Copied · ' + file.name));
+      const ta = panelEls[activeKey].querySelector('textarea');
+      navigator.clipboard.writeText(ta.value)
+        .then(() => showToast('Copied · ' + file.name))
+        .catch(() => {
+          // Fallback for denied/unavailable clipboard API
+          try {
+            ta.select();
+            const ok = document.execCommand('copy');
+            showToast(ok ? 'Copied · ' + file.name : 'Copy failed · ' + file.name);
+          } catch (_) {
+            showToast('Copy failed · ' + file.name);
+          }
+        });
     });
 
     footer.appendChild(btnSel);
@@ -412,12 +435,21 @@
     const resetWrap = document.getElementById('resetWrap');
 
     Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        showToast('Bỏ qua (không phải ảnh) · ' + file.name);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Bỏ qua (> 10 MB) · ' + file.name);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = e => {
         const card = buildCard(file, e.target.result);
         cardsEl.appendChild(card);
         resetWrap.style.display = 'flex';
       };
+      reader.onerror = () => showToast('Lỗi đọc file · ' + file.name);
       reader.readAsDataURL(file);
     });
   }

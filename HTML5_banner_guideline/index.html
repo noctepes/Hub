@@ -1411,19 +1411,6 @@
             navContainer.classList.toggle('active');
         });
 
-        // Language switching functionality
-        const translations = {
-            vi: {},
-            en: {}
-        };
-
-        // Collect all translation data
-        document.querySelectorAll('[data-vi]').forEach(element => {
-            const key = element.getAttribute('data-vi');
-            translations.vi[key] = element.getAttribute('data-vi');
-            translations.en[key] = element.getAttribute('data-en');
-        });
-
         // Change default language to English
         let currentLang = 'en';
 
@@ -1448,6 +1435,11 @@
                 } else if (lang === 'en' && enText) {
                     element.textContent = enText;
                 }
+            });
+
+            // Update copy-button labels on code blocks
+            document.querySelectorAll('.code-block .copy-btn').forEach(btn => {
+                btn.textContent = lang === 'vi' ? 'Sao chép' : 'Copy';
             });
 
             // Update document language
@@ -1528,6 +1520,12 @@
                     const sectionId = href.substring(1);
                     showSection(sectionId);
 
+                    // Reflect section in URL without triggering a scroll jump
+                    history.replaceState(null, '', '#' + sectionId);
+
+                    // Close mobile menu after selecting a section
+                    navContainer.classList.remove('active');
+
                     // Smooth scroll to top of main content, offset by sticky nav
                     smoothScrollTo(document.querySelector('main'));
                 });
@@ -1545,6 +1543,7 @@
             // Copy code functionality for code blocks
             document.querySelectorAll('.code-block').forEach(block => {
                 const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
                 copyBtn.textContent = currentLang === 'vi' ? 'Sao chép' : 'Copy';
                 copyBtn.style.cssText = `
                     position: absolute;
@@ -1576,7 +1575,10 @@
                 });
 
                 copyBtn.addEventListener('click', () => {
-                    const text = block.textContent.replace('Code' + copyBtn.textContent, '').trim();
+                    // Clone the block and strip the button so only the code is copied
+                    const clone = block.cloneNode(true);
+                    clone.querySelectorAll('button').forEach(btn => btn.remove());
+                    const text = clone.textContent.trim();
                     navigator.clipboard.writeText(text).then(() => {
                         const originalText = copyBtn.textContent;
                         copyBtn.textContent = currentLang === 'vi' ? 'Đã sao chép!' : 'Copied!';
@@ -1588,28 +1590,46 @@
                             copyBtn.style.background = 'var(--accent)';
                             copyBtn.style.boxShadow = '0 0 8px var(--accent-glow)';
                         }, 2000);
+                    }).catch(() => {
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = currentLang === 'vi' ? 'Lỗi sao chép' : 'Copy failed';
+                        copyBtn.style.background = 'var(--clr-err, #c0392b)';
+
+                        setTimeout(() => {
+                            copyBtn.textContent = originalText;
+                            copyBtn.style.background = 'var(--accent)';
+                        }, 2000);
                     });
                 });
             });
 
             // Initialize with English
             switchLanguage('en');
+
+            // Deep link: open the section from the URL hash if valid
+            const initialId = location.hash.slice(1);
+            if (initialId) {
+                const initialSection = document.getElementById(initialId);
+                if (initialSection && initialSection.classList.contains('section')) {
+                    showSection(initialId);
+                }
+            }
         });
 
         // Keyboard shortcuts
         document.addEventListener('keydown', function (e) {
-            // Alt + L for language switch
-            if (e.altKey && e.key.toLowerCase() === 'l') {
+            // Alt + L for language switch (e.code works even when Option+key yields a symbol on macOS)
+            if (e.altKey && e.code === 'KeyL') {
                 e.preventDefault();
                 const newLang = currentLang === 'vi' ? 'en' : 'vi';
                 switchLanguage(newLang);
             }
 
             // Number keys for quick navigation
-            if (e.altKey && e.key >= '1' && e.key <= '6') {
+            if (e.altKey && /^Digit[1-6]$/.test(e.code)) {
                 e.preventDefault();
                 const sections = ['overview', 'brief', 'photoshop', 'animate', 'export', 'tips'];
-                const index = parseInt(e.key) - 1;
+                const index = parseInt(e.code.slice(5), 10) - 1;
                 if (sections[index]) {
                     showSection(sections[index]);
                 }
@@ -1697,16 +1717,8 @@
             searchContainer.appendChild(searchInput);
             document.body.appendChild(searchContainer);
 
-            // Toggle search with Ctrl+F
+            // Native browser find (Ctrl/Cmd+F) is left untouched.
             document.addEventListener('keydown', function (e) {
-                if (e.ctrlKey && e.key === 'f') {
-                    e.preventDefault();
-                    searchContainer.style.display = searchContainer.style.display === 'none' ? 'block' : 'none';
-                    if (searchContainer.style.display === 'block') {
-                        searchInput.focus();
-                    }
-                }
-
                 if (e.key === 'Escape') {
                     searchContainer.style.display = 'none';
                 }
@@ -1779,54 +1791,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', setupPrint);
-
-        // Add loading animation
-        function showLoadingAnimation() {
-            const loader = document.createElement('div');
-            loader.id = 'loader';
-            loader.innerHTML = `
-                <div style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(10, 9, 8, 0.85);
-                    backdrop-filter: blur(16px);
-                    -webkit-backdrop-filter: blur(16px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 9999;
-                ">
-                    <div style="
-                        width: 50px;
-                        height: 50px;
-                        border: 4px solid rgba(255, 255, 255, 0.05);
-                        border-top: 4px solid var(--accent);
-                        border-radius: 50%;
-                        animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-                        box-shadow: 0 0 15px var(--accent-glow);
-                    "></div>
-                </div>
-                <style>
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                </style>
-            `;
-            document.body.appendChild(loader);
-
-            setTimeout(() => {
-                loader.style.transition = 'opacity 0.4s ease';
-                loader.style.opacity = '0';
-                setTimeout(() => loader.remove(), 400);
-            }, 1000);
-        }
-
-        // Show loading on page load
-        window.addEventListener('load', showLoadingAnimation);
     </script>
 </body>
 

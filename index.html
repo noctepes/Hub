@@ -1327,16 +1327,6 @@
                 <span class="stat-card-tag">Offline</span>
               </div>
             </div><!-- /hero-stats -->
-            <div class="stats-dots">
-              <button class="stats-dot active" data-idx="0"></button>
-              <button class="stats-dot" data-idx="1"></button>
-              <button class="stats-dot" data-idx="2"></button>
-              <button class="stats-dot" data-idx="3"></button>
-              <button class="stats-dot" data-idx="4"></button>
-              <button class="stats-dot" data-idx="5"></button>
-              <button class="stats-dot" data-idx="6"></button>
-              <button class="stats-dot" data-idx="7"></button>
-            </div>
           </div><!-- /stats-slider -->
 
         </div><!-- /hero-body -->
@@ -1638,51 +1628,11 @@
     window.addEventListener('DOMContentLoaded', () => {
       buildBlurHeadline();
       initOnView();
-      initStatSlider();
       updateEnvBadge();
       document.getElementById('footerYear').textContent = new Date().getFullYear();
       document.getElementById('footerHost').textContent = location.hostname || 'local';
       initBg();
     });
-
-    /* ── STAT CARDS SLIDER ──────────────────────────────────── */
-    function initStatSlider() {
-      const track = document.querySelector('.hero-stats');
-      const dots = document.querySelectorAll('.stats-dot');
-      if (!track || !dots.length) return;
-
-      // Update active dot based on scroll position
-      function updateDots() {
-        const cards = track.querySelectorAll('.stat-card');
-        let best = 0, minDist = Infinity;
-        cards.forEach((card, i) => {
-          const dist = Math.abs(card.offsetLeft - track.scrollLeft);
-          if (dist < minDist) { minDist = dist; best = i; }
-        });
-        dots.forEach((d, i) => d.classList.toggle('active', i === best));
-      }
-
-      // Dot click → scroll to card
-      dots.forEach((dot, i) => {
-        dot.addEventListener('click', () => {
-          const cards = track.querySelectorAll('.stat-card');
-          if (cards[i]) track.scrollTo({ left: cards[i].offsetLeft, behavior: 'smooth' });
-        });
-      });
-
-      track.addEventListener('scroll', updateDots, { passive: true });
-
-      // Mouse drag support for desktop
-      let isDown = false, startX = 0, scrollLeft = 0;
-      track.addEventListener('mousedown', e => { isDown = true; startX = e.pageX - track.offsetLeft; scrollLeft = track.scrollLeft; track.style.userSelect = 'none'; });
-      track.addEventListener('mouseleave', () => { isDown = false; });
-      track.addEventListener('mouseup', () => { isDown = false; track.style.userSelect = ''; });
-      track.addEventListener('mousemove', e => {
-        if (!isDown) return;
-        e.preventDefault();
-        track.scrollLeft = scrollLeft - (e.pageX - track.offsetLeft - startX) * 1.5;
-      });
-    }
 
     function switchTab(btn) {
       document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -1710,6 +1660,10 @@
       nav.style.pointerEvents = '';
       document.getElementById('toolBack').classList.remove('visible');
       currentTab = 'home';
+      // Resume background animation
+      bgPaused = false;
+      if (window.gsap) gsap.globalTimeline.resume();
+      if (bgDrawFn && !bgRafId) bgDrawFn();
     }
 
     function switchToHome() {
@@ -1723,6 +1677,10 @@
 
     function loadTool(key) {
       document.getElementById('homePanel').classList.add('hidden');
+      // Pause background animation while a tool is open
+      bgPaused = true;
+      if (bgRafId) { cancelAnimationFrame(bgRafId); bgRafId = null; }
+      if (window.gsap) gsap.globalTimeline.pause();
       // Kill CSS animation fill-mode first (anim-0 fill:both overrides inline style)
       const nav = document.querySelector('.nav');
       nav.classList.remove('anim-0');
@@ -1775,10 +1733,11 @@
 
     /* ── BACKGROUND ANIMATION ENGINE ───────────────────────── */
     const heroStage = document.getElementById('hero-stage');
-    let activeBg = null, bgRafId = null, bgResizeFn = null;
+    let activeBg = null, bgRafId = null, bgResizeFn = null, bgDrawFn = null, bgPaused = false;
 
     function clearBg() {
-      gsap.killTweensOf(heroStage.querySelectorAll('*'));
+      if (window.gsap) gsap.killTweensOf(heroStage.querySelectorAll('*'));
+      bgDrawFn = null;
       if (bgRafId) { cancelAnimationFrame(bgRafId); bgRafId = null; }
       if (bgResizeFn) { window.removeEventListener('resize', bgResizeFn); bgResizeFn = null; }
       heroStage.innerHTML = '';
@@ -1829,6 +1788,7 @@
         el.setAttribute('fill', s.fill || 'none');
         if (s.stroke) { el.setAttribute('stroke', s.stroke); el.setAttribute('stroke-width', s.sw); }
         svg.appendChild(el);
+        if (!window.gsap) return; // no GSAP: shapes stay static
         gsap.set(el, { transformOrigin: `${s.cx}px ${s.cy}px` });
         gsap.to(el, {
           rotation: (i % 2 === 0 ? 1 : -1) * (15 + i * 7),
@@ -1873,6 +1833,7 @@
       function reset(p) { p.x = Math.random() * W; p.y = Math.random() * H; p.vx = 0; p.vy = 0; p.life = 0; p.lifeSpd = .005 + Math.random() * .012; }
 
       function draw() {
+        if (bgPaused) { bgRafId = null; return; }
         ctx.fillStyle = 'rgba(10,9,8,.13)'; ctx.fillRect(0, 0, W, H);
         t += .005;
         particles.forEach(p => {
@@ -1889,6 +1850,7 @@
         });
         bgRafId = requestAnimationFrame(draw);
       }
+      bgDrawFn = draw;
       draw();
     }
 
