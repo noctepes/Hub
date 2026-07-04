@@ -766,6 +766,7 @@
 
 <!-- Firebase SDK -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
 <script>
     function toggleMenu() {
@@ -790,9 +791,29 @@
         db = firebase.firestore();
         isCloudEnabled = true;
         updateConnectionStatus('connected', '✅ Cloud connected');
+        firebase.auth().signInAnonymously().catch(function(error) {
+            console.warn('Anonymous sign-in failed (auth may not be enabled):', error);
+        });
     } catch (error) {
         console.warn('Firebase initialization failed, using localStorage only:', error);
         updateConnectionStatus('disconnected', '⌛ Cloud unavailable - Using local storage');
+    }
+
+    async function ensureAuth() {
+        if (!isCloudEnabled || typeof firebase.auth !== 'function') return false;
+        try {
+            if (firebase.auth().currentUser) return true;
+            await firebase.auth().signInAnonymously();
+            return true;
+        } catch (error) {
+            console.warn('Anonymous auth failed:', error);
+            return false;
+        }
+    }
+
+    function showAuthFallbackStatus() {
+        showSaveStatus('error');
+        document.getElementById('saveStatus').textContent = '⚠ Auth not enabled — using local storage';
     }
 
     let taskData = [];
@@ -821,42 +842,58 @@
         });
     }
 
+    const ACCOUNT_NAME_RE = /^[a-zA-Z0-9_-]{3,50}$/;
+
     function createAccount() {
         const accountName = document.getElementById('accountName').value.trim();
         if (!accountName) { alert('Please enter an account name!'); return; }
-        if (accountName.length < 3) { alert('Account name must be at least 3 characters long!'); return; }
+        if (!ACCOUNT_NAME_RE.test(accountName)) { alert('Account name must be 3-50 characters and contain only letters, numbers, hyphens (-) or underscores (_)!'); return; }
         changeAccount();
     }
 
-    function changeAccount() {
+    async function changeAccount() {
         const accountName = document.getElementById('accountName').value.trim();
-        if (accountName && accountName !== currentAccount && accountName.length >= 3) {
+        if (accountName && accountName !== currentAccount) {
+            if (!ACCOUNT_NAME_RE.test(accountName)) { alert('Account name must be 3-50 characters and contain only letters, numbers, hyphens (-) or underscores (_)!'); return; }
             currentAccount = accountName;
             localStorage.setItem('taskManagerAccount', accountName);
             taskData = [];
             taskIdCounter = 1;
-            if (isCloudEnabled) { loadFromCloud(); } else { loadDataLocally(); }
+            if (isCloudEnabled) { await loadFromCloud(); } else { loadDataLocally(); }
             if (taskData.length === 0) addRow();
             renderTable();
         }
     }
+
+    let cloudCreatedAt = null;
 
     async function saveToCloud() {
         if (!isCloudEnabled || !currentAccount) {
             alert('Please create an account and ensure cloud connection is available!');
             return;
         }
+        if (!(await ensureAuth())) {
+            saveDataLocally();
+            showAuthFallbackStatus();
+            return;
+        }
         try {
-            showSaveStatus('cloudsaved');
+            showSaveStatus('saving');
             const dataToSave = {
                 tasks: taskData,
                 counter: taskIdCounter,
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                accountName: currentAccount,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                accountName: currentAccount
             };
-            await db.collection('taskAccounts').doc(currentAccount).set(dataToSave);
-            showSaveStatus('saved');
+            if (!cloudCreatedAt) {
+                dataToSave.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            }
+            await Promise.race([
+                db.collection('taskAccounts').doc(currentAccount).set(dataToSave, { merge: true }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Cloud save timed out after 10s')), 10000))
+            ]);
+            if (!cloudCreatedAt) cloudCreatedAt = true;
+            showSaveStatus('cloudsaved');
         } catch (error) {
             console.error('Error saving to cloud:', error);
             showSaveStatus('error');
@@ -867,6 +904,11 @@
 
     async function loadFromCloud() {
         if (!isCloudEnabled || !currentAccount) { loadDataLocally(); return; }
+        if (!(await ensureAuth())) {
+            showAuthFallbackStatus();
+            loadDataLocally();
+            return;
+        }
         try {
             showSaveStatus('loading');
             const doc = await db.collection('taskAccounts').doc(currentAccount).get();
@@ -874,10 +916,12 @@
                 const data = doc.data();
                 taskData = data.tasks || [];
                 taskIdCounter = data.counter || 1;
+                cloudCreatedAt = data.createdAt || null;
                 renderTable();
                 showSaveStatus('loaded');
             } else {
                 taskData = []; taskIdCounter = 1;
+                cloudCreatedAt = null;
                 renderTable(); showSaveStatus('saved');
             }
         } catch (error) {
@@ -1054,12 +1098,12 @@
     }
 
     // Init
-    window.addEventListener('load', function() {
+    window.addEventListener('load', async function() {
         const savedAccount = localStorage.getItem('taskManagerAccount');
         if (savedAccount) {
             document.getElementById('accountName').value = savedAccount;
             currentAccount = savedAccount;
-            if (isCloudEnabled) { loadFromCloud(); } else { loadDataLocally(); }
+            if (isCloudEnabled) { await loadFromCloud(); } else { loadDataLocally(); }
         }
         if (taskData.length === 0 && currentAccount) addRow();
         initializeColumnResize();
@@ -1095,6 +1139,8 @@
         return Math.min(100, (filled / estimate) * 100);
     }
 
+    function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
     function renderTable() {
         const tbody = document.getElementById('taskTableBody');
         tbody.innerHTML = '';
@@ -1105,51 +1151,71 @@
             const isComplete = progress >= 100;
 
             const row = document.createElement('tr');
+            row.dataset.id = String(task.id);
             if (task.done) row.classList.add('done-row');
 
             row.innerHTML = `
                 <td class="job-number">
-                    <input type="text" value="${task.jobNumber}"
-                           onchange="updateTask(${task.id}, 'jobNumber', this.value)"
+                    <input type="text" value="${esc(task.jobNumber)}"
+                           data-field="jobNumber"
                            placeholder="#" maxlength="10" style="text-align:center;">
                 </td>
                 <td class="task-name">
-                    <input type="text" value="${task.taskName}"
-                           onchange="updateTask(${task.id}, 'taskName', this.value)"
+                    <input type="text" value="${esc(task.taskName)}"
+                           data-field="taskName"
                            placeholder="Task description…">
                 </td>
                 <td class="estimate-col">
-                    <input type="number" value="${task.estimate}"
-                           onchange="updateTask(${task.id}, 'estimate', this.value)"
+                    <input type="number" value="${esc(task.estimate)}"
+                           data-field="estimate"
                            min="0" step="0.5" style="text-align:center;">
                 </td>
                 <td class="filled-col">
-                    <input type="number" value="${task.filled}"
-                           onchange="updateTask(${task.id}, 'filled', this.value)"
+                    <input type="number" value="${esc(task.filled)}"
+                           data-field="filled"
                            min="0" step="0.5" style="text-align:center;">
                 </td>
                 <td class="remaining-col">
                     <div class="progress-wrap">
-                        <span class="remaining-val">${remaining.toFixed(1)}h</span>
+                        <span class="remaining-val">${esc(remaining.toFixed(1))}h</span>
                         <div class="progress-bar">
-                            <div class="progress-fill ${isComplete ? 'complete' : ''}" style="width:${progress}%"></div>
+                            <div class="progress-fill ${isComplete ? 'complete' : ''}" style="width:${esc(progress)}%"></div>
                         </div>
                         <div class="progress-numbers">
-                            <span>${progress.toFixed(0)}%</span>
+                            <span>${esc(progress.toFixed(0))}%</span>
                         </div>
                     </div>
                 </td>
                 <td class="done-col">
                     <input type="checkbox" ${task.done ? 'checked' : ''}
-                           onchange="updateTask(${task.id}, 'done', this.checked)">
+                           data-field="done">
                 </td>
                 <td class="actions-col">
-                    <button class="delete-row" onclick="deleteRow(${task.id})" title="Delete task">✕</button>
+                    <button class="delete-row" data-action="delete" title="Delete task">✕</button>
                 </td>
             `;
             tbody.appendChild(row);
         });
     }
+
+    // Delegated handlers for table inputs and delete buttons (no inline handlers)
+    document.getElementById('taskTableBody').addEventListener('change', function(e) {
+        const field = e.target.dataset && e.target.dataset.field;
+        if (!field) return;
+        const row = e.target.closest('tr');
+        if (!row || row.dataset.id === undefined) return;
+        const id = Number(row.dataset.id);
+        if (field === 'done') updateTask(id, 'done', e.target.checked);
+        else updateTask(id, field, e.target.value);
+    });
+
+    document.getElementById('taskTableBody').addEventListener('click', function(e) {
+        const btn = e.target.closest('.delete-row');
+        if (!btn) return;
+        const row = btn.closest('tr');
+        if (!row || row.dataset.id === undefined) return;
+        deleteRow(Number(row.dataset.id));
+    });
 
     function toggleCalculator() {
         const box = document.getElementById('calculatorBox');

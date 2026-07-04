@@ -1439,6 +1439,8 @@
       </div>
       <div class="section-body">
         <button class="run-btn" id="run-btn" onclick="runProcess()" disabled>⚡ Run Mapping</button>
+        <div class="notice" id="req-cols-warn"
+          style="display:none;margin:16px 0 0;border-color:var(--warn);background:var(--warn-bg);color:var(--warn)"></div>
       </div>
     </div>
 
@@ -1895,8 +1897,23 @@
       // Required cols for "complete row" check (flexible match)
       const REQ_COLS = ['Article No.', 'Product  name (DK)', 'Product  price (DKK)', 'Product  price (Euro)'];
       function normCol(s) { return s.replace(/[\s]+/g, ' ').trim(); }
+      // Only require the REQ_COLS that actually exist in the loaded source file
+      const srcColsNorm = S.src.cols.map(normCol);
+      const activeReqCols = REQ_COLS.filter(function (req) { return srcColsNorm.includes(normCol(req)); });
+      const missingReqCols = REQ_COLS.filter(function (req) { return !srcColsNorm.includes(normCol(req)); });
+      const reqWarnEl = document.getElementById('req-cols-warn');
+      if (reqWarnEl) {
+        if (missingReqCols.length) {
+          reqWarnEl.style.display = '';
+          reqWarnEl.innerHTML = '⚠️ <strong>Source file is missing expected column(s):</strong> ' +
+            missingReqCols.map(function (c) { return '<code>' + c + '</code>'; }).join(', ') +
+            ' — the "complete row" check only uses the columns that exist, so matching may be degraded.';
+        } else {
+          reqWarnEl.style.display = 'none';
+        }
+      }
       function isCompleteRow(row) {
-        return REQ_COLS.every(function (req) {
+        return activeReqCols.every(function (req) {
           var reqN = normCol(req);
           var keys = Object.keys(row);
           var matched = keys.find(function (k) { return normCol(k) === reqN; });
@@ -1934,7 +1951,6 @@
             if (!label) return;
             const oldVal = (row[m.tgtCol] || '').toString().trim();
 
-            if (!label) return;
             if (label === oldVal) return;
 
             newRow._changes[m.tgtCol] = {
@@ -1998,6 +2014,7 @@
           // Read from the already-updated newRow (not original row)
           const numVal = newRow[m.srcCol] !== undefined ? newRow[m.srcCol] : findVal(row, m.srcCol);
           const label = applyRangeLabel(numVal, m.rules);
+          if (!label) return;
           newRow._changes[m.tgtCol] = { old: row[m.tgtCol] || '', new: label, isRange: true };
           newRow[m.tgtCol] = label;
         });

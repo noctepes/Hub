@@ -1844,7 +1844,7 @@
   <script>
     // ── UTILS ──────────────────────────────────────────────────────
     function esc(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;').replace(/`/g, '&#96;');
     }
     function autoResizeTA(el) {
       el.style.height = 'auto';
@@ -2040,12 +2040,17 @@
       const fl = S.fillByLang[lang] || 0;
       const ri = remInfo(h, fl, q > 0);
 
-      document.getElementById(`rq-${li}`).textContent = q || '—';
-      document.getElementById(`rh-${li}`).textContent = q ? h.toFixed(2) : '—';
-      document.getElementById(`rd-${li}`).textContent = q ? d.toFixed(2) : '—';
+      const rqEl = document.getElementById(`rq-${li}`);
+      if (rqEl) rqEl.textContent = q || '—';
+      const rhEl = document.getElementById(`rh-${li}`);
+      if (rhEl) rhEl.textContent = q ? h.toFixed(2) : '—';
+      const rdEl = document.getElementById(`rd-${li}`);
+      if (rdEl) rdEl.textContent = q ? d.toFixed(2) : '—';
       const remEl = document.getElementById(`rrem-${li}`);
-      remEl.textContent = ri.text;
-      remEl.className = `td-stat-cell ${ri.rowCls}`;
+      if (remEl) {
+        remEl.textContent = ri.text;
+        remEl.className = `td-stat-cell ${ri.rowCls}`;
+      }
 
       const pi = S.products.indexOf(prod);
       const cqEl = document.getElementById(`cq-${pi}`);
@@ -2070,11 +2075,15 @@
       const fl = S.fillByLang[lang] || 0;
       const ri = remInfo(h, fl, q > 0);
 
-      document.getElementById(`rh-${li}`).textContent = q ? h.toFixed(2) : '—';
-      document.getElementById(`rd-${li}`).textContent = q ? d.toFixed(2) : '—';
+      const rhEl = document.getElementById(`rh-${li}`);
+      if (rhEl) rhEl.textContent = q ? h.toFixed(2) : '—';
+      const rdEl = document.getElementById(`rd-${li}`);
+      if (rdEl) rdEl.textContent = q ? d.toFixed(2) : '—';
       const remEl = document.getElementById(`rrem-${li}`);
-      remEl.textContent = ri.text;
-      remEl.className = `td-stat-cell ${ri.rowCls}`;
+      if (remEl) {
+        remEl.textContent = ri.text;
+        remEl.className = `td-stat-cell ${ri.rowCls}`;
+      }
 
       _patchFoot();
       updateStats();
@@ -2099,8 +2108,10 @@
       const h = (q * langMins(lang)) / 60;
       const ri = remInfo(h, v, q > 0);
       const remEl = document.getElementById(`rrem-${li}`);
-      remEl.textContent = ri.text;
-      remEl.className = `td-stat-cell ${ri.rowCls}`;
+      if (remEl) {
+        remEl.textContent = ri.text;
+        remEl.className = `td-stat-cell ${ri.rowCls}`;
+      }
 
       _patchFoot();
       updateStats();
@@ -2179,6 +2190,7 @@
           if (nw !== old) delete S.matrix[l][old];
         }
       });
+      render();
       schedSave();
     }
 
@@ -2201,6 +2213,7 @@
         S.fillByLang[nw] = S.fillByLang[old];
         if (nw !== old) delete S.fillByLang[old];
       }
+      render();
       schedSave();
     }
 
@@ -2210,7 +2223,7 @@
       if (!confirm(`Remove product "${name}"? This deletes all its data.`)) return;
       S.products.splice(i, 1);
       S.languages.forEach(l => { if (S.matrix[l]) delete S.matrix[l][name]; });
-      render(); toast(`Removed: ${name}`);
+      render(); schedSave(); toast(`Removed: ${name}`);
     }
 
     function deleteLang(i) {
@@ -2221,7 +2234,7 @@
       delete S.matrix[name];
       if (S.minsPerLang) delete S.minsPerLang[name];
       if (S.fillByLang) delete S.fillByLang[name];
-      render(); toast(`Removed: ${name}`);
+      render(); schedSave(); toast(`Removed: ${name}`);
     }
 
     // ── ADD LANGUAGE / PRODUCT ────────────────────────────────────
@@ -2237,7 +2250,7 @@
       S.languages.push(code);
       // minsPerLang intentionally NOT pre-set → langMins() returns 40 as default
       closeModal('modalLang');
-      render(); toast(`Added: ${code}`);
+      render(); schedSave(); toast(`Added: ${code}`);
     }
 
     function openAddProduct() {
@@ -2251,7 +2264,7 @@
       if (S.products.includes(name)) { toast(`"${name}" already exists`); return; }
       S.products.push(name);
       closeModal('modalProduct');
-      render(); toast(`Added: ${name}`);
+      render(); schedSave(); toast(`Added: ${name}`);
     }
 
     // ── MODAL ─────────────────────────────────────────────────────
@@ -2395,6 +2408,7 @@
   <!-- Firebase SDK (compat) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
   <script>
     // ── FIREBASE INIT ─────────────────────────────────────────────
     const firebaseConfig = {
@@ -2411,12 +2425,39 @@
     let cloudEnabled = false;
     let currentAccount = '';
     let currentJob = '';
+    let lastLoadedJob = ''; // job id whose data is currently on screen
 
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
       cloudEnabled = true;
+      firebase.auth().signInAnonymously().catch(e => console.warn('Anonymous sign-in failed:', e));
     } catch (e) { console.warn('Firebase init failed:', e); }
+
+    // ── AUTH GUARD ────────────────────────────────────────────────
+    // True when anonymously signed in (or sign-in succeeds now); false otherwise.
+    async function ensureAuth() {
+      if (!cloudEnabled) return false;
+      try {
+        if (firebase.auth().currentUser) return true;
+        await firebase.auth().signInAnonymously();
+        return true;
+      } catch (e) {
+        console.warn('Auth unavailable:', e);
+        const el = document.getElementById('cloudStatus');
+        el.className = 'cloud-status error';
+        el.textContent = '✕ auth off';
+        return false;
+      }
+    }
+
+    // Timeout wrapper for cloud writes (rejects after ms; write may still land later)
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timed out — check your connection')), ms))
+      ]);
+    }
 
     // ── HELPERS ───────────────────────────────────────────────────
     function jobsCol() { return db.collection('bannerTracker').doc(currentAccount).collection('jobs'); }
@@ -2458,7 +2499,7 @@
     function connectAccount() {
       const name = document.getElementById('accountName').value.trim();
       if (!name) { toast('Enter an account name first'); return; }
-      if (name.length < 2) { toast('Account name min 2 characters'); return; }
+      if (!/^[a-zA-Z0-9_-]{2,50}$/.test(name)) { toast('Account name: 2–50 chars, letters, numbers, "-" or "_" only'); return; }
       _activateAccount(name);
     }
 
@@ -2467,6 +2508,7 @@
       currentAccount = name;
       localStorage.setItem('bannerTracker_account', name);
       setCloudStatus('connecting');
+      if (!(await ensureAuth())) { toast('Cloud sign-in failed — working locally'); return; }
       try {
         await db.collection('bannerTracker').doc(name)
           .set({ _createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -2484,7 +2526,14 @@
     // Populates the dropdown and pre-selects the last used job,
     // but does NOT auto-load cloud data — local state is preserved.
     async function loadJobList() {
-      const snap = await jobsCol().orderBy('_updatedAt', 'desc').get().catch(() => null);
+      if (!(await ensureAuth())) { toast('Cloud sign-in failed — job list unavailable'); return; }
+      let snap = null;
+      try {
+        snap = await jobsCol().orderBy('_updatedAt', 'desc').get();
+      } catch (e) {
+        setCloudStatus('error');
+        toast('Failed to load job list: ' + e.message);
+      }
       const sel = document.getElementById('jobSelect');
       sel.innerHTML = '<option value="">— select job —</option>';
       if (snap) snap.forEach(doc => {
@@ -2509,9 +2558,10 @@
     }
 
     // ── SWITCH JOB ────────────────────────────────────────────────
-    // Only updates the active job reference and button states.
-    // No auto-load: local changes are not overwritten.
-    function switchJob(jobId) {
+    // Loads the selected job's data from the cloud before re-enabling
+    // Save, so switching can never overwrite the new job with the old
+    // job's on-screen table.
+    async function switchJob(jobId) {
       if (!jobId) {
         currentJob = '';
         setSaveLoad(false);
@@ -2521,18 +2571,27 @@
       currentJob = jobId;
       localStorage.setItem('bannerTracker_job_' + currentAccount, jobId);
       document.getElementById('delJobBtn').style.display = '';
-      setSaveLoad(true);
+      setSaveLoad(false); // disabled while loading
+      await loadFromCloud();
+      if (lastLoadedJob === jobId) {
+        setSaveLoad(true);
+      } else {
+        // Load failed: keep Save disabled so an overwrite is impossible; allow retrying Load
+        document.getElementById('loadCloudBtn').disabled = false;
+        toast('⚠ Could not load job — Save disabled to protect cloud data');
+      }
     }
 
     // ── NEW JOB ───────────────────────────────────────────────────
     async function newJob() {
       if (!currentAccount) { toast('Connect an account first'); return; }
+      if (!(await ensureAuth())) { toast('Cloud sign-in failed — cannot create job'); return; }
       const name = prompt('Job name (e.g. Miele Outdoor Cooking):');
       if (!name || !name.trim()) return;
       const id = slugify(name) || ('job-' + Date.now());
       const ns = freshState(name.trim());
       try {
-        await jobDoc(id).set({ ...ns, _updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        await withTimeout(jobDoc(id).set({ ...ns, _updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), 10000);
         const sel = document.getElementById('jobSelect');
         if (!sel.querySelector(`option[value="${id}"]`)) {
           const opt = document.createElement('option');
@@ -2541,6 +2600,7 @@
         }
         sel.value = id;
         currentJob = id;
+        lastLoadedJob = id; // fresh state on screen IS this job's data
         localStorage.setItem('bannerTracker_job_' + currentAccount, id);
         S = ns;
         document.getElementById('projectName').value = S.projectName;
@@ -2557,10 +2617,12 @@
       const sel = document.getElementById('jobSelect');
       const label = sel.options[sel.selectedIndex]?.textContent || currentJob;
       if (!confirm(`Delete job "${label}"?\nThis cannot be undone.`)) return;
+      if (!(await ensureAuth())) { toast('Cloud sign-in failed — cannot delete'); return; }
       try {
         await jobDoc(currentJob).delete();
         sel.querySelector(`option[value="${currentJob}"]`)?.remove();
         currentJob = '';
+        lastLoadedJob = '';
         sel.value = '';
         document.getElementById('delJobBtn').style.display = 'none';
         setSaveLoad(false);
@@ -2575,6 +2637,8 @@
     async function saveToCloud() {
       if (!cloudEnabled || !currentAccount) { toast('Not connected'); return; }
       if (!currentJob) { toast('Select or create a job first'); return; }
+      if (lastLoadedJob !== currentJob) { toast('⚠ Load this job first — saving now would overwrite it with other data'); return; }
+      if (!(await ensureAuth())) { toast('Cloud sign-in failed — cannot save'); return; }
       S.projectName = document.getElementById('projectName').value;
       const ind = document.getElementById('saveIndicator');
       ind.textContent = '● SAVING…'; ind.className = 'save-dot saving';
@@ -2582,10 +2646,10 @@
         const sel = document.getElementById('jobSelect');
         const opt = sel.querySelector(`option[value="${currentJob}"]`);
         if (opt && S.projectName) opt.textContent = S.projectName;
-        await jobDoc(currentJob).set({
+        await withTimeout(jobDoc(currentJob).set({
           ...S,
           _updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        }), 10000);
         ind.textContent = '● CLOUD SAVED'; ind.className = 'save-dot saved';
         toast('☁ Saved — ' + (S.projectName || currentJob));
       } catch (e) {
@@ -2598,6 +2662,7 @@
     async function loadFromCloud() {
       if (!cloudEnabled || !currentAccount) { toast('Not connected'); return; }
       if (!currentJob) { toast('Select a job first'); return; }
+      if (!(await ensureAuth())) { toast('Cloud sign-in failed — cannot load'); return; }
       const ind = document.getElementById('saveIndicator');
       ind.textContent = '● LOADING…'; ind.className = 'save-dot saving';
       try {
@@ -2617,6 +2682,7 @@
         document.getElementById('projectName').value = S.projectName;
         try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); } catch (e) { }
         render();
+        lastLoadedJob = currentJob; // on-screen data now matches this job
         ind.textContent = '● LOADED'; ind.className = 'save-dot saved';
         toast('↓ Loaded — ' + (S.projectName || currentJob));
       } catch (e) {

@@ -2293,6 +2293,7 @@
       const skipHidden = document.getElementById('scan-skip-hidden').checked
       const includeDirs = document.getElementById('scan-include-dirs').checked && nameQueries.length > 0
       LS.dirSizeToken++ // cancel any folder-size computation from a previous scan
+      LS.dirChildren = {} // clear folder-expand cache from a previous scan
 
       // Show scanning status in results area
       const resultsArea = document.getElementById('list-results')
@@ -2431,7 +2432,7 @@
       box.innerHTML = `
     <div class="preview-head">
       <span>${d.previewLabel} — ${pathLines.length.toLocaleString()} paths</span>
-      <span class="acc">${LS.scanHandle.name}</span>
+      <span class="acc">${LS.scanHandle?.name || LS.restoredFolderName || ''}</span>
     </div>
     <div class="preview-toolbar">
       <label class="pv-chk-wrap">
@@ -3276,6 +3277,7 @@
           LS.lastNameLines = LS.nameLines
           const pathContent = LS.pathLines.join('\n')
           const nameContent = LS.nameLines.join('\n')
+          LS.restoredFolderName = st.ls.folderName || ''
           if (st.ls.folderName) {
             document.getElementById('scan-folder-path').textContent = st.ls.folderName
             document.getElementById('scan-folder-card').classList.add('ok')

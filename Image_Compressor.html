@@ -969,7 +969,20 @@ async function downloadAll() {
       });
     }
     const zip = new window.JSZip();
-    ready.forEach(it => zip.file(outputName(it.name, it.fmt), it.blob));
+    const usedNames = new Set();
+    ready.forEach(it => {
+      let name = outputName(it.name, it.fmt);
+      if (usedNames.has(name)) {
+        const dot  = name.lastIndexOf('.');
+        const base = dot > 0 ? name.slice(0, dot) : name;
+        const ext  = dot > 0 ? name.slice(dot) : '';
+        let n = 1;
+        while (usedNames.has(`${base} (${n})${ext}`)) n++;
+        name = `${base} (${n})${ext}`;
+      }
+      usedNames.add(name);
+      zip.file(name, it.blob);
+    });
     const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
     const a = document.createElement('a');
     a.href     = URL.createObjectURL(zipBlob);
