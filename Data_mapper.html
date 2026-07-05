@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CSV / Excel Column Mapper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
@@ -18,18 +21,18 @@
     }
 
     :root {
-      /* ── Glass Dark Surfaces ── */
-      --bg:      #0a0908;
+      /* ── Hub Glass Surfaces (off-black #282828 base, beige borders) ── */
+      --bg:      #282828;
       --surface: rgba(255,255,255,0.025);
       --surface2:rgba(255,255,255,0.04);
       --surface3:rgba(255,255,255,0.07);
-      --border:  rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
+      --border:  rgba(229,210,184,0.10);
+      --border2: rgba(229,210,184,0.22);
 
       /* ── Text ── */
-      --text:  #fff;
+      --text:  #E5D2B8;
       --dim:   #E5D2B8;
-      --muted: rgba(185,185,177,0.55);
+      --muted: #B9B9B1;
 
       /* ── Brand ── */
       --accent:   #FF3700;
@@ -41,12 +44,12 @@
       --clr-ok:      #2DB87D;
       --clr-ok-dim:  rgba(45,184,125,0.12);
       --clr-err:     #E05252;
-      --clr-info:    #5B9BD4;
-      --clr-info-dim:rgba(91,155,212,0.12);
+      --clr-info:    #D7E8F8;
+      --clr-info-dim:rgba(215,232,248,0.12);
       --warn:        #f0a84c;
       --warn-bg:     rgba(240,168,76,0.1);
 
-      --mono: 'JetBrains Mono', monospace;
+      --mono: 'DM Mono', monospace;
       --sans: 'DM Sans', sans-serif;
       --r:    6px;
       --r-lg: 10px;
@@ -68,35 +71,33 @@
       position: relative;
     }
 
-    /* ── VIDEO BACKGROUND ─────────────────────────────────────── */
+    /* ── VIDEO BACKGROUND (removed — dark glow canvas only, per hub demo) ── */
     .bg-video {
-      position: fixed; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -2;
-      opacity: 0.35;
+      display: none !important;
     }
+
+    /* ── BACKGROUND GLOW (dark ambient base — off-black + faint orange/beige) ── */
     .bg-glow {
       position: fixed; inset: 0;
       z-index: -1; pointer-events: none;
       background:
-        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.11)  0%, transparent 70%);
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(229,210,184,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(255,55,0,0.04)  0%, transparent 70%),
+        #282828;
     }
 
     /* ── GLASS CARD SYSTEM ─────────────────────────────────── */
     .gl-card {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border-radius: var(--r-lg);
       position: relative;
       overflow: hidden;
       box-shadow:
-        0 4px 24px rgba(0,0,0,0.35),
-        inset 0 1px 0   rgba(255,255,255,0.12),
-        inset 0 -1px 0  rgba(0,0,0,0.18);
+        0 8px 24px rgba(0,0,0,0.22),
+        inset 0 1px 0   rgba(255,255,255,0.10);
     }
     .gl-card::before {
       content: "";
@@ -104,10 +105,10 @@
       border-radius: var(--r-lg);
       padding: 1px;
       background: linear-gradient(150deg,
-        rgba(255,255,255,0.3) 0%,
-        rgba(255,255,255,0.07) 40%,
-        rgba(255,255,255,0)    60%,
-        rgba(255,255,255,0.15) 100%);
+        rgba(229,210,184,0.32) 0%,
+        rgba(229,210,184,0.12) 40%,
+        rgba(229,210,184,0.08) 60%,
+        rgba(229,210,184,0.22) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude;
@@ -129,12 +130,12 @@
       gap: 16px;
       padding: 0 24px 0 120px;
       height: 56px;
-      background: rgba(10,9,8,0.55);
-      backdrop-filter: blur(32px) saturate(160%);
-      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      background: rgba(40,40,40,0.55);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
       box-shadow:
-        0 1px 0 rgba(255,255,255,0.08),
-        0 2px 16px rgba(0,0,0,0.4);
+        0 1px 0 rgba(229,210,184,0.14),
+        0 2px 16px rgba(0,0,0,0.28);
       position: sticky;
       top: 0;
       z-index: 200;
@@ -206,16 +207,15 @@
 
     /* ── SECTIONS (GLASS PANELS) ────────────────────────────── */
     .section {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border-radius: var(--r-lg);
       position: relative;
       overflow: hidden;
       box-shadow:
-        0 4px 24px rgba(0,0,0,0.35),
-        inset 0 1px 0   rgba(255,255,255,0.12),
-        inset 0 -1px 0  rgba(0,0,0,0.18);
+        0 8px 24px rgba(0,0,0,0.22),
+        inset 0 1px 0   rgba(255,255,255,0.10);
     }
     .section::before {
       content: "";
@@ -223,10 +223,10 @@
       border-radius: var(--r-lg);
       padding: 1px;
       background: linear-gradient(150deg,
-        rgba(255,255,255,0.22) 0%,
-        rgba(255,255,255,0.06) 40%,
-        rgba(255,255,255,0)    60%,
-        rgba(255,255,255,0.12) 100%);
+        rgba(229,210,184,0.28) 0%,
+        rgba(229,210,184,0.10) 40%,
+        rgba(229,210,184,0.08) 60%,
+        rgba(229,210,184,0.18) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude;
@@ -817,7 +817,7 @@
 
     .stat-card.blue .val {
       color: var(--clr-info);
-      text-shadow: 0 0 8px rgba(91, 155, 212, 0.3);
+      text-shadow: 0 0 8px rgba(215, 232, 248, 0.3);
     }
 
     .stat-card.white .val {
@@ -952,7 +952,7 @@
     }
 
     td.age-col {
-      color: #bfa3ff;
+      color: var(--clr-info);
       font-weight: 500;
     }
 
@@ -1114,12 +1114,12 @@
 
     /* ── NOTICE & DECORATIONS ───────────────────────────────── */
     .notice {
-      background: rgba(91, 155, 212, 0.06);
-      border: 1px solid rgba(91, 155, 212, 0.25);
+      background: rgba(215, 232, 248, 0.05);
+      border: 1px solid rgba(215, 232, 248, 0.22);
       border-radius: var(--r-lg);
       padding: 14px 18px;
       font-size: 12px;
-      color: #cce3ff;
+      color: var(--dim);
       margin-bottom: 20px;
       line-height: 1.6;
     }
@@ -1145,16 +1145,16 @@
     }
 
     .notice strong {
-      color: #fff;
+      color: var(--accent);
     }
 
     .notice code {
       font-family: var(--mono);
       font-size: 11px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(229,210,184,0.12);
       padding: 2px 6px;
       border-radius: 4px;
-      color: #fff;
+      color: var(--dim);
     }
 
     .mt-8 { margin-top: 8px; }

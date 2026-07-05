@@ -21,14 +21,13 @@
 
     html {
       height: 100%;
-      background: #0a0908;
-      /* fallback canvas colour */
+      background: #282828;
+      /* fallback canvas colour — off-black base (palette borrowed from Spring CC) */
     }
 
     body {
       height: 100%;
       background: transparent;
-      /* transparent so fixed video at z-index:-2 shows through */
       color: #E5D2B8;
       font-family: 'DM Sans', sans-serif;
       font-size: 14px;
@@ -37,98 +36,43 @@
     }
 
     /* ── LIQUID GLASS SYSTEM ─────────────────────────────────
-       Ported directly from Aetheris_Voyage
+       Dark Spring CC glass, ported from the original hub —
+       translucent off-black tint + blur/saturate, thin light
+       border, soft inner top highlight. Reads on the dark hero
+       AND on the beige/grey bands (light text set per-component).
+       Class names kept — markup & JS untouched.
     ──────────────────────────────────────────────────────── */
     .liquid-glass {
-      background: rgba(255, 255, 255, 0.01);
-      background-blend-mode: luminosity;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border: none;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      background: rgba(40, 40, 40, 0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border: 1px solid rgba(229, 210, 184, 0.18);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.10);
       position: relative;
       overflow: hidden;
-    }
-
-    .liquid-glass::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.4px;
-      background: linear-gradient(180deg,
-          rgba(255, 255, 255, 0.45) 0%,
-          rgba(255, 255, 255, 0.15) 20%,
-          rgba(255, 255, 255, 0) 40%,
-          rgba(255, 255, 255, 0) 60%,
-          rgba(255, 255, 255, 0.15) 80%,
-          rgba(255, 255, 255, 0.45) 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
     }
 
     .liquid-glass-strong {
-      background: rgba(255, 255, 255, 0.01);
-      background-blend-mode: luminosity;
-      backdrop-filter: blur(50px);
-      -webkit-backdrop-filter: blur(50px);
-      border: none;
-      box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+      background: rgba(40, 40, 40, 0.55);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border: 1px solid rgba(229, 210, 184, 0.22);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.14);
       position: relative;
       overflow: hidden;
     }
 
-    .liquid-glass-strong::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.4px;
-      background: linear-gradient(180deg,
-          rgba(255, 255, 255, 0.5) 0%,
-          rgba(255, 255, 255, 0.2) 20%,
-          rgba(255, 255, 255, 0) 40%,
-          rgba(255, 255, 255, 0) 60%,
-          rgba(255, 255, 255, 0.2) 80%,
-          rgba(255, 255, 255, 0.5) 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-
     .liquid-glass-nest {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(229, 210, 184, 0.14);
       box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12);
       position: relative;
       overflow: hidden;
     }
 
-    .liquid-glass-nest::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.2px;
-      background: linear-gradient(180deg,
-          rgba(255, 255, 255, 0.4) 0%,
-          rgba(255, 255, 255, 0.12) 30%,
-          rgba(255, 255, 255, 0) 50%,
-          rgba(255, 255, 255, 0.12) 70%,
-          rgba(255, 255, 255, 0.4) 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-    }
-
-    /* ── ANIMATIONS ──────────────────────────────────────────
-       Ported from Aetheris
-    ──────────────────────────────────────────────────────── */
+    /* ── ANIMATIONS ─────────────────────────────────────────── */
     @keyframes fadeUpIn {
       from {
         opacity: 0;
@@ -247,7 +191,7 @@
       align-items: center;
       justify-content: center;
       gap: 14px;
-      background: #0a0908;
+      background: #282828;
       z-index: 10;
       transition: opacity .3s ease;
     }
@@ -260,7 +204,7 @@
     .loader-icon {
       width: 32px;
       height: 32px;
-      border: 2px solid rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 255, 255, 0.12);
       border-top-color: #FF3700;
       border-radius: 50%;
       animation: spin .7s linear infinite;
@@ -269,8 +213,9 @@
     .loader-label {
       font-family: 'DM Mono', monospace;
       font-size: 12px;
-      color: rgba(185, 185, 177, 0.6);
+      color: #B9B9B1;
       letter-spacing: .08em;
+      text-transform: uppercase;
     }
 
     /* ── HERO SECTION ────────────────────────────────────────
@@ -304,44 +249,32 @@
       height: 100%;
     }
 
-    /* Warm gradient overlay */
+    /* Dark hero overlay — off-black up top, dissolving into the big
+       BEIGE band where the stat cards sit (reference band structure) */
     .hero-overlay {
       position: absolute;
       inset: 0;
       z-index: 1;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 60% 50% at 10% 90%, rgba(255, 55, 0, .22) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 55% at 90% 10%, rgba(255, 55, 0, .07) 0%, transparent 60%),
-        linear-gradient(to bottom, rgba(10, 9, 8, .15) 0%, rgba(10, 9, 8, .5) 60%, rgba(10, 9, 8, .85) 100%);
+        radial-gradient(ellipse 60% 50% at 10% 90%, rgba(255, 55, 0, .10) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 55% at 90% 10%, rgba(229, 210, 184, .08) 0%, transparent 60%),
+        linear-gradient(to bottom, rgba(40, 40, 40, .3) 0%, rgba(40, 40, 40, .12) 38%, rgba(229, 210, 184, 0) 52%, #E5D2B8 74%, #E5D2B8 100%);
     }
 
-    /* Video background — fixed, behind everything */
-    .bg-video {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -2;
-      opacity: 0.38;
-    }
-
-    /* Orange ambient glow overlay — needed for glass blur to render well */
+    /* Dark ambient base — off-black with faint orange/beige glows */
     .bg-glow {
       position: fixed;
       inset: 0;
       z-index: -1;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255, 55, 0, 0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 50% at 100% 0%, rgba(255, 55, 0, 0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(80, 40, 0, 0.12) 0%, transparent 70%);
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255, 55, 0, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%, rgba(229, 210, 184, 0.07) 0%, transparent 60%),
+        #282828;
     }
 
-    /* ── FLOATING NAV ────────────────────────────────────────
-       Aetheris pill navbar adapted for Hub
-    ──────────────────────────────────────────────────────── */
+    /* ── FLOATING NAV ──────────────────────────────────────── */
     .nav {
       position: fixed;
       top: 16px;
@@ -364,49 +297,73 @@
       transition: opacity .25s ease, transform .25s ease !important;
     }
 
-    /* Logo pill */
+    /* Logo pill — personal name, orange accent */
     .nav-logo {
-      width: 46px;
       height: 46px;
-      border-radius: 50%;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 10px;
+      padding: 0 16px;
       cursor: pointer;
       text-decoration: none;
       flex-shrink: 0;
+      background: #282828;
+      border: 1px solid rgba(229, 210, 184, 0.18);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
     }
 
     .nav-logo-inner {
       font-family: 'DM Sans', sans-serif;
       font-weight: 700;
-      font-size: 18px;
-      color: #FF3700;
+      font-size: 16px;
+      letter-spacing: -.02em;
+      color: #FFFFFF;
       line-height: 1;
-      text-shadow: 0 0 14px rgba(255, 55, 0, 0.5);
       user-select: none;
+      white-space: nowrap;
     }
 
-    /* Center pill — tabs */
+    .nav-logo-inner .slash {
+      color: #FF3700;
+    }
+
+    .nav-logo-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #B9B9B1;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* Center pill — tabs (dark pill, overrides white .liquid-glass) */
     .nav-tabs {
       display: flex;
       align-items: center;
       gap: 2px;
       border-radius: 9999px;
       padding: 5px 6px;
+      background: #282828;
+      border: 1px solid rgba(229, 210, 184, 0.16);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
     }
 
     .nav-tab {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 16px;
+      padding: 7px 14px;
       border: none;
       background: transparent;
-      color: rgba(229, 210, 184, 0.7);
+      color: #B9B9B1;
       font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
       border-radius: 9999px;
       cursor: pointer;
       transition: color .18s, background .18s;
@@ -419,8 +376,8 @@
     }
 
     .nav-tab.active {
-      color: #E5D2B8;
-      background: rgba(255, 255, 255, 0.1);
+      color: #FF3700;
+      background: rgba(255, 55, 0, 0.14);
     }
 
     .nav-tab-icon {
@@ -428,14 +385,17 @@
       line-height: 1;
     }
 
-    /* Right pill — env badge */
+    /* Right pill — env badge, Spring CC light-blue badge */
     .nav-end {
-      border-radius: 9999px;
-      padding: 6px 14px;
+      border-radius: 4px;
+      padding: 8px 14px;
       font-family: 'DM Mono', monospace;
       font-size: 11px;
-      color: rgba(185, 185, 177, 0.6);
+      color: #282828;
       letter-spacing: .06em;
+      background: #D7E8F8 !important;
+      border: none !important;
+      box-shadow: 0 4px 20px rgba(40, 40, 40, 0.06) !important;
     }
 
     /* BG toggle */
@@ -448,17 +408,16 @@
       gap: 3px;
       border-radius: 9999px;
       padding: 4px 5px;
-      background: rgba(0, 0, 0, .35);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, .06);
+      background: #FFFFFF;
+      border: 1px solid rgba(40, 40, 40, .08);
+      box-shadow: 0 4px 20px rgba(40, 40, 40, 0.08);
     }
 
     .bg-toggle button {
       padding: 4px 12px;
       border: none;
       background: transparent;
-      color: rgba(255, 255, 255, .35);
+      color: #B9B9B1;
       border-radius: 9999px;
       cursor: pointer;
       font-family: 'DM Mono', monospace;
@@ -471,16 +430,16 @@
     }
 
     .bg-toggle button:hover {
-      color: rgba(255, 255, 255, .7);
+      color: #282828;
     }
 
     .bg-toggle button.active {
-      background: rgba(255, 255, 255, .1);
-      color: rgba(255, 255, 255, .8);
+      background: rgba(255, 55, 0, .1);
+      color: #FF3700;
     }
 
     /* ── HERO CONTENT ────────────────────────────────────────
-       Centered like Aetheris hero
+       Centered, airy — personal voice, dark band
     ──────────────────────────────────────────────────────── */
     .hero-body {
       position: relative;
@@ -494,7 +453,7 @@
       padding: 120px 24px 40px;
     }
 
-    /* Badge */
+    /* Badge — dark pill on dark hero (overrides white .liquid-glass) */
     .hero-badge {
       display: inline-flex;
       align-items: center;
@@ -502,6 +461,9 @@
       border-radius: 9999px;
       padding: 4px 14px 4px 4px;
       margin-bottom: 28px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(229, 210, 184, 0.16);
+      box-shadow: none;
     }
 
     .hero-badge-chip {
@@ -511,27 +473,28 @@
       font-weight: 700;
       padding: 3px 10px;
       border-radius: 9999px;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
+      text-transform: uppercase;
     }
 
     .hero-badge-text {
       font-size: 13px;
-      color: rgba(229, 210, 184, 0.85);
-      font-weight: 400;
+      color: #B9B9B1;
+      font-weight: 500;
     }
 
     /* Headline — blur-word animated */
     .hero-headline {
-      max-width: 700px;
+      max-width: 760px;
       margin-bottom: 20px;
     }
 
     .hero-headline h1 {
       font-size: clamp(52px, 9vw, 108px);
       font-weight: 700;
-      line-height: .88;
+      line-height: .92;
       letter-spacing: -.04em;
-      color: #E5D2B8;
+      color: #FFFFFF;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
@@ -544,11 +507,11 @@
 
     /* Sub */
     .hero-sub {
-      max-width: 400px;
-      font-size: 15px;
-      font-weight: 300;
-      color: rgba(229, 210, 184, 0.7);
-      line-height: 1.65;
+      max-width: 440px;
+      font-size: 16px;
+      font-weight: 400;
+      color: #B9B9B1;
+      line-height: 1.6;
       margin-bottom: 32px;
     }
 
@@ -564,20 +527,26 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      border-radius: 9999px;
-      padding: 10px 22px;
+      border-radius: 6px;
+      padding: 12px 24px;
       font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      color: #E5D2B8;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #fff;
       cursor: pointer;
-      transition: opacity .18s;
+      transition: opacity .18s, transform .18s;
       text-decoration: none;
       white-space: nowrap;
+      background: #FF3700 !important;
+      border: none !important;
+      box-shadow: 0 6px 20px rgba(255, 55, 0, 0.28) !important;
     }
 
     .btn-glass:hover {
-      opacity: .85;
+      opacity: .9;
+      transform: translateY(-1px);
     }
 
     .btn-text {
@@ -585,8 +554,8 @@
       align-items: center;
       gap: 7px;
       font-size: 14px;
-      font-weight: 500;
-      color: rgba(229, 210, 184, 0.75);
+      font-weight: 700;
+      color: #E5D2B8;
       cursor: pointer;
       transition: color .18s;
       background: none;
@@ -594,7 +563,7 @@
     }
 
     .btn-text:hover {
-      color: #E5D2B8;
+      color: #FF3700;
     }
 
     /* Stat cards — full-width stretch */
@@ -613,19 +582,21 @@
     .stat-card {
       flex: 1 1 0;
       min-width: 120px;
-      border-radius: 20px;
+      border-radius: 12px;
       padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       text-align: left;
       cursor: pointer;
-      transition: transform .22s, opacity .22s;
+      transition: transform .22s, box-shadow .22s, border-color .22s;
       text-decoration: none;
     }
 
     .stat-card:hover {
       transform: translateY(-4px);
+      border-color: rgba(255, 55, 0, 0.55);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.10);
     }
 
     .stat-card-icon {
@@ -635,7 +606,7 @@
       align-items: center;
       justify-content: center;
       font-size: 18px;
-      border-radius: 10px;
+      border-radius: 8px;
       flex-shrink: 0;
     }
 
@@ -646,7 +617,7 @@
       font-weight: 700;
       line-height: 1;
       letter-spacing: -.03em;
-      color: #E5D2B8;
+      color: #FFFFFF;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -655,7 +626,7 @@
 
     .stat-card-label {
       font-size: 12px;
-      color: rgba(229, 210, 184, 0.6);
+      color: #B9B9B1;
       font-weight: 400;
       margin-top: 6px;
       margin-bottom: 10px;
@@ -668,11 +639,11 @@
       font-weight: 500;
       letter-spacing: .1em;
       text-transform: uppercase;
-      color: #FF3700;
-      background: rgba(255, 55, 0, .1);
+      color: rgba(229, 210, 184, 0.85);
+      background: transparent;
       padding: 2px 8px;
-      border-radius: 99px;
-      border: 1px solid rgba(255, 55, 0, .2);
+      border-radius: 4px;
+      border: 1px solid rgba(229, 210, 184, 0.3);
       margin-top: auto;
       padding-top: 2px;
       display: inline-block;
@@ -697,9 +668,10 @@
       border-radius: 9999px;
       padding: 4px 14px;
       font-size: 11px;
-      font-weight: 500;
-      color: rgba(229, 210, 184, 0.6);
-      letter-spacing: .03em;
+      font-weight: 700;
+      color: #E5D2B8;
+      letter-spacing: .1em;
+      text-transform: uppercase;
     }
 
     .hero-footer-tools {
@@ -713,7 +685,7 @@
       font-style: italic;
       font-size: 22px;
       font-weight: 700;
-      color: rgba(229, 210, 184, 0.35);
+      color: rgba(40, 40, 40, 0.4);
       letter-spacing: -.02em;
       transition: color .2s;
       cursor: pointer;
@@ -721,36 +693,34 @@
     }
 
     .hero-footer-name:hover {
-      color: rgba(229, 210, 184, 0.65);
+      color: #FF3700;
     }
 
-    /* ── TOOLS SECTION ───────────────────────────────────────
-       Aetheris-style Capabilities section
-    ──────────────────────────────────────────────────────── */
+    /* ── TOOLS SECTION ──────────────────────────────────────── */
     .tools-section {
       position: relative;
       min-height: 100vh;
       background: transparent;
-      /* no overflow:hidden — would create stacking context that clips video */
     }
 
-    /* Ambient orange glow + top gradient that picks up exactly where the hero
-       overlay ends (.85 dark) and gently lifts — seamless hero → tools blend */
+    /* Section bands — BEIGE band continues from the hero, then a
+       GREY band takes over for the lower half (reference rhythm) */
     .tools-bg {
       position: absolute;
       inset: 0;
       z-index: 0;
       pointer-events: none;
       background:
-        linear-gradient(to bottom, rgba(10, 9, 8, .85) 0%, rgba(10, 9, 8, .45) 28%, rgba(10, 9, 8, 0) 58%),
-        radial-gradient(ellipse 60% 50% at 90% 90%, rgba(255, 55, 0, .16) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 10% 10%, rgba(255, 55, 0, .08) 0%, transparent 60%);
+        radial-gradient(ellipse 60% 50% at 90% 20%, rgba(255, 55, 0, .07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 12% 48%, rgba(255, 255, 255, .20) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 40% at 68% 82%, rgba(40, 40, 40, .10) 0%, transparent 60%),
+        linear-gradient(to bottom, #E5D2B8 0%, #E5D2B8 52%, #B9B9B1 74%, #B9B9B1 100%);
     }
 
     .tools-inner {
       position: relative;
       z-index: 1;
-      padding: 80px 48px 72px;
+      padding: 80px 48px 0;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -758,19 +728,20 @@
 
     /* Section header */
     .section-kicker {
-      font-size: 13px;
-      font-weight: 400;
-      color: rgba(229, 210, 184, 0.55);
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(40, 40, 40, 0.55);
       margin-bottom: 18px;
-      letter-spacing: .04em;
+      letter-spacing: .16em;
+      text-transform: uppercase;
     }
 
     .section-heading {
       font-size: clamp(48px, 7vw, 88px);
       font-weight: 700;
-      line-height: .88;
+      line-height: .92;
       letter-spacing: -.04em;
-      color: #E5D2B8;
+      color: #282828;
       margin-bottom: auto;
     }
 
@@ -779,7 +750,7 @@
       color: #FF3700;
     }
 
-    /* Tool cards grid — Aetheris Capabilities style */
+    /* Tool cards grid */
     .tools-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -788,18 +759,20 @@
     }
 
     .tool-card {
-      border-radius: 20px;
+      border-radius: 12px;
       padding: 24px;
       min-height: 320px;
       display: flex;
       flex-direction: column;
       cursor: pointer;
-      transition: transform .25s, box-shadow .25s;
+      transition: transform .25s, box-shadow .25s, border-color .25s;
       text-decoration: none;
     }
 
     .tool-card:hover {
       transform: translateY(-6px);
+      border-color: rgba(255, 55, 0, 0.55);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10);
     }
 
     /* Top row of card */
@@ -813,7 +786,7 @@
     .card-icon-wrap {
       width: 44px;
       height: 44px;
-      border-radius: 12px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -830,13 +803,24 @@
     }
 
     .card-tag-pill {
-      border-radius: 9999px;
+      border-radius: 4px;
       padding: 4px 10px;
       font-size: 10px;
       color: rgba(229, 210, 184, 0.8);
       white-space: nowrap;
       font-family: 'DM Mono', monospace;
       letter-spacing: .04em;
+      background: transparent !important;
+      border: 1px solid rgba(229, 210, 184, 0.28) !important;
+      box-shadow: none !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transition: color .2s, border-color .2s;
+    }
+
+    .tool-card:hover .card-tag-pill {
+      color: #FF3700;
+      border-color: rgba(255, 55, 0, 0.45) !important;
     }
 
     /* Card bottom */
@@ -860,41 +844,43 @@
 
     .card-desc {
       font-size: 13px;
-      font-weight: 300;
-      color: rgba(229, 210, 184, 0.65);
+      font-weight: 400;
+      color: #B9B9B1;
       line-height: 1.6;
       max-width: 28ch;
     }
 
-    /* Arrow */
+    /* Arrow — Spring CC "→" CTA */
     .card-arrow {
       position: absolute;
       bottom: 20px;
       right: 20px;
-      color: rgba(229, 210, 184, 0.3);
-      font-size: 18px;
+      color: #B9B9B1;
+      font-size: 20px;
+      font-weight: 700;
       transition: transform .2s, color .2s;
     }
 
     .tool-card:hover .card-arrow {
-      transform: translate(3px, -3px);
+      transform: translateX(4px);
       color: #FF3700;
     }
 
-    /* Section footer */
+    /* Section footer — DARK band, full-bleed against the grey band */
     .tools-footer {
-      margin-top: 40px;
+      margin: 56px -48px 0;
+      padding: 26px 48px 30px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-      padding-top: 20px;
+      background: #282828;
+      border-top: none;
     }
 
     .footer-copy {
       font-family: 'DM Mono', monospace;
       font-size: 11px;
-      color: rgba(185, 185, 177, 0.4);
+      color: #B9B9B1;
       letter-spacing: .04em;
     }
 
@@ -931,7 +917,12 @@
       }
 
       .tools-inner {
-        padding: 80px 32px 60px;
+        padding: 80px 32px 0;
+      }
+
+      .tools-footer {
+        margin: 48px -32px 0;
+        padding: 24px 32px 28px;
       }
     }
 
@@ -944,12 +935,17 @@
       }
 
       .nav-logo {
-        width: 36px;
         height: 36px;
+        padding: 0 10px;
+        gap: 6px;
       }
 
       .nav-logo-inner {
-        font-size: 14px;
+        font-size: 13px;
+      }
+
+      .nav-logo-label {
+        display: none;
       }
 
       .nav-tabs {
@@ -971,7 +967,7 @@
       /* Home tab keeps text */
       .nav-tab[data-panel="home"] {
         padding: 6px 10px;
-        font-size: 12px;
+        font-size: 11px;
       }
 
       .nav-end {
@@ -1019,7 +1015,7 @@
         flex: 1 1 calc(50% - 4px);
         min-width: calc(50% - 4px);
         padding: 16px;
-        border-radius: 16px;
+        border-radius: 12px;
       }
 
       .stat-card-value {
@@ -1044,7 +1040,7 @@
 
       /* Tools section */
       .tools-inner {
-        padding: 60px 20px 48px;
+        padding: 60px 20px 0;
       }
 
       .section-heading {
@@ -1068,6 +1064,8 @@
 
       /* Footer */
       .tools-footer {
+        margin: 40px -20px 0;
+        padding: 20px 20px 24px;
         flex-direction: column;
         gap: 6px;
         align-items: flex-start;
@@ -1095,21 +1093,21 @@
       align-items: center;
       gap: 8px;
       padding: 8px 16px 8px 12px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(32px) saturate(160%);
-      -webkit-backdrop-filter: blur(32px) saturate(160%);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      background: #282828;
+      border: 1px solid rgba(229, 210, 184, 0.2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
       color: #E5D2B8;
-      border: none;
       text-decoration: none;
       opacity: 0;
       transform: translateY(-8px);
-      transition: opacity .25s ease, transform .25s ease, background .15s;
+      transition: opacity .25s ease, transform .25s ease, color .15s, border-color .15s;
     }
 
     .tool-back.visible {
@@ -1119,25 +1117,8 @@
     }
 
     .tool-back:hover {
-      background: rgba(255, 255, 255, 0.1);
       color: #FF3700;
-    }
-
-    .tool-back::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1px;
-      background: linear-gradient(160deg,
-          rgba(255, 255, 255, 0.38) 0%,
-          rgba(255, 255, 255, 0.08) 40%,
-          rgba(255, 255, 255, 0) 60%,
-          rgba(255, 255, 255, 0.28) 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
+      border-color: rgba(255, 55, 0, 0.4);
     }
 
     .tool-back svg {
@@ -1156,24 +1137,20 @@
     Hub
   </button>
 
-  <!-- ── VIDEO BACKGROUND ─────────────────────────────────────────── -->
-  <video class="bg-video" autoplay muted loop playsinline>
-    <source
-      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4"
-      type="video/mp4">
-  </video>
+  <!-- ── DARK AMBIENT BACKGROUND (off-black, no video) ────────────── -->
   <div class="bg-glow"></div>
 
   <div class="shell">
 
     <!-- ══════════════════════════════════════════════════════
-       FLOATING NAV — Aetheris pill style
+       FLOATING NAV — dark pill style
   ═══════════════════════════════════════════════════════ -->
     <nav class="nav anim-0">
 
-      <!-- Logo pill -->
-      <div class="nav-logo liquid-glass" onclick="switchToHome()" title="Home">
-        <span class="nav-logo-inner">⬡</span>
+      <!-- Logo pill — personal name, orange accent -->
+      <div class="nav-logo" onclick="switchToHome()" title="Home">
+        <span class="nav-logo-inner">Tùng<span class="slash">/</span>Hub</span>
+        <span class="nav-logo-label">Personal</span>
       </div>
 
       <!-- Center tabs pill -->
@@ -1213,10 +1190,10 @@
         </button>
       </div>
 
-      <!-- Env badge -->
-      <div class="nav-end liquid-glass">
+      <!-- Env badge — light-blue small badge -->
+      <div class="nav-end">
         <span id="envBadge"
-          style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(185,185,177,0.6)">localhost</span>
+          style="font-family:'DM Mono',monospace;font-size:11px;color:#282828">localhost</span>
       </div>
 
     </nav>
@@ -1231,15 +1208,14 @@
 
         <div id="hero-stage"></div>
         <div class="hero-overlay"></div>
-        <!-- hero-noise removed: replaced by video background -->
 
-        <!-- Hero content — centered like Aetheris -->
+        <!-- Hero content — centered, airy -->
         <div class="hero-body">
 
           <!-- Badge -->
           <div class="hero-badge liquid-glass anim-1">
             <span class="hero-badge-chip">Personal</span>
-            <span class="hero-badge-text">Tools for production & tracking</span>
+            <span class="hero-badge-text">Tools for production &amp; tracking</span>
           </div>
 
           <!-- Headline — blur-word animated -->
@@ -1250,7 +1226,7 @@
           <!-- Sub -->
           <p class="hero-sub anim-3">
             Banner tracking, task management and time estimation —
-            all in one dark glass workspace. No tab juggling.
+            all in one personal workspace. No tab juggling.
           </p>
 
           <!-- CTAs -->
@@ -1386,7 +1362,7 @@
                 <div class="card-desc">Production status, fill hours, overrun states and delivery across all campaigns.
                 </div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('Tasks_Tracking')"
@@ -1404,7 +1380,7 @@
                 <div class="card-name">Task<br />Tracking</div>
                 <div class="card-desc">Estimate vs filled hours, visual progress and cloud sync per account.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('Tasks_Estimation')"
@@ -1423,7 +1399,7 @@
                 <div class="card-desc">Master/version quantities, time per unit, total hours — calculated instantly.
                 </div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('Data_mapper')"
@@ -1441,7 +1417,7 @@
                 <div class="card-name">Data<br />Mapper</div>
                 <div class="card-desc">Map and transform CSV/Excel columns — clean data output in one step.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('HTML5_guide')"
@@ -1459,7 +1435,7 @@
                 <div class="card-name">HTML5<br />Guide</div>
                 <div class="card-desc">Step-by-step HTML5 banner creation guide for Adobe Animate CC export.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('Banner_Preview')"
@@ -1477,7 +1453,7 @@
                 <div class="card-name">Banner<br />Preview</div>
                 <div class="card-desc">Scan banner folders or drag &amp; drop to preview all HTML5 sizes locally.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('File_finder')"
@@ -1495,7 +1471,7 @@
                 <div class="card-name">File<br />Finder</div>
                 <div class="card-desc">Generate file lists from any folder and search across multiple paths instantly.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('PDF_overview')"
@@ -1513,7 +1489,7 @@
                 <div class="card-name">PDF<br />Overview</div>
                 <div class="card-desc">Drop a campaign folder, reorder previews and export a clean QA overview PDF.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('Base64_converter')"
@@ -1531,7 +1507,7 @@
                 <div class="card-name">Base64<br />Converter</div>
                 <div class="card-desc">Convert images to base64 — data URL, CSS bg, img tag. Fully offline, no upload.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
             <div class="tool-card liquid-glass on-view" onclick="openTool('Image_Compressor')"
@@ -1549,7 +1525,7 @@
                 <div class="card-name">Image<br />Compressor</div>
                 <div class="card-desc">Compress JPG, PNG, WebP in-browser — quality slider, target KB, batch ZIP download.</div>
               </div>
-              <span class="card-arrow">↗</span>
+              <span class="card-arrow">→</span>
             </div>
 
           </div><!-- /tools-grid -->
@@ -1763,7 +1739,7 @@
 
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
       defs.innerHTML = `<pattern id="pgrid" width="64" height="64" patternUnits="userSpaceOnUse">
-    <path d="M 64 0 L 0 0 0 64" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+    <path d="M 64 0 L 0 0 0 64" fill="none" stroke="rgba(229,210,184,0.05)" stroke-width="1"/>
   </pattern>`;
       svg.appendChild(defs);
 
@@ -1771,15 +1747,16 @@
       gridBg.setAttribute('width', '100%'); gridBg.setAttribute('height', '100%'); gridBg.setAttribute('fill', 'url(#pgrid)');
       svg.appendChild(gridBg);
 
+      /* Re-tinted for the dark #282828 bg: orange / beige / grey only, subtle */
       const shapes = [
-        { tag: 'polygon', attrs: { points: '180,80 340,340 20,340' }, fill: 'rgba(139,92,246,.15)', cx: 180, cy: 240 },
-        { tag: 'rect', attrs: { x: 580, y: 180, width: 220, height: 220 }, fill: 'rgba(59,130,246,.12)', cx: 690, cy: 290 },
-        { tag: 'polygon', attrs: { points: '1180,40 1380,310 980,310' }, fill: 'rgba(20,184,166,.13)', cx: 1180, cy: 220 },
-        { tag: 'rect', attrs: { x: 80, y: 590, width: 160, height: 160 }, fill: 'rgba(255,55,0,.10)', cx: 160, cy: 670 },
-        { tag: 'polygon', attrs: { points: '870,610 1060,820 680,820' }, fill: 'rgba(236,72,153,.12)', cx: 870, cy: 750 },
-        { tag: 'rect', attrs: { x: 1220, y: 620, width: 130, height: 130 }, fill: 'none', stroke: 'rgba(139,92,246,.2)', sw: 2, cx: 1285, cy: 685 },
-        { tag: 'polygon', attrs: { points: '700,380 760,480 640,480' }, fill: 'none', stroke: 'rgba(6,182,212,.18)', sw: 1.5, cx: 700, cy: 447 },
-        { tag: 'rect', attrs: { x: 360, y: 500, width: 80, height: 80 }, fill: 'none', stroke: 'rgba(255,55,0,.18)', sw: 1.5, cx: 400, cy: 540 },
+        { tag: 'polygon', attrs: { points: '180,80 340,340 20,340' }, fill: 'rgba(255,55,0,.14)', cx: 180, cy: 240 },
+        { tag: 'rect', attrs: { x: 580, y: 180, width: 220, height: 220 }, fill: 'rgba(229,210,184,.15)', cx: 690, cy: 290 },
+        { tag: 'polygon', attrs: { points: '1180,40 1380,310 980,310' }, fill: 'rgba(185,185,177,.13)', cx: 1180, cy: 220 },
+        { tag: 'rect', attrs: { x: 80, y: 590, width: 160, height: 160 }, fill: 'rgba(255,55,0,.16)', cx: 160, cy: 670 },
+        { tag: 'polygon', attrs: { points: '870,610 1060,820 680,820' }, fill: 'rgba(229,210,184,.17)', cx: 870, cy: 750 },
+        { tag: 'rect', attrs: { x: 1220, y: 620, width: 130, height: 130 }, fill: 'none', stroke: 'rgba(255,55,0,.35)', sw: 2, cx: 1285, cy: 685 },
+        { tag: 'polygon', attrs: { points: '700,380 760,480 640,480' }, fill: 'none', stroke: 'rgba(185,185,177,.4)', sw: 1.5, cx: 700, cy: 447 },
+        { tag: 'rect', attrs: { x: 360, y: 500, width: 80, height: 80 }, fill: 'none', stroke: 'rgba(255,55,0,.3)', sw: 1.5, cx: 400, cy: 540 },
       ];
 
       shapes.forEach((s, i) => {
@@ -1817,7 +1794,8 @@
       bgResizeFn = () => { W = canvas.width = hero.offsetWidth; H = canvas.height = hero.offsetHeight; };
       window.addEventListener('resize', bgResizeFn);
 
-      const palette = [[139, 92, 246], [59, 130, 246], [20, 184, 166], [236, 72, 153], [255, 55, 0], [16, 185, 129]];
+      /* Re-tinted palette for dark bg: orange + beige + grey, subtle */
+      const palette = [[255, 55, 0], [229, 210, 184], [185, 185, 177], [255, 55, 0], [229, 210, 184], [185, 185, 177]];
       const particles = Array.from({ length: 900 }, (_, i) => ({
         x: Math.random() * W, y: Math.random() * H, vx: 0, vy: 0,
         speed: .8 + Math.random() * 1.4,
@@ -1834,7 +1812,8 @@
 
       function draw() {
         if (bgPaused) { bgRafId = null; return; }
-        ctx.fillStyle = 'rgba(10,9,8,.13)'; ctx.fillRect(0, 0, W, H);
+        /* Dark fade — trails dissolve into the off-black base */
+        ctx.fillStyle = 'rgba(40,40,40,.13)'; ctx.fillRect(0, 0, W, H);
         t += .005;
         particles.forEach(p => {
           const angle = field(p.x, p.y, t);
@@ -1843,7 +1822,8 @@
           if (spd > p.speed) { p.vx = p.vx / spd * p.speed; p.vy = p.vy / spd * p.speed; }
           p.x += p.vx; p.y += p.vy; p.life += p.lifeSpd;
           if (p.x < -5 || p.x > W + 5 || p.y < -5 || p.y > H + 5 || p.life > Math.PI) { reset(p); return; }
-          const alpha = Math.max(0, Math.min(.7, Math.sin(p.life) * .7));
+          /* Visible but subtle on dark bg: peak alpha capped at .25 */
+          const alpha = Math.max(0, Math.min(.25, Math.sin(p.life) * .25));
           const [r, g, b] = p.color;
           ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`; ctx.fill();

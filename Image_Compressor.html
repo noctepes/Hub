@@ -4,30 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image Compressor</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     /* ── DESIGN TOKENS ──────────────────────────────────────────── */
     :root {
-      --bg:       #0a0908;
-      --surface:  rgba(255,255,255,0.025);
-      --surface2: rgba(255,255,255,0.04);
-      --surface3: rgba(255,255,255,0.07);
-      --border:   rgba(255,255,255,0.07);
-      --border2:  rgba(255,255,255,0.12);
+      --bg:       #282828;
+      --surface:  rgba(255,255,255,0.04);
+      --surface2: rgba(255,255,255,0.06);
+      --surface3: rgba(255,255,255,0.08);
+      --border:   rgba(229,210,184,0.14);
+      --border2:  rgba(229,210,184,0.22);
       --text:   #E5D2B8;
       --dim:    #B9B9B1;
-      --muted:  rgba(185,185,177,0.55);
+      --muted:  rgba(185,185,177,0.6);
       --accent:    #FF3700;
-      --accent-d:  rgba(255,55,0,0.09);
+      --accent-d:  rgba(255,55,0,0.10);
       --accent-d2: rgba(255,55,0,0.18);
       --clr-ok:      #2DB87D;
-      --clr-ok-dim:  rgba(45,184,125,0.12);
+      --clr-ok-dim:  rgba(45,184,125,0.14);
       --clr-err:     #E05252;
-      --clr-info:    #5B9BD4;
-      --clr-info-dim:rgba(91,155,212,0.12);
-      --mono: 'JetBrains Mono', monospace;
+      --clr-info:    #D7E8F8;
+      --clr-info-dim:rgba(215,232,248,0.10);
+      --mono: 'DM Mono', monospace;
       --sans: 'DM Sans', sans-serif;
-      --r: 6px;
+      --r: 8px;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -46,9 +46,15 @@
     .bg-glow {
       position: fixed; inset: 0; z-index: -1; pointer-events: none;
       background:
-        radial-gradient(ellipse 60% 50% at 0% 100%, rgba(255,55,0,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 45% at 100% 0%,  rgba(255,55,0,0.06) 0%, transparent 60%);
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(229,210,184,0.07) 0%, transparent 60%);
     }
+
+    /* Scrollbars (subtle) */
+    ::-webkit-scrollbar { width:8px; height:8px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(229,210,184,0.18); border-radius:8px; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(229,210,184,0.30); }
 
     /* ── TOP BAR ────────────────────────────────────────────────── */
     .topbar {
@@ -57,10 +63,10 @@
       gap: 0;
       padding: 0 20px 0 112px;
       height: 50px;
-      background: rgba(10,9,8,0.75);
-      backdrop-filter: blur(32px) saturate(160%);
-      -webkit-backdrop-filter: blur(32px) saturate(160%);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.07), 0 2px 12px rgba(0,0,0,0.4);
+      background: rgba(40,40,40,0.55);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.10), 0 2px 12px rgba(0,0,0,0.28);
       flex-shrink: 0;
       z-index: 100;
       position: relative;
@@ -129,9 +135,9 @@
       display: inline-flex; align-items: center; gap: 5px;
       padding: 5px 13px;
       border-radius: var(--r);
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04);
-      color: var(--dim);
+      border: 1px solid rgba(229,210,184,0.25);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
       font-family: var(--sans);
       font-size: 12px;
       font-weight: 500;
@@ -216,12 +222,13 @@
 
     /* ── IMAGE CARD ─────────────────────────────────────────────── */
     .img-card {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(24px) saturate(150%);
-      -webkit-backdrop-filter: blur(24px) saturate(150%);
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border-radius: 12px;
+      border: 1px solid rgba(229,210,184,0.18);
       border-left: 3px solid var(--border2);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
       overflow: hidden;
       position: relative;
       transition: border-color .2s, opacity .2s, transform .2s;
@@ -445,9 +452,10 @@
       position: fixed;
       bottom: 22px; right: 22px;
       z-index: 999;
-      background: rgba(18,16,14,0.93);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(40,40,40,0.75);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      border: 1px solid rgba(229,210,184,0.22);
       border-radius: var(--r);
       padding: 10px 16px;
       font-size: 11px;

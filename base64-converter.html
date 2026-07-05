@@ -6,7 +6,7 @@
 <title>Image → Base64 · Spring CC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --sc-orange:   #FF3700;
@@ -14,16 +14,22 @@
     --sc-offblack: #282828;
     --sc-grey:     #B9B9B1;
     --sc-white:    #FFFFFF;
-    --sc-grad-dark: linear-gradient(135deg, #282828 60%, #FF3700 100%);
+    --sc-grad-dark: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,55,0,0.14) 100%);
     --sc-font: 'DM Sans', sans-serif;
+    --sc-mono: 'DM Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
     --sc-r-sm: 6px;
     --sc-r-md: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: var(--sc-font);
-    background: #f0ece5;
-    color: var(--sc-offblack);
+    /* Hub dark base — off-black with subtle orange/beige radial glows */
+    background:
+      radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 45% 50% at 100% 0%, rgba(229,210,184,0.07) 0%, transparent 60%),
+      #282828;
+    background-attachment: fixed;
+    color: var(--sc-beige);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -83,34 +89,39 @@
 
   /* ── Drop zone ── */
   .dropzone {
-    border: 2px dashed var(--sc-beige); border-radius: var(--sc-r-md);
+    border: 2px dashed rgba(229,210,184,0.3); border-radius: var(--sc-r-md);
     padding: 52px 24px; text-align: center; cursor: pointer;
     transition: border-color .15s, background .15s;
-    background: var(--sc-white); position: relative;
-    box-shadow: 0 4px 20px rgba(40,40,40,.06);
+    background: rgba(40,40,40,0.45); position: relative;
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
   }
   .dropzone:hover, .dropzone.drag-over {
-    border-color: var(--sc-orange); background: #fff8f5;
+    border-color: var(--sc-orange); background: rgba(255,55,0,0.08);
   }
   .dropzone input[type="file"] {
     position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;
   }
   .drop-icon {
     width:52px; height:52px;
-    background: linear-gradient(135deg,#fff0eb,#ffe4d6);
+    background: rgba(255,55,0,0.12);
     border-radius:14px; display:flex; align-items:center; justify-content:center;
-    margin:0 auto 16px; border:1px solid #ffd0be;
+    margin:0 auto 16px; border:1px solid rgba(255,55,0,0.35);
   }
   .drop-icon svg { width:24px; height:24px; }
-  .drop-label { font-size:15px; font-weight:500; color:var(--sc-offblack); }
+  .drop-label { font-size:15px; font-weight:500; color:var(--sc-beige); }
   .drop-label em { color:var(--sc-orange); font-style:normal; font-weight:700; }
   .drop-sub { font-size:12px; color:var(--sc-grey); margin-top:6px; }
 
   /* ── File card (single & multi) ── */
   .file-card {
-    background: var(--sc-white);
+    background: rgba(40,40,40,0.45);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(229,210,184,0.18);
     border-radius: var(--sc-r-md);
-    box-shadow: 0 4px 20px rgba(40,40,40,.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
     overflow: hidden;
   }
 
@@ -118,24 +129,24 @@
   .fc-header {
     display: flex; align-items: flex-start; gap: 14px;
     padding: 18px 20px 16px;
-    border-bottom: 1px solid #f0ece5;
+    border-bottom: 1px solid rgba(229,210,184,0.15);
   }
   .fc-thumb {
     width:72px; height:72px; object-fit:contain;
-    border-radius:8px; border:1px solid #ede8e0;
-    background:#faf8f5; flex-shrink:0;
+    border-radius:8px; border:1px solid rgba(229,210,184,0.18);
+    background:rgba(255,255,255,0.06); flex-shrink:0;
   }
   .fc-meta { flex:1; }
   .fc-name {
-    font-size:13px; font-weight:700; color:var(--sc-offblack);
+    font-size:13px; font-weight:700; color:var(--sc-white);
     word-break:break-all; margin-bottom:5px;
   }
   .fc-info { font-size:11.5px; color:var(--sc-grey); line-height:1.9; }
-  .fc-info b { color:var(--sc-offblack); font-weight:500; }
+  .fc-info b { color:var(--sc-beige); font-weight:500; }
   .fc-warn {
-    display:none; font-size:11.5px; font-weight:500; color:#c23000;
-    padding:4px 8px; background:#fff4f0;
-    border-radius:4px; border:1px solid #ffd0be;
+    display:none; font-size:11.5px; font-weight:500; color:#FF8A66;
+    padding:4px 8px; background:rgba(255,55,0,0.10);
+    border-radius:4px; border:1px solid rgba(255,55,0,0.30);
     margin-top:6px; width:fit-content;
   }
   .fc-warn.on { display:block; }
@@ -143,17 +154,18 @@
   /* 4-tab strip */
   .fc-tabs {
     display: flex; gap: 4px; padding: 8px 10px;
-    border-bottom: 1px solid #f0ece5;
-    background: #faf8f5;
+    border-bottom: 1px solid rgba(229,210,184,0.15);
+    background: rgba(255,255,255,0.04);
   }
   .fc-tab {
     flex:1; padding:6px 8px; font-family:var(--sc-font);
-    font-size:11px; font-weight:600; border-radius:6px; border:none;
+    font-size:11px; font-weight:600; border-radius:6px;
+    border:1px solid rgba(229,210,184,0.28);
     background:transparent; color:var(--sc-grey); cursor:pointer;
     transition:all .12s; text-align:center; white-space:nowrap;
   }
-  .fc-tab:hover { color:var(--sc-offblack); background:#eee8df; }
-  .fc-tab.active { background:var(--sc-offblack); color:var(--sc-white); }
+  .fc-tab:hover { color:var(--sc-beige); background:rgba(255,255,255,0.06); border-color:rgba(229,210,184,0.5); }
+  .fc-tab.active { background:rgba(255,55,0,0.12); color:var(--sc-orange); border-color:var(--sc-orange); }
 
   /* output panels — 1 visible at a time */
   .fc-panels { position:relative; }
@@ -164,8 +176,8 @@
     width:100%; min-height:90px; max-height:160px;
     background:transparent; border:none;
     padding:12px 20px;
-    font-family:'SF Mono','Fira Code','Consolas',monospace;
-    font-size:11px; color:var(--sc-orange); line-height:1.7;
+    font-family:var(--sc-mono);
+    font-size:11px; color:var(--sc-beige); line-height:1.7;
     resize:none; overflow-y:auto; word-break:break-all; display:block;
   }
   .fc-out:focus { outline:none; }
@@ -173,7 +185,7 @@
   /* copy bar */
   .fc-footer {
     display:flex; justify-content:flex-end; gap:8px;
-    padding:10px 20px; border-top:1px solid #f0ece5;
+    padding:10px 20px; border-top:1px solid rgba(229,210,184,0.15);
   }
   .btn-sm {
     padding:6px 16px; font-family:var(--sc-font);
@@ -186,24 +198,23 @@
   }
   .btn-copy:hover { background:#e03000; border-color:#e03000; }
   .btn-sel {
-    background:var(--sc-white); color:var(--sc-offblack); border-color:var(--sc-beige);
-    box-shadow:0 1px 4px rgba(40,40,40,.06);
+    background:transparent; color:var(--sc-beige); border-color:rgba(229,210,184,0.28);
   }
-  .btn-sel:hover { border-color:var(--sc-grey); }
+  .btn-sel:hover { border-color:var(--sc-orange); color:var(--sc-orange); }
 
   /* global reset */
   .reset-wrap { display:flex; justify-content:flex-end; }
   .btn-reset {
-    background:transparent; border:2px solid #ddd4c5; border-radius:var(--sc-r-sm);
+    background:transparent; border:2px solid rgba(229,210,184,0.28); border-radius:var(--sc-r-sm);
     padding:8px 20px; font-family:var(--sc-font); font-size:12px; font-weight:700;
     color:var(--sc-grey); cursor:pointer; transition:all .12s;
   }
-  .btn-reset:hover { border-color:var(--sc-orange); color:#c23000; background:#fff4f0; }
+  .btn-reset:hover { border-color:var(--sc-orange); color:var(--sc-orange); background:rgba(255,55,0,0.08); }
 
   /* size warn global */
   .size-warn-bar {
-    display:none; font-size:12px; font-weight:500; color:#c23000;
-    padding:10px 14px; background:#fff4f0;
+    display:none; font-size:12px; font-weight:500; color:#FF8A66;
+    padding:10px 14px; background:rgba(255,55,0,0.10);
     border-left:3px solid var(--sc-orange); border-radius:0 6px 6px 0;
   }
   .size-warn-bar.on { display:block; }
@@ -212,10 +223,14 @@
   .toast {
     position:fixed; bottom:28px; left:50%;
     transform:translateX(-50%) translateY(10px);
-    background:var(--sc-offblack); color:var(--sc-white);
+    background:rgba(40,40,40,0.85); color:var(--sc-white);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border:1px solid rgba(229,210,184,0.18);
     font-family:var(--sc-font); font-size:13px; font-weight:500;
     padding:10px 22px; border-radius:100px;
     border-left:3px solid var(--sc-orange);
+    box-shadow:0 8px 24px rgba(0,0,0,0.35);
     opacity:0; transition:opacity .2s, transform .2s;
     pointer-events:none; white-space:nowrap; z-index:999;
   }
@@ -225,9 +240,15 @@
   .footer {
     width:100%; text-align:center; padding:20px;
     font-size:11.5px; color:var(--sc-grey);
-    border-top:1px solid var(--sc-beige);
+    border-top:1px solid rgba(229,210,184,0.18);
   }
   .footer span { color:var(--sc-orange); font-weight:700; }
+
+  /* ── Scrollbars (subtle) ── */
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(229,210,184,0.18); border-radius:8px; }
+  ::-webkit-scrollbar-thumb:hover { background:rgba(229,210,184,0.30); }
 </style>
 </head>
 <body>

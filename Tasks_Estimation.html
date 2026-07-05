@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Task Estimation Calculator</title>
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <style>
     * {
@@ -16,12 +16,12 @@
     }
 
     :root {
-      --bg: #0a0908;
+      --bg: #282828;
       --surface: rgba(255,255,255,0.03);
       --surface2: rgba(255,255,255,0.05);
-      --surface3: rgba(255,255,255,0.08);
-      --border: rgba(255,255,255,0.08);
-      --border-light: rgba(255,255,255,0.14);
+      --surface3: rgba(255,255,255,0.06);
+      --border: rgba(229,210,184,0.10);
+      --border-light: rgba(229,210,184,0.28);
       --text: #E5D2B8;
       --text-dim: #E5D2B8;
       --text-muted: rgba(185,185,177,0.6);
@@ -42,28 +42,22 @@
 
     body {
       font-family: 'DM Sans', sans-serif;
-      background: #0a0908;
+      background: #282828;
       color: var(--text);
       min-height: 100vh;
       padding: 24px;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── VIDEO BACKGROUND ─────────────────────────────────────── */
-    .bg-video {
-      position: fixed; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -2;
-      opacity: 0.35;
-    }
+    /* ── BACKGROUND GLOW (dark ambient base — off-black + faint orange/beige) ── */
     .bg-glow {
       position: fixed; inset: 0;
       z-index: -1; pointer-events: none;
       background:
-        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.1)   0%, transparent 70%);
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(229,210,184,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(255,55,0,0.04)  0%, transparent 70%),
+        #282828;
     }
 
     .app {
@@ -109,7 +103,7 @@
 
     /* Lang toggle */
     .lang-btn {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 1px;
@@ -222,9 +216,9 @@
 
     .project-field {
       flex: 1;
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border: none;
       border-radius: var(--radius);
       padding: 12px 16px;
@@ -307,9 +301,9 @@
     }
 
     .config-card {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border: none;
       border-radius: var(--radius);
       padding: 16px 20px;
@@ -339,7 +333,7 @@
     }
 
     .config-card .value-display {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 18px;
       font-weight: 600;
       color: var(--accent);
@@ -366,9 +360,9 @@
       font-weight: 500;
       padding: 6px 14px;
       border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text-dim);
+      border: 1px solid rgba(229,210,184,0.28);
+      background: transparent;
+      color: #E5D2B8;
       cursor: pointer;
       transition: all .15s
     }
@@ -391,7 +385,7 @@
       flex: 1;
       min-width: 0;
       height: 4px;
-      background: var(--surface3);
+      background: rgba(255,255,255,0.10);
       border-radius: 2px;
       outline: none;
       cursor: pointer;
@@ -400,7 +394,7 @@
 
     .config-card input[type="range"]::-webkit-slider-runnable-track {
       height: 4px;
-      background: var(--surface3);
+      background: rgba(255,255,255,0.10);
       border-radius: 2px;
     }
 
@@ -428,7 +422,7 @@
 
     .config-card input[type="range"]::-moz-range-track {
       height: 4px;
-      background: var(--surface3);
+      background: rgba(255,255,255,0.10);
       border-radius: 2px;
       border: none;
     }
@@ -450,9 +444,9 @@
 
     /* Table */
     .table-wrap {
-      background: rgba(255,255,255,0.025);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border: none;
       border-radius: var(--radius);
       overflow-x: auto;
@@ -473,7 +467,7 @@
     }
 
     thead th {
-      background: rgba(18,16,14,0.85) !important;
+      background: rgba(30,30,30,0.85) !important;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       font-size: 11px;
@@ -509,7 +503,7 @@
     }
 
     tbody tr:hover {
-      background: rgba(255, 255, 255, .025)
+      background: rgba(255, 255, 255, .04)
     }
 
     /* Inputs in table */
@@ -537,7 +531,7 @@
     }
 
     .t-input.num {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       text-align: center;
       width: 80px
     }
@@ -573,7 +567,7 @@
       transition: all .15s;
       appearance: none;
       -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b90a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B9B9B1' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 10px center;
       padding-right: 30px
@@ -585,14 +579,14 @@
     }
 
     .t-select option {
-      background: #131110;
+      background: #282828;
       color: #E5D2B8;
       padding: 8px
     }
 
     /* Computed cells */
     .computed {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 13px;
       text-align: center;
       color: var(--text);
@@ -606,7 +600,7 @@
 
     /* Row number */
     .row-num {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 12px;
       color: var(--text-dim);
       text-align: center;
@@ -622,9 +616,9 @@
     }
 
     .ss-item {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(32px) saturate(160%);
-      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border: none;
       border-radius: var(--radius);
       padding: 16px 20px;
@@ -650,7 +644,7 @@
     }
 
     .ss-item .ss-value {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 22px;
       font-weight: 700;
       letter-spacing: -1px
@@ -704,7 +698,7 @@
     }
 
     .ss-total .ss-value {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 26px;
       font-weight: 700;
       color: var(--green);
@@ -730,9 +724,9 @@
 
     /* Breakdown */
     .breakdown {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(32px) saturate(160%);
-      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border: none;
       border-radius: var(--radius);
       padding: 20px;
@@ -956,7 +950,7 @@
     }
 
     .conv-field input {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 16px;
       font-weight: 600;
       color: var(--text);
@@ -986,7 +980,7 @@
 
     .conv-out {
       margin-top: 12px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 13px;
       color: var(--accent);
       background: var(--accent-dim);
@@ -1012,7 +1006,7 @@
 
     .ref-cell b {
       display: block;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 13px;
       color: var(--text);
       font-weight: 600
@@ -1037,7 +1031,7 @@
       font-size: 10px;
       color: var(--text-muted);
       margin-top: 1px;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-weight: 400
     }
 
@@ -1176,7 +1170,7 @@
       }
 
       .m-card-num {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: 'DM Mono', monospace;
         font-size: 11px;
         color: var(--text-muted);
         background: var(--surface3);
@@ -1273,7 +1267,7 @@
       }
 
       .m-card-field input {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: 'DM Mono', monospace;
         font-size: 16px;
         color: var(--text);
         background: transparent;
@@ -1307,7 +1301,7 @@
       }
 
       .m-card-result .m-res b {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: 'DM Mono', monospace;
         font-size: 13px;
         color: var(--text-dim)
       }
@@ -1405,16 +1399,16 @@
       }
     }
 
-    /* ── GLASS DARK OVERRIDES (replaces Spring CC tokens) ────────── */
+    /* ── HUB GLASS OVERRIDES (off-black #282828 base, beige borders) ── */
 
-    /* Re-pin the glass dark palette (overrides any leftover Spring CC tokens) */
+    /* Re-pin the Hub palette (overrides any leftover legacy tokens) */
     :root {
-      --bg:          #0a0908;
+      --bg:          #282828;
       --surface:     rgba(255,255,255,0.03);
       --surface2:    rgba(255,255,255,0.05);
-      --surface3:    rgba(255,255,255,0.08);
-      --border:      rgba(255,255,255,0.08);
-      --border-light:rgba(255,255,255,0.15);
+      --surface3:    rgba(255,255,255,0.06);
+      --border:      rgba(229,210,184,0.10);
+      --border-light:rgba(229,210,184,0.28);
       --text:        #E5D2B8;
       --text-dim:    #C8B99A;
       --text-muted:  rgba(185,185,177,0.55);
@@ -1436,20 +1430,21 @@
     /* Upgrade header bar to glass */
     .header {
       border-bottom: none;
-      background: rgba(10,9,8,0.45);
+      background: rgba(40,40,40,0.55);
       backdrop-filter: blur(28px) saturate(160%);
       -webkit-backdrop-filter: blur(28px) saturate(160%);
       padding: 16px 0 16px;
       margin-bottom: 20px;
-      box-shadow: 0 1px 0 rgba(255,255,255,0.07), 0 2px 12px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.10), 0 2px 12px rgba(0,0,0,0.22);
       /* glass border bottom via ::after */
       position: relative;
     }
     .header::after {
       content: "";
       position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0.05) 70%, transparent);
+      background: linear-gradient(90deg, transparent, rgba(229,210,184,0.22) 30%, rgba(229,210,184,0.10) 70%, transparent);
     }
+    .header h1 { color: #FFFFFF; }
 
     /* Upgrade project-field + config-card to ::before mask-gradient border */
     .project-field::before,
@@ -1461,34 +1456,33 @@
       border-radius: inherit;
       padding: 1px;
       background: linear-gradient(160deg,
-        rgba(255,255,255,0.38) 0%,
-        rgba(255,255,255,0.1)  35%,
-        rgba(255,255,255,0)    55%,
-        rgba(255,255,255,0.08) 75%,
-        rgba(255,255,255,0.3)  100%);
+        rgba(229,210,184,0.38) 0%,
+        rgba(229,210,184,0.14) 35%,
+        rgba(229,210,184,0.08) 55%,
+        rgba(229,210,184,0.14) 75%,
+        rgba(229,210,184,0.32) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude;
       pointer-events: none;
     }
-    /* Remove the weaker inset box-shadow borders (kept in the box-shadow for depth, remove the border attempt) */
-    .project-field, .config-card, .ss-item, .breakdown {
+    /* Approved glass shadow recipe */
+    .project-field, .config-card, .ss-item, .breakdown, .table-wrap {
       box-shadow:
-        0 4px 16px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.12),
-        inset 0 -1px 0 rgba(0,0,0,0.15);
+        0 8px 24px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.10);
     }
 
     /* config-presets: upgrade from flat border to glass */
     .config-presets {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(28px) saturate(150%);
-      -webkit-backdrop-filter: blur(28px) saturate(150%);
+      background: rgba(40,40,40,0.45);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
       border: none;
       position: relative;
       box-shadow:
-        0 4px 16px rgba(0,0,0,0.28),
-        inset 0 1px 0 rgba(255,255,255,0.1);
+        0 8px 24px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.10);
     }
     .config-presets::before {
       content: "";
@@ -1496,10 +1490,10 @@
       border-radius: inherit;
       padding: 1px;
       background: linear-gradient(160deg,
-        rgba(255,255,255,0.3) 0%,
-        rgba(255,255,255,0.07) 40%,
-        rgba(255,255,255,0)   60%,
-        rgba(255,255,255,0.22) 100%);
+        rgba(229,210,184,0.32) 0%,
+        rgba(229,210,184,0.12) 40%,
+        rgba(229,210,184,0.08) 60%,
+        rgba(229,210,184,0.26) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
               mask-composite: exclude;
@@ -1509,11 +1503,33 @@
     .btn-primary {
       background: var(--accent);
       color: #fff;
+      font-weight: 700;
+      border-radius: 6px;
     }
     .btn-primary:hover {
       filter: brightness(1.1);
       box-shadow: 0 0 20px var(--accent-glow);
     }
+
+    /* Secondary buttons: transparent + outline (approved spec) */
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(229,210,184,0.28);
+      color: #E5D2B8;
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Inputs — approved spec: soft white fill, beige text/border, orange focus */
+    .t-input, .t-select, .conv-field {
+      background: rgba(255,255,255,0.06);
+      color: #E5D2B8;
+    }
+    .t-input { border-color: rgba(229,210,184,0.15); }
+    .t-select { border-color: rgba(229,210,184,0.15); }
+    .t-input:focus, .t-select:focus { border-color: var(--accent); }
 
     .badge-chip {
       background: var(--accent);
@@ -1549,10 +1565,7 @@
 
 <body>
 
-<!-- VIDEO BACKGROUND -->
-<video class="bg-video" autoplay muted loop playsinline>
-  <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260422_112520_ee819691-f2e8-4c54-bb77-3fb72c84eaa5.mp4" type="video/mp4">
-</video>
+<!-- BACKGROUND GLOW -->
 <div class="bg-glow"></div>
 
   <div class="app" id="appRoot">

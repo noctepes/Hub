@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <title>Banner Preview Builder</title>
   <style>
     :root {
@@ -257,13 +257,13 @@
     }
 
     .group-name-input:hover {
-      border-bottom-color: rgba(255, 140, 0, .3);
+      border-bottom-color: rgba(255, 55, 0, .3);
     }
 
     .group-name-input:focus {
       outline: none;
       border-bottom-color: var(--accent);
-      background: rgba(255, 140, 0, .04);
+      background: rgba(255, 55, 0, .04);
     }
 
     .group-name-input.edited {
@@ -429,13 +429,13 @@
        HUB GLASS THEME — Mirrors Hub home + Banner_Tracker
     ════════════════════════════════════════════════════════════ */
     :root {
-      --bg: #0a0908;
-      --surface: rgba(255,255,255,0.03);
-      --surface2: rgba(255,255,255,0.04);
-      --border: rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
+      --bg: #282828;
+      --surface: rgba(40,40,40,0.45);
+      --surface2: rgba(40,40,40,0.55);
+      --border: rgba(229,210,184,0.15);
+      --border2: rgba(229,210,184,0.25);
       --text: #E5D2B8;
-      --muted: rgba(185,185,177,0.55);
+      --muted: rgba(185,185,177,0.75);
       --accent: #FF3700;
       --accent1: #E5D2B8;
     }
@@ -444,48 +444,42 @@
       color: var(--text);
       padding-top: 56px; /* Reserve space for Hub back button */
     }
-    /* Video bg + ambient glow — match Hub home */
-    .bg-video {
-      position: fixed; inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      z-index: -2; opacity: 0.35; pointer-events: none;
-    }
+    /* Ambient glow — match Hub home (bg video removed) */
     .bg-glow {
       position: fixed; inset: 0;
       z-index: -1; pointer-events: none;
       background:
-        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.16) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(255,55,0,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(80,40,0,0.11)  0%, transparent 70%);
+        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(229,210,184,0.05) 0%, transparent 60%);
     }
     /* Header — glass top bar */
     .header {
-      background: rgba(255,255,255,0.03) !important;
-      backdrop-filter: blur(32px) saturate(160%);
-      -webkit-backdrop-filter: blur(32px) saturate(160%);
-      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+      background: rgba(40,40,40,0.55) !important;
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border-bottom: 1px solid rgba(229,210,184,0.18) !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
     }
     .header h1 { color: var(--accent); text-shadow: 0 0 14px rgba(255,55,0,0.45); }
     .header-stats em { color: var(--text); }
     /* Toolbar — sticky glass */
     .toolbar {
-      background: rgba(255,255,255,0.03) !important;
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
-      border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+      background: rgba(40,40,40,0.45) !important;
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      border-bottom: 1px solid rgba(229,210,184,0.18) !important;
     }
-    /* Buttons — pill glass */
+    /* Buttons — secondary: transparent + beige outline */
     .btn {
-      background: rgba(255,255,255,0.04) !important;
-      border: 1px solid rgba(255,255,255,0.10) !important;
+      background: transparent !important;
+      border: 1px solid rgba(229,210,184,0.28) !important;
       color: var(--text) !important;
-      border-radius: 9999px !important;
+      border-radius: 6px !important;
       padding: 7px 16px !important;
     }
     .btn:hover {
-      background: rgba(255,255,255,0.08) !important;
-      border-color: rgba(255,255,255,0.20) !important;
+      background: rgba(255,55,0,0.08) !important;
+      border-color: var(--accent) !important;
     }
     .btn.primary {
       background: var(--accent) !important;
@@ -494,8 +488,8 @@
       box-shadow: 0 4px 16px rgba(255,55,0,0.30);
     }
     .btn.primary:hover {
-      background: #CC2C00 !important;
-      border-color: #CC2C00 !important;
+      background: #FF5522 !important;
+      border-color: #FF5522 !important;
       color: #fff !important;
     }
     /* Inputs */
@@ -564,6 +558,21 @@
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10) !important; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent) !important; }
 
+    /* Ambient glow layer — mount full-viewport behind content */
+    .bg-glow { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+    /* Background video is intentionally not shown — glow only (matches Hub home) */
+    .bg-video { display: none !important; }
+
+    /* Fonts — body in DM Sans, numeric/mono chrome in DM Mono */
+    body { font-family: 'DM Sans', sans-serif !important; }
+    .header-stats, .header-stats em,
+    .size-cell, .parent-cell,
+    .lang-input, .lang-flag,
+    .group-title-meta,
+    .help code {
+      font-family: 'DM Mono', monospace !important;
+    }
+    .header h1, .group-title-name, .group-name-input { font-family: 'DM Sans', sans-serif !important; }
   </style>
 </head>
 
