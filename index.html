@@ -926,6 +926,43 @@
       }
     }
 
+    /* Laptop / small-desktop ≤ 1300px — collapse tool tabs to icon-only
+       so the full nav fits without clipping. Home tab keeps its text. */
+    @media (max-width: 1300px) {
+      .nav {
+        padding: 0 20px;
+      }
+
+      /* Let the center pill shrink and scroll instead of overflowing */
+      .nav-tabs {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .nav-tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .nav-tab {
+        flex-shrink: 0;
+      }
+
+      /* Tool tabs: icon only — hide text label, restore icon */
+      .nav-tab[data-tool] {
+        font-size: 0;
+        padding: 7px 10px;
+        gap: 0;
+      }
+
+      .nav-tab[data-tool] .nav-tab-icon {
+        font-size: 15px;
+      }
+    }
+
     /* Mobile ≤ 640px */
     @media (max-width: 640px) {
 
@@ -948,15 +985,19 @@
         display: none;
       }
 
+      /* Let the icon tabs wrap onto 2 rows instead of shrinking too small */
       .nav-tabs {
-        gap: 1px;
-        padding: 4px 4px;
+        gap: 3px 2px;
+        padding: 5px 6px;
+        flex-wrap: wrap;
+        overflow-x: visible;
+        justify-content: center;
       }
 
       /* Tool tabs: icon only — hide text label via font-size:0, restore icon */
       .nav-tab[data-tool] {
         font-size: 0;
-        padding: 6px 9px;
+        padding: 7px 10px;
         gap: 0;
       }
 
