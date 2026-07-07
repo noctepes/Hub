@@ -665,7 +665,6 @@ function buildSizeSection(banner) {
       <div class="folder-name">\${v.folderName || ''}</div>
       <div class="iframe-wrapper" style="width:\${dispW}px;height:\${dispH}px;" id="wrap_\${cid}" data-card="\${cid}">
         <iframe id="frame_\${cid}"
-          sandbox="allow-scripts allow-popups"
           style="width:\${w}px;height:\${h}px;transform:scale(\${currentScale});transform-origin:top left;display:block;border:none;"
           scrolling="no"></iframe>
         <div class="lazy-placeholder" id="ph_\${cid}"><div class="lazy-dot"></div></div>

@@ -1370,7 +1370,7 @@ function buildSection(b){
     const card=document.createElement('div');
     card.className='banner-card';card.dataset.lang=v.lang||'–';
     const lang=v.lang||'–';
-    card.innerHTML='<div class="card-header"><span class="lang-badge" style="'+badge(lang)+'">'+lang+'</span><button class="btn-replay" data-cid="'+cid+'">↻ Replay</button></div><div class="folder-name" title="'+esc(v.folderName)+'">'+esc(v.folderName)+'</div><div class="iframe-wrapper" id="wrap_'+cid+'" data-cid="'+cid+'" style="width:'+(b.width*currentScale)+'px;height:'+(b.height*currentScale)+'px"><iframe id="frame_'+cid+'" sandbox="allow-scripts allow-popups" style="width:'+b.width+'px;height:'+b.height+'px;transform:scale('+currentScale+');transform-origin:top left;display:block;border:none" scrolling="no"></iframe><div class="lazy-placeholder" id="ph_'+cid+'"><div class="lazy-dot"></div></div></div>';
+    card.innerHTML='<div class="card-header"><span class="lang-badge" style="'+badge(lang)+'">'+lang+'</span><button class="btn-replay" data-cid="'+cid+'">↻ Replay</button></div><div class="folder-name" title="'+esc(v.folderName)+'">'+esc(v.folderName)+'</div><div class="iframe-wrapper" id="wrap_'+cid+'" data-cid="'+cid+'" style="width:'+(b.width*currentScale)+'px;height:'+(b.height*currentScale)+'px"><iframe id="frame_'+cid+'" style="width:'+b.width+'px;height:'+b.height+'px;transform:scale('+currentScale+');transform-origin:top left;display:block;border:none" scrolling="no"></iframe><div class="lazy-placeholder" id="ph_'+cid+'"><div class="lazy-dot"></div></div></div>';
     card.querySelector('.btn-replay').addEventListener('click',()=>replay(cid));
     row.appendChild(card);
     iframeMap[cid]={src:v.src,loaded:false};
