@@ -1390,8 +1390,8 @@
         </main>
 
         <footer>
-            <p data-vi="© 2025 HTML5 Banner Creation Guide. Được thiết kế cho các developer và designer chuyên nghiệp."
-                data-en="© 2025 HTML5 Banner Creation Guide. Designed for professional developers and designers.">© 2025
+            <p data-vi="© 2026 HTML5 Banner Creation Guide. Được thiết kế cho các developer và designer chuyên nghiệp."
+                data-en="© 2026 HTML5 Banner Creation Guide. Designed for professional developers and designers.">© 2025
                 HTML5 Banner Creation Guide. Được thiết kế cho các developer và designer chuyên nghiệp.</p>
             <p data-vi="Cập nhật thường xuyên với các techniques và best practices mới nhất."
                 data-en="Regularly updated with the latest techniques and best practices.">Cập nhật thường xuyên với các
@@ -1433,11 +1433,6 @@
                 } else if (lang === 'en' && enText) {
                     element.textContent = enText;
                 }
-            });
-
-            // Update copy-button labels on code blocks
-            document.querySelectorAll('.code-block .copy-btn').forEach(btn => {
-                btn.textContent = lang === 'vi' ? 'Sao chép' : 'Copy';
             });
 
             // Update document language
@@ -1537,69 +1532,6 @@
             });
 
             // Note: Hover transitions for .workflow-step and .step are handled by CSS classes for visual precision.
-
-            // Copy code functionality for code blocks
-            document.querySelectorAll('.code-block').forEach(block => {
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'copy-btn';
-                copyBtn.textContent = currentLang === 'vi' ? 'Sao chép' : 'Copy';
-                copyBtn.style.cssText = `
-                    position: absolute;
-                    top: 0.5rem;
-                    right: 4rem;
-                    background: var(--accent);
-                    color: white;
-                    border: none;
-                    padding: 0.25rem 0.6rem;
-                    border-radius: 4px;
-                    font-size: 0.75rem;
-                    cursor: pointer;
-                    opacity: 0;
-                    transition: all 0.25s ease;
-                    font-family: var(--sans);
-                    font-weight: 600;
-                    box-shadow: 0 0 8px var(--accent-glow);
-                `;
-
-                block.style.position = 'relative';
-                block.appendChild(copyBtn);
-
-                block.addEventListener('mouseenter', () => {
-                    copyBtn.style.opacity = '1';
-                });
-
-                block.addEventListener('mouseleave', () => {
-                    copyBtn.style.opacity = '0';
-                });
-
-                copyBtn.addEventListener('click', () => {
-                    // Clone the block and strip the button so only the code is copied
-                    const clone = block.cloneNode(true);
-                    clone.querySelectorAll('button').forEach(btn => btn.remove());
-                    const text = clone.textContent.trim();
-                    navigator.clipboard.writeText(text).then(() => {
-                        const originalText = copyBtn.textContent;
-                        copyBtn.textContent = currentLang === 'vi' ? 'Đã sao chép!' : 'Copied!';
-                        copyBtn.style.background = 'var(--clr-ok)';
-                        copyBtn.style.boxShadow = '0 0 8px rgba(45, 184, 125, 0.4)';
-
-                        setTimeout(() => {
-                            copyBtn.textContent = originalText;
-                            copyBtn.style.background = 'var(--accent)';
-                            copyBtn.style.boxShadow = '0 0 8px var(--accent-glow)';
-                        }, 2000);
-                    }).catch(() => {
-                        const originalText = copyBtn.textContent;
-                        copyBtn.textContent = currentLang === 'vi' ? 'Lỗi sao chép' : 'Copy failed';
-                        copyBtn.style.background = 'var(--clr-err, #c0392b)';
-
-                        setTimeout(() => {
-                            copyBtn.textContent = originalText;
-                            copyBtn.style.background = 'var(--accent)';
-                        }, 2000);
-                    });
-                });
-            });
 
             // Initialize with English
             switchLanguage('en');
