@@ -1865,9 +1865,17 @@
       return (v && v > 0) ? v : 40;
     }
 
+    // Required hours for one language row, rounded to 2dp — this IS the number
+    // printed in the Hours column and the number production fills hours against.
+    // Every aggregate (totals, sidebar, CSV) must sum THIS rounded figure. Summing
+    // the raw unrounded float instead causes the total to drift from the sum of
+    // what's actually displayed per row (e.g. 4/60*40=2.6666.. shown as "2.67"),
+    // which is what produced the "+0.01 over" mismatch between Hours and Fill Hrs.
+    function rowHours(lang) { return Math.round((rowQ(lang) * langMins(lang)) / 60 * 100) / 100; }
+
     // ── AGGREGATES ────────────────────────────────────────────────
     function totalFill() { return S.languages.reduce((s, l) => s + (S.fillByLang[l] || 0), 0); }
-    function totalHours() { return S.languages.reduce((s, l) => s + (rowQ(l) * langMins(l)) / 60, 0); }
+    function totalHours() { return S.languages.reduce((s, l) => s + rowHours(l), 0); }
 
     // ── REMAIN/OVERRUN HELPER ──────────────────────────────────────
     function remInfo(h, fl, hasData) {
@@ -1956,7 +1964,7 @@
       S.languages.forEach((lang, li) => {
         const q = rowQ(lang);
         const mb = langMins(lang);
-        const h = (q * mb) / 60;
+        const h = rowHours(lang);
         const d = h / 8;
         const fl = S.fillByLang[lang] || 0;
         const ri = remInfo(h, fl, q > 0);
@@ -2031,7 +2039,7 @@
 
       const li = S.languages.indexOf(lang);
       const q = rowQ(lang);
-      const h = (q * langMins(lang)) / 60;
+      const h = rowHours(lang);
       const d = h / 8;
       const fl = S.fillByLang[lang] || 0;
       const ri = remInfo(h, fl, q > 0);
@@ -2066,7 +2074,7 @@
 
       const li = S.languages.indexOf(lang);
       const q = rowQ(lang);
-      const h = (q * langMins(lang)) / 60;
+      const h = rowHours(lang);
       const d = h / 8;
       const fl = S.fillByLang[lang] || 0;
       const ri = remInfo(h, fl, q > 0);
@@ -2101,7 +2109,7 @@
 
       const li = S.languages.indexOf(lang);
       const q = rowQ(lang);
-      const h = (q * langMins(lang)) / 60;
+      const h = rowHours(lang);
       const ri = remInfo(h, v, q > 0);
       const remEl = document.getElementById(`rrem-${li}`);
       if (remEl) {
@@ -2137,8 +2145,12 @@
       const th = totalHours();
       const td = th / 8;
       const tf = totalFill();
-      const pct = th > 0 ? Math.min(100, (tf / th) * 100) : 0;
-      const isOver = tf > th && th > 0;
+      // Round before comparing/subtracting — same guard remInfo() uses — so the
+      // sidebar can never disagree with the footer over sub-cent float noise.
+      const thR = Math.round(th * 100) / 100;
+      const tfR = Math.round(tf * 100) / 100;
+      const pct = thR > 0 ? Math.min(100, (tfR / thR) * 100) : 0;
+      const isOver = tfR > thR && thR > 0;
 
       document.getElementById('sQuality').textContent = tq.toLocaleString();
       document.getElementById('sHours').textContent = th.toFixed(2);
@@ -2151,14 +2163,14 @@
       const remCardEl = document.getElementById('sRemainCard');
 
       if (isOver) {
-        const over = tf - th;
+        const over = tfR - thR;
         remValEl.textContent = '+' + over.toFixed(2);
         remValEl.className = 'stat-val accent';
         if (remLblEl) remLblEl.textContent = 'Overrun';
         if (remSubEl) remSubEl.textContent = 'hrs over estimate';
         if (remCardEl) remCardEl.className = 'sc c-amber';
       } else {
-        const rem = Math.max(0, th - tf);
+        const rem = Math.max(0, thR - tfR);
         remValEl.textContent = rem.toFixed(2);
         remValEl.className = rem <= 0 ? 'stat-val ok' : 'stat-val err';
         if (remLblEl) remLblEl.textContent = 'Remaining';
@@ -2289,7 +2301,7 @@
       S.languages.forEach(lang => {
         const q = rowQ(lang);
         const mb = langMins(lang);
-        const h = (q * mb) / 60;
+        const h = rowHours(lang);
         const d = h / 8;
         const fl = S.fillByLang[lang] || 0;
         const rm = Math.max(0, h - fl);
