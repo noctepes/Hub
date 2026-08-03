@@ -1,1099 +1,1796 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Compressor</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    /* ── DESIGN TOKENS ──────────────────────────────────────────── */
-    :root {
-      --bg:       #282828;
-      --surface:  rgba(255,255,255,0.04);
-      --surface2: rgba(255,255,255,0.06);
-      --surface3: rgba(255,255,255,0.08);
-      --border:   rgba(229,210,184,0.14);
-      --border2:  rgba(229,210,184,0.22);
-      --text:   #E5D2B8;
-      --dim:    #B9B9B1;
-      --muted:  rgba(185,185,177,0.6);
-      --accent:    #FF3700;
-      --accent-d:  rgba(255,55,0,0.10);
-      --accent-d2: rgba(255,55,0,0.18);
-      --clr-ok:      #2DB87D;
-      --clr-ok-dim:  rgba(45,184,125,0.14);
-      --clr-err:     #E05252;
-      --clr-info:    #D7E8F8;
-      --clr-info-dim:rgba(215,232,248,0.10);
-      --mono: 'DM Mono', monospace;
-      --sans: 'DM Sans', sans-serif;
-      --r: 8px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IMGPRESS — Image Compressor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#282828;
+  --surface:rgba(255,255,255,.04);
+  --surface2:rgba(255,255,255,.06);
+  --surface3:rgba(255,255,255,.09);
+  --border:rgba(229,210,184,.14);
+  --border2:rgba(229,210,184,.24);
+  /* Contrast measured against the #282828 surface:
+       --text  #F2E6D2  →  11.6:1   (card names, values)
+       --dim   #DFD6C6  →   9.3:1   (secondary values)
+       --muted .76 beige →  7.1:1   (10px uppercase labels — was 3.8:1, unreadable)
+       --read  #F4EADA  →  12.0:1   (hint body copy)
+     Anything under 4.5:1 at 9–10px is unusable, which is what the old
+     rgba(185,185,177,.62) was. */
+  --text:#F2E6D2;
+  --dim:#DFD6C6;
+  --muted:rgba(236,226,208,.76);
+  --read:#F4EADA;
+  --accent:#FF3700;
+  --accent-d:rgba(255,55,0,.10);
+  --accent-d2:rgba(255,55,0,.20);
+  --ok:#2DB87D;
+  --ok-d:rgba(45,184,125,.14);
+  --err:#E05252;
+  --err-d:rgba(224,82,82,.12);
+  --warn:#E0A030;
+  --warn-d:rgba(224,160,48,.13);
+  --info:#8FBCE6;
+  --info-d:rgba(143,188,230,.10);
+  --mono:'DM Mono',ui-monospace,monospace;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --r:8px;
+  --r-sm:6px;
+  --tb-pad-l:112px;   /* space reserved for the Hub's shell chrome */
+  --tb-h:50px;
+}
 
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html, body { height:100%; font-size:14px; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:14px;-webkit-text-size-adjust:100%}
+body{
+  min-height:100dvh;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+.bg-glow{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 65% 55% at 0% 100%,rgba(255,55,0,.10) 0%,transparent 60%),
+    radial-gradient(ellipse 45% 50% at 100% 0%,rgba(229,210,184,.07) 0%,transparent 60%);
+}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(229,210,184,.18);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:rgba(229,210,184,.32)}
 
-    /* Background glow */
-    .bg-glow {
-      position: fixed; inset: 0; z-index: -1; pointer-events: none;
-      background:
-        radial-gradient(ellipse 65% 55% at 0% 100%, rgba(255,55,0,0.10) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 50% at 100% 0%,  rgba(229,210,184,0.07) 0%, transparent 60%);
-    }
+button,input,select{font-family:inherit;color:inherit}
+button{cursor:pointer}
+.mono{font-family:var(--mono)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-    /* Scrollbars (subtle) */
-    ::-webkit-scrollbar { width:8px; height:8px; }
-    ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:rgba(229,210,184,0.18); border-radius:8px; }
-    ::-webkit-scrollbar-thumb:hover { background:rgba(229,210,184,0.30); }
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOP BAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+.topbar{
+  display:flex;align-items:center;gap:0;
+  padding:0 16px 0 var(--tb-pad-l);
+  min-height:var(--tb-h);
+  background:rgba(40,40,40,.6);
+  backdrop-filter:blur(28px) saturate(160%);
+  -webkit-backdrop-filter:blur(28px) saturate(160%);
+  box-shadow:0 1px 0 rgba(255,255,255,.10),0 2px 12px rgba(0,0,0,.28);
+  flex-shrink:0;z-index:100;position:sticky;top:0;
+}
+.logo{
+  font-family:var(--mono);font-weight:700;font-size:17px;letter-spacing:2.5px;
+  color:var(--accent);text-transform:uppercase;white-space:nowrap;user-select:none;
+  text-shadow:0 0 18px rgba(255,55,0,.35);
+}
+.sep{width:1px;height:18px;background:var(--border2);margin:0 14px;flex-shrink:0}
+.tb-mid{display:flex;align-items:center;gap:14px;flex:1;min-width:0;overflow:hidden}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
 
-    /* ── TOP BAR ────────────────────────────────────────────────── */
-    .topbar {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      padding: 0 20px 0 112px;
-      height: 50px;
-      background: rgba(40,40,40,0.55);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.10), 0 2px 12px rgba(0,0,0,0.28);
-      flex-shrink: 0;
-      z-index: 100;
-      position: relative;
-    }
-    .logo {
-      font-family: var(--mono);
-      font-weight: 700;
-      font-size: 18px;
-      letter-spacing: 2.5px;
-      color: var(--accent);
-      text-transform: uppercase;
-      white-space: nowrap;
-      user-select: none;
-      text-shadow: 0 0 18px rgba(255,55,0,0.35);
-    }
-    .sep { width:1px; height:18px; background:var(--border2); margin:0 14px; flex-shrink:0; }
+/* burger — mobile only */
+.burger{
+  display:none;background:none;border:1px solid var(--border);border-radius:var(--r-sm);
+  width:34px;height:34px;align-items:center;justify-content:center;
+  color:var(--dim);font-size:15px;flex-shrink:0;
+}
 
-    /* Global quality control */
-    .gq-wrap { display:flex; align-items:center; gap:8px; }
-    .gq-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      white-space: nowrap;
-    }
-    input[type=range].gq-slider {
-      -webkit-appearance: none;
-      width: 110px; height: 4px;
-      background: var(--surface3);
-      border-radius: 2px;
-      outline: none;
-      cursor: pointer;
-    }
-    input[type=range].gq-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width:14px; height:14px;
-      background: var(--accent);
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 8px rgba(255,55,0,0.5);
-    }
-    .gq-val {
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--accent);
-      min-width: 32px;
-    }
+/* Global quality */
+.gq{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.lbl{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;user-select:none;
+}
+.gq-val{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--accent);min-width:34px}
 
-    /* Stats strip */
-    .tb-stats {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.3px;
-    }
-    .tb-stats .ok  { color: var(--clr-ok); font-weight: 700; }
-    .tb-stats .acc { color: var(--accent); font-weight: 700; }
+/* Range inputs — shared */
+input[type=range]{
+  -webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;
+  height:18px;flex:1;min-width:60px;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:3px;border-radius:3px;background:var(--surface3);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:13px;height:13px;border-radius:50%;background:var(--accent);
+  margin-top:-5px;border:0;box-shadow:0 0 0 3px rgba(255,55,0,.16);
+  transition:box-shadow .15s,transform .15s;
+}
+input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 5px rgba(255,55,0,.22)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
+input[type=range]::-moz-range-track{height:3px;border-radius:3px;background:var(--surface3)}
+input[type=range]::-moz-range-thumb{
+  width:13px;height:13px;border-radius:50%;background:var(--accent);border:0;
+  box-shadow:0 0 0 3px rgba(255,55,0,.16);
+}
+input[type=range].q-ok::-webkit-slider-thumb{background:var(--ok);box-shadow:0 0 0 3px rgba(45,184,125,.16)}
+input[type=range].q-ok::-moz-range-thumb{background:var(--ok);box-shadow:0 0 0 3px rgba(45,184,125,.16)}
 
-    .tb-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+/* Stats + budget */
+.tb-stats{
+  font-family:var(--mono);font-size:10.5px;color:var(--dim);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.tb-stats b{color:var(--text);font-weight:500}
+.tb-stats .s-from{color:var(--accent)}
+.tb-stats .s-to{color:var(--ok)}
 
-    /* Buttons */
-    .btn {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 13px;
-      border-radius: var(--r);
-      border: 1px solid rgba(229,210,184,0.25);
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all .15s;
-      white-space: nowrap;
-      line-height: 1.4;
-    }
-    .btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-d); }
-    .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
-    .btn.primary:hover { background:#CC2D00; border-color:#CC2D00; }
-    .btn:disabled { opacity:.35; pointer-events:none; }
+.budget{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.budget-bar{
+  width:104px;height:5px;border-radius:5px;background:var(--surface3);
+  overflow:hidden;position:relative;flex-shrink:0;
+}
+.budget-fill{
+  height:100%;width:0%;border-radius:5px;background:var(--ok);
+  transition:width .3s ease,background .3s;
+}
+.budget-fill.mid{background:var(--warn)}
+.budget-fill.over{background:var(--accent)}
+.budget-txt{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+.budget-txt b{color:var(--text);font-weight:500}
+.budget-txt.over b{color:var(--accent)}
 
-    /* ── MAIN SCROLL AREA ───────────────────────────────────────── */
-    .main-wrap {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.1) transparent;
-      transition: background .2s;
-    }
-    .main-wrap::-webkit-scrollbar { width: 6px; }
-    .main-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    .main-wrap.drag-over { background: rgba(255,55,0,0.04); }
+/* Buttons */
+.btn{
+  font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.4px;
+  padding:8px 13px;border-radius:var(--r-sm);border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s,opacity .15s;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover:not(:disabled){background:var(--surface3);border-color:var(--border2)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.36;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.btn-primary:hover:not(:disabled){background:#ff5522;border-color:#ff5522}
+.btn-ghost{background:transparent}
+.btn-icon{padding:8px 10px}
 
-    /* ── DROP ZONE ──────────────────────────────────────────────── */
-    .drop-zone {
-      border: 2px dashed var(--border2);
-      border-radius: 12px;
-      padding: 56px 40px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .2s;
-      background: rgba(255,255,255,0.02);
-      margin-bottom: 20px;
-    }
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: var(--accent);
-      background: var(--accent-d);
-    }
-    .dz-ico { font-size: 38px; margin-bottom: 12px; }
-    .dz-h {
-      font-family: var(--mono);
-      font-size: 13px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--dim);
-      margin-bottom: 8px;
-    }
-    .dz-p {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.7;
-      margin-bottom: 16px;
-    }
-    .dz-or {
-      font-size: 9px;
-      font-family: var(--mono);
-      letter-spacing: 2px;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    /* Collapsed drop zone when files exist */
-    .drop-zone.mini {
-      padding: 10px 16px;
-      border-style: solid;
-      border-width: 1px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: default;
-    }
-    .dz-mini-txt {
-      font-size: 11px;
-      color: var(--muted);
-      font-family: var(--mono);
-    }
+select.sel{
+  font-family:var(--mono);font-size:10.5px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:7px 9px;cursor:pointer;outline:none;
+  transition:border-color .15s;
+}
+select.sel:hover{border-color:var(--border2)}
+select.sel:focus-visible{border-color:var(--accent)}
+select.sel option{background:#323232;color:var(--text)}
 
-    /* ── IMAGE LIST ─────────────────────────────────────────────── */
-    .img-list { display: flex; flex-direction: column; gap: 8px; }
+/* ═══════════════════════════════════════════════════════════════════════════
+   SETTINGS DRAWER (collapsible advanced row)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.settings{
+  display:none;flex-wrap:wrap;align-items:center;gap:12px 18px;
+  padding:12px 20px 12px var(--tb-pad-l);
+  background:rgba(255,255,255,.025);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.settings.open{display:flex}
+.set-group{display:flex;align-items:center;gap:8px}
+.num{
+  font-family:var(--mono);font-size:10.5px;width:64px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:6px 8px;outline:none;
+}
+.num:focus{border-color:var(--accent)}
+.num::-webkit-outer-spin-button,.num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.chk{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
+.chk input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer}
 
-    /* ── IMAGE CARD ─────────────────────────────────────────────── */
-    .img-card {
-      background: rgba(40,40,40,0.45);
-      backdrop-filter: blur(16px) saturate(150%);
-      -webkit-backdrop-filter: blur(16px) saturate(150%);
-      border-radius: 12px;
-      border: 1px solid rgba(229,210,184,0.18);
-      border-left: 3px solid var(--border2);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
-      overflow: hidden;
-      position: relative;
-      transition: border-color .2s, opacity .2s, transform .2s;
-    }
-    .img-card.s-done       { border-left-color: var(--clr-ok); }
-    .img-card.s-compressing{ border-left-color: var(--accent); }
-    .img-card.s-error      { border-left-color: var(--clr-err); }
-    .img-card.removing     { opacity:0; transform:translateX(16px); }
+/* ═══════════════════════════════════════════════════════════════════════════
+   CODEC HEALTH STRIP
+   ═══════════════════════════════════════════════════════════════════════════ */
+.health{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px 20px 9px var(--tb-pad-l);
+  font-family:var(--mono);font-size:10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+/* Same rule as the hints: readable neutral copy, coloured indicator dot. */
+.health{color:var(--read)}
+.health.state-loading{background:var(--info-d)}
+.health.state-loading .health-dot{background:var(--info)}
+.health.state-ok{background:var(--ok-d)}
+.health.state-ok .health-dot{background:var(--ok)}
+.health.state-fail{background:var(--err-d)}
+.health.state-fail .health-dot{background:var(--err)}
+.health.hide{display:none}
+.health-dot{
+  width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+.health.state-ok .health-dot,.health.state-fail .health-dot{animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.28}}
+.health-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.health .btn{font-size:9.5px;padding:5px 10px}
 
-    .card-inner {
-      display: flex;
-      gap: 14px;
-      padding: 12px 14px;
-      align-items: flex-start;
-    }
+/* ═══════════════════════════════════════════════════════════════════════════
+   WORKSPACE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.workspace{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:14px 20px 32px;
+  display:flex;flex-direction:column;gap:14px;
+  -webkit-overflow-scrolling:touch;
+}
 
-    /* Thumbnail */
-    .thumb {
-      width: 64px; height: 64px;
-      object-fit: contain;
-      background: rgba(255,255,255,0.03);
-      border-radius: 6px;
-      flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,0.07);
-      opacity: 0;
-      transition: opacity .3s;
-    }
-    .thumb.loaded { opacity: 1; }
-    .thumb-ph {
-      width:64px; height:64px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 6px;
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      border: 1px solid rgba(255,255,255,0.07);
-    }
+/* Dropzone */
+.dropzone{
+  border:1.5px dashed var(--border2);border-radius:var(--r);
+  padding:20px;display:flex;align-items:center;gap:14px;
+  background:var(--surface);
+  transition:border-color .2s,background .2s;
+  flex-shrink:0;
+  flex-wrap:wrap;          /* lets .drop-status take its own line in compact mode */
+}
+.dropzone.drag{
+  border-color:var(--accent);background:var(--accent-d);
+  box-shadow:0 0 0 1px var(--accent),0 0 26px rgba(255,55,0,.22) inset;
+}
+.dz-icon{font-size:22px;opacity:.62;flex-shrink:0;transition:transform .2s}
+.dropzone.drag .dz-icon{transform:scale(1.14)}
+.dz-txt{font-family:var(--mono);font-size:11px;color:var(--muted);flex:1;min-width:0;line-height:1.7}
+.dz-txt b{color:var(--text);font-weight:500}
+.dropzone.empty{padding:44px 20px;flex-direction:column;text-align:center;gap:12px}
+.dropzone.empty .dz-icon{font-size:40px}
+.dropzone.empty .dz-txt{text-align:center}
+.dz-btns{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:center}
+.drop-status{
+  font-family:var(--mono);font-size:10px;color:var(--accent);
+  flex-basis:100%;padding-top:2px;
+}
 
-    /* Card body */
-    .card-body { flex: 1; min-width: 0; }
+/* Whole-window drop affordance — while a drag is live the workspace edge lights
+   up, so it is obvious the drop lands anywhere, not only inside the dashed box. */
+body.dragging .workspace{outline:1.5px dashed var(--border2);outline-offset:-7px}
+body.dragging .img-card{opacity:.55;transition:opacity .15s}
 
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-    .card-name {
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      flex: 1;
-      min-width: 0;
-    }
-    .card-dims {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--muted);
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-    .btn-remove {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--muted);
-      font-size: 12px;
-      padding: 2px 5px;
-      transition: color .15s;
-      flex-shrink: 0;
-      line-height: 1;
-    }
-    .btn-remove:hover { color: var(--clr-err); }
+/* ═══════════════════════════════════════════════════════════════════════════
+   IMAGE CARD
+   ═══════════════════════════════════════════════════════════════════════════ */
+.img-list{display:grid;grid-template-columns:1fr;gap:12px}
 
-    /* Size display */
-    .size-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .sz-orig { font-family:var(--mono); font-size:11px; color:var(--muted); }
-    .sz-arrow { color:var(--border2); font-size:10px; }
-    .sz-new   { font-family:var(--mono); font-size:12px; font-weight:700; }
-    .sz-new.ok      { color: var(--clr-ok); }
-    .sz-new.warn    { color: var(--accent); }
-    .sz-new.pending { color: var(--muted); font-weight:400; font-style:italic; }
-    .sz-badge {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 20px;
-    }
-    .sz-badge.good { background: var(--clr-ok-dim); color: var(--clr-ok); }
-    .sz-badge.same { background: var(--surface3);  color: var(--muted); }
-    .sz-badge.bigger{ background: rgba(255,55,0,.1); color: var(--accent); }
+.img-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid var(--border2);
+  border-radius:var(--r);
+  box-shadow:0 6px 20px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.07);
+  padding:13px 15px;
+  display:flex;flex-direction:column;gap:10px;
+  transition:border-color .2s,opacity .25s,transform .25s;
+  min-width:0;
+}
+.img-card.s-done{border-left-color:var(--ok)}
+.img-card.s-working{border-left-color:var(--accent)}
+.img-card.s-error{border-left-color:var(--err)}
+.img-card.s-warn{border-left-color:var(--warn)}
+.img-card.removing{opacity:0;transform:translateX(20px)}
 
-    /* PNG info box */
-    .png-box {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      background: var(--clr-info-dim);
-      border: 1px solid rgba(91,155,212,0.2);
-      border-radius: 6px;
-      padding: 8px 11px;
-      margin-bottom: 10px;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--clr-info);
-      line-height: 1.6;
-    }
-    .png-box strong { color: var(--text); font-weight: 600; }
+/* row 1 — identity */
+.c-head{display:flex;align-items:flex-start;gap:12px;min-width:0}
+.thumb-box{
+  width:60px;height:60px;flex-shrink:0;border-radius:var(--r-sm);
+  background:
+    linear-gradient(45deg,rgba(255,255,255,.045) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.045) 75%),
+    linear-gradient(45deg,rgba(255,255,255,.045) 25%,transparent 25%,transparent 75%,rgba(255,255,255,.045) 75%);
+  background-size:12px 12px;background-position:0 0,6px 6px;
+  border:1px solid rgba(255,255,255,.08);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.thumb-box img{
+  width:100%;height:100%;object-fit:contain;display:block;
+  opacity:0;transition:opacity .3s;
+}
+.thumb-box img.loaded{opacity:1}
+.thumb-box .ph{font-size:20px;opacity:.4}
 
-    /* Quality row */
-    .quality-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .q-label {
-      font-family: var(--mono);
-      font-size: 9px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      flex-shrink: 0;
-    }
-    input[type=range].q-slider {
-      -webkit-appearance: none;
-      flex: 1;
-      height: 4px;
-      background: var(--surface3);
-      border-radius: 2px;
-      outline: none;
-      cursor: pointer;
-    }
-    input[type=range].q-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width:14px; height:14px;
-      background: var(--clr-ok);
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 6px rgba(45,184,125,0.4);
-    }
-    .q-val {
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--clr-ok);
-      min-width: 30px;
-      text-align: right;
-    }
-    .target-wrap {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      flex-shrink: 0;
-    }
-    .target-inp {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 10px;
-      padding: 4px 8px;
-      width: 68px;
-      text-align: center;
-      transition: border-color .15s;
-    }
-    .target-inp:focus { outline:none; border-color:var(--accent); }
-    .target-inp::placeholder { color:var(--muted); }
-    .target-inp.active { border-color: var(--accent); }
+.c-id{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.c-name{
+  font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.c-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{
+  font-family:var(--mono);font-size:9px;letter-spacing:.5px;
+  padding:2.5px 7px;border-radius:20px;white-space:nowrap;
+  background:var(--surface3);color:var(--muted);
+}
+.tag.dim{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.tag.alpha{background:var(--info-d);color:var(--info)}
+.tag.flat{background:var(--warn-d);color:var(--warn)}
+.tag.retina{background:var(--accent-d2);color:var(--accent)}
 
-    /* Actions row */
-    .actions-row { display:flex; align-items:center; gap:8px; }
-    .btn-dl {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 13px;
-      border-radius: var(--r);
-      border: 1px solid rgba(45,184,125,0.3);
-      background: var(--clr-ok-dim);
-      color: var(--clr-ok);
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .btn-dl:hover { background: rgba(45,184,125,0.22); border-color: var(--clr-ok); }
-    .btn-dl:disabled { opacity:.3; pointer-events:none; }
-    .warn-msg {
-      font-family: var(--mono);
-      font-size: 9px;
-      color: var(--accent);
-      display: none;
-    }
+.c-sizes{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin-top:1px}
+.sz-o{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.sz-arw{color:var(--border2);font-size:9px}
+.sz-n{font-family:var(--mono);font-size:13px;font-weight:500}
+.sz-n.ok{color:var(--ok)}
+.sz-n.bad{color:var(--accent)}
+.sz-n.pend{color:var(--muted);font-weight:400;font-style:italic;font-size:11px}
+.badge{
+  font-family:var(--mono);font-size:9.5px;font-weight:500;
+  padding:2.5px 8px;border-radius:20px;
+}
+.badge.good{background:var(--ok-d);color:var(--ok)}
+.badge.flat{background:var(--surface3);color:var(--muted)}
+.badge.bad{background:var(--accent-d2);color:var(--accent)}
 
-    /* Spinner */
-    .spin {
-      display: none;
-      width: 13px; height: 13px;
-      border: 2px solid var(--border2);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .65s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform:rotate(360deg); } }
+.btn-x{
+  background:none;border:none;color:var(--muted);font-size:13px;
+  padding:4px 6px;line-height:1;flex-shrink:0;border-radius:4px;
+  transition:color .15s,background .15s;
+}
+.btn-x:hover{color:var(--err);background:var(--err-d)}
 
-    /* ── TOAST ──────────────────────────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: 22px; right: 22px;
-      z-index: 999;
-      background: rgba(40,40,40,0.75);
-      backdrop-filter: blur(20px) saturate(150%);
-      -webkit-backdrop-filter: blur(20px) saturate(150%);
-      border: 1px solid rgba(229,210,184,0.22);
-      border-radius: var(--r);
-      padding: 10px 16px;
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--clr-ok);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.55);
-      transform: translateY(60px);
-      opacity: 0;
-      transition: all .28s cubic-bezier(.4,0,.2,1);
-      pointer-events: none;
-    }
-    .toast.show { transform:translateY(0); opacity:1; }
-    .toast.err { color: var(--clr-err); }
+/* row 2 — advisor hints */
+.c-hints{display:flex;flex-direction:column;gap:6px}
+.hint{
+  display:flex;align-items:flex-start;gap:8px;
+  border-radius:var(--r-sm);padding:8px 11px;
+  font-family:var(--mono);font-size:10px;line-height:1.65;
+}
+.hint b{font-weight:500}
+/* Body copy stays bright and neutral; only the icon carries the severity
+   colour. Coloured paragraph text at 10px monospace is what made these
+   unreadable. */
+.hint span{color:var(--read)}
+.hint .h-ico{flex-shrink:0;font-style:normal;font-size:11px;line-height:1.5}
+.hint.i{background:var(--info-d);border:1px solid rgba(143,188,230,.22)}
+.hint.i .h-ico{color:var(--info)}
+.hint.w{background:var(--warn-d);border:1px solid rgba(224,160,48,.26)}
+.hint.w .h-ico{color:var(--warn)}
+.hint.e{background:var(--err-d);border:1px solid rgba(224,82,82,.26)}
+.hint.e .h-ico{color:#F09090}
 
-    /* Entrance animations */
-    @keyframes fadeUpIn {
-      from { opacity:0; transform:translateY(12px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    .topbar  { animation: fadeUpIn .4s ease-out both; }
-    .main-wrap { animation: fadeUpIn .5s ease-out .1s both; }
+/* row 3 — controls */
+/* A fixed 132px first track cannot hold "Format" + a select whose widest
+   option is "WebP lossless" — grid does not shrink a track below its content,
+   so the select overflowed and painted on top of the next cell. Sizing the
+   track to its own content is the fix; the quality column absorbs the rest. */
+.c-ctrl{
+  display:grid;
+  grid-template-columns:max-content minmax(160px,1fr) max-content max-content;
+  align-items:center;gap:10px 16px;
+}
+.ctrl-cell{display:flex;align-items:center;gap:8px;min-width:0}
+.ctrl-cell.q{min-width:0}
+.ctrl-cell .lbl{flex-shrink:0}
+select.sel{min-width:0;max-width:100%}
+.q-val{font-family:var(--mono);font-size:11px;font-weight:500;min-width:36px;text-align:right;color:var(--dim)}
+.q-val.auto{color:var(--ok)}
+.tgt-wrap{display:flex;align-items:center;gap:6px}
 
-    .img-card { animation: fadeUpIn .25s ease-out both; }
-  </style>
+.c-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.spin{
+  width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--surface3);border-top-color:var(--accent);
+  animation:spin .7s linear infinite;flex-shrink:0;display:none;
+}
+.spin.on{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.c-msg{font-family:var(--mono);font-size:10px;color:var(--muted);flex:1;min-width:0}
+.c-msg.err{color:#f0a0a0}
+.c-msg.warn{color:var(--warn)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.empty-note{
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  line-height:1.85;padding:0 4px;
+}
+.empty-note b{color:var(--dim);font-weight:500}
+.empty-note code{
+  background:var(--surface2);padding:1px 5px;border-radius:4px;
+  border:1px solid var(--border);font-size:9.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE ACTION BAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+.mobile-bar{
+  display:none;position:sticky;bottom:0;z-index:90;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  gap:8px;
+  background:rgba(40,40,40,.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 -1px 0 rgba(255,255,255,.09),0 -4px 18px rgba(0,0,0,.34);
+}
+.mobile-bar .btn{flex:1;justify-content:center;padding:12px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — ≤1240px : drop the budget meter label, tighten
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width:1240px){
+  .budget-bar{width:72px}
+  .tb-mid{gap:10px}
+  .sep{margin:0 10px}
+}
+
+/* ── ≤1080px : stats move under the bar, controls reflow to 2 columns ────── */
+@media (max-width:1080px){
+  :root{--tb-pad-l:16px}
+  .topbar{flex-wrap:wrap;padding-top:8px;padding-bottom:8px;gap:8px 0}
+  .tb-mid{order:3;flex-basis:100%;padding-top:2px}
+  .tb-right{order:2}
+  .settings,.health{padding-left:16px;padding-right:16px}
+  .c-ctrl{grid-template-columns:max-content minmax(140px,1fr);gap:10px 14px}
+  .c-ctrl .ctrl-cell.tgt{grid-column:1/-1}
+  .c-ctrl .ctrl-cell.dl{grid-column:1/-1}
+  .c-ctrl .ctrl-cell.dl .btn{width:100%;justify-content:center}
+}
+
+/* ── ≤760px : true mobile ───────────────────────────────────────────────── */
+@media (max-width:760px){
+  html{font-size:13.5px}
+  .topbar{padding:8px 12px;gap:8px}
+  .logo{font-size:15px;letter-spacing:2px}
+  .burger{display:inline-flex}
+  .tb-mid{order:4}
+  .tb-mid .gq{flex:1}
+  .sep{display:none}
+
+  /* hide desktop-only actions, mobile bar takes over */
+  .tb-right .desk-only{display:none}
+
+  .budget{order:5;flex-basis:100%;padding-top:2px}
+  .budget-bar{flex:1;width:auto}
+
+  .workspace{padding:12px 12px 20px;gap:12px}
+  .dropzone{padding:16px;gap:11px}
+  .dropzone.empty{padding:32px 16px}
+
+  .img-card{padding:12px;gap:9px}
+  .thumb-box{width:48px;height:48px}
+  .c-head{gap:10px}
+  .c-name{font-size:11.5px}
+  .c-ctrl{grid-template-columns:1fr;gap:11px}
+  .c-ctrl .ctrl-cell{grid-column:1/-1}
+  .c-ctrl select.sel{flex:1}
+  .ctrl-cell.q{gap:10px}
+  .tgt-wrap{flex:1}
+  .num{flex:1;width:auto;min-width:0}
+
+  .mobile-bar{display:flex}
+
+  .settings{padding:11px 12px;gap:11px 14px}
+  .set-group{flex:1 1 auto}
+  .health{padding:9px 12px}
+  .health-actions{margin-left:0;flex-basis:100%}
+}
+
+/* ── ≤420px : small phones ──────────────────────────────────────────────── */
+@media (max-width:420px){
+  .logo{font-size:13.5px;letter-spacing:1.5px}
+  .thumb-box{width:42px;height:42px}
+  .c-tags .tag{font-size:8.5px;padding:2px 6px}
+  .tb-stats{font-size:9.5px;white-space:normal;line-height:1.6}
+  .mobile-bar .btn{font-size:10px;padding:11px 8px}
+}
+
+/* ── ≥1560px : two columns ──────────────────────────────────────────────── */
+@media (min-width:1560px){
+  .img-list{grid-template-columns:1fr 1fr}
+  .workspace{padding-left:24px;padding-right:24px}
+}
+@media (min-width:2200px){
+  .img-list{grid-template-columns:1fr 1fr 1fr}
+}
+
+/* ── Touch devices : bigger hit targets ─────────────────────────────────── */
+@media (hover:none) and (pointer:coarse){
+  input[type=range]{height:30px}
+  input[type=range]::-webkit-slider-thumb{width:20px;height:20px;margin-top:-8.5px}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px}
+  .btn{padding:11px 15px}
+  .btn-x{padding:9px 11px;font-size:15px}
+  select.sel{padding:10px 10px}
+  .num{padding:10px 9px}
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
+}
+
+/* ── Print / narrow fallback for very old engines ───────────────────────── */
+@supports not (backdrop-filter:blur(1px)){
+  .topbar,.mobile-bar{background:#2f2f2f}
+}
+</style>
 </head>
 <body>
 <div class="bg-glow"></div>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo">▸ ImgPress</div>
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<header class="topbar">
+  <button class="burger" id="btnBurger" title="Settings" aria-label="Settings">⚙</button>
+  <div class="logo">Imgpress</div>
   <div class="sep"></div>
-  <!-- Global quality (applies to JPG/WebP; PNG ignores it) -->
-  <div class="gq-wrap">
-    <span class="gq-label">Quality</span>
-    <input type="range" class="gq-slider" id="gqSlider" min="1" max="100" value="80"
-      oninput="applyGlobalQuality(this.value)">
-    <span class="gq-val" id="gqVal">80%</span>
-  </div>
-  <div class="sep"></div>
-  <div class="tb-stats" id="tbStats">No images loaded</div>
-  <div class="tb-right">
-    <button class="btn" onclick="openPicker()">+ Add Files</button>
-    <button class="btn primary" id="dlAllBtn" onclick="downloadAll()" disabled>⬇ Download All</button>
-  </div>
-</div>
 
-<!-- MAIN SCROLL AREA -->
-<div class="main-wrap" id="mainWrap"
-     ondragover="onDragOver(event)"
-     ondragleave="onDragLeave(event)"
-     ondrop="onDrop(event)">
-
-  <!-- DROP ZONE -->
-  <div class="drop-zone" id="dropZone" onclick="openPicker()">
-    <div class="dz-ico">🗜</div>
-    <div class="dz-h">Drop images or a folder here</div>
-    <div class="dz-p">
-      Supports JPEG · PNG · WebP · GIF · BMP<br>
-      Compresses in-browser — works fully offline · output keeps original extension
+  <div class="tb-mid">
+    <div class="gq">
+      <span class="lbl">Quality</span>
+      <input type="range" id="gq" min="1" max="100" value="78" aria-label="Global quality">
+      <span class="gq-val mono" id="gqVal">78%</span>
     </div>
-    <div class="dz-or">— or —</div>
-    <button class="btn" onclick="event.stopPropagation(); openPicker()">Browse Files</button>
+    <div class="sep"></div>
+    <div class="tb-stats" id="stats">No images loaded</div>
   </div>
 
-  <!-- IMAGE LIST -->
-  <div class="img-list" id="imgList"></div>
+  <div class="budget" id="budgetWrap" hidden>
+    <span class="lbl">Budget</span>
+    <div class="budget-bar"><div class="budget-fill" id="budgetFill"></div></div>
+    <span class="budget-txt" id="budgetTxt"></span>
+  </div>
 
+  <div class="tb-right">
+    <button class="btn btn-ghost desk-only" id="btnSettings" title="Advanced settings">⚙ Settings</button>
+    <button class="btn desk-only" id="btnAdd">+ Files</button>
+    <button class="btn desk-only" id="btnFolder" title="Pick a whole folder">+ Folder</button>
+    <button class="btn btn-primary desk-only" id="btnZip" disabled>⬇ Download All</button>
+  </div>
+</header>
+
+<!-- ── Advanced settings drawer ─────────────────────────────────────────── -->
+<div class="settings" id="settings">
+  <div class="set-group">
+    <span class="lbl">Output</span>
+    <select class="sel" id="setFormat">
+      <option value="auto">Auto (per asset)</option>
+      <option value="jpeg">JPEG · mozjpeg</option>
+      <option value="webp">WebP</option>
+      <option value="png8">PNG-8 · lossy palette</option>
+      <option value="png">PNG · lossless</option>
+      <option value="keep">Keep original format</option>
+    </select>
+  </div>
+
+  <div class="set-group">
+    <span class="lbl">Budget</span>
+    <select class="sel" id="setBudget">
+      <option value="150">150 KB · Google Ads HTML5</option>
+      <option value="200">200 KB</option>
+      <option value="500">500 KB</option>
+      <option value="0">Off</option>
+    </select>
+  </div>
+
+  <div class="set-group">
+    <span class="lbl">Max width</span>
+    <input type="number" class="num" id="setMaxW" placeholder="—" min="16" step="1">
+    <span class="lbl">px</span>
+  </div>
+
+  <label class="chk"><input type="checkbox" id="setProgressive" checked><span class="lbl">Progressive JPEG</span></label>
+  <label class="chk"><input type="checkbox" id="setTrellis" checked><span class="lbl">Trellis (slower, smaller)</span></label>
+  <label class="chk"><input type="checkbox" id="setCmpWebp" checked><span class="lbl">Compare WebP</span></label>
+
+  <div class="set-group">
+    <span class="lbl">CDN</span>
+    <select class="sel" id="setCdn">
+      <option value="https://esm.sh">esm.sh</option>
+      <option value="https://cdn.jsdelivr.net/npm">jsDelivr</option>
+      <option value="https://unpkg.com">unpkg</option>
+    </select>
+    <button class="btn btn-ghost" id="btnReloadCodecs">↻ Reload codecs</button>
+  </div>
 </div>
 
-<!-- Hidden file input -->
-<input type="file" id="fileInput" accept="image/*" multiple style="display:none"
-  onchange="onFileInputChange(event)">
+<!-- ── Codec health ─────────────────────────────────────────────────────── -->
+<div class="health state-loading" id="health">
+  <span class="health-dot"></span>
+  <span id="healthTxt">Loading WASM codecs…</span>
+  <span class="health-actions" id="healthActions"></span>
+</div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<main class="workspace" id="workspace">
 
-<script>
+  <div class="dropzone empty" id="dropzone">
+    <div class="dz-icon">🗜</div>
+    <div class="dz-txt" id="dzTxt">
+      <b>Drop images or a folder here</b><br>
+      JPG · PNG · WebP · GIF · BMP &nbsp;—&nbsp; paste from clipboard works too
+    </div>
+    <div class="dz-btns">
+      <button class="btn" id="btnAdd2">+ Choose Files</button>
+      <button class="btn btn-ghost" id="btnFolder2">+ Choose Folder</button>
+    </div>
+    <div class="drop-status" id="dropStatus" hidden></div>
+  </div>
+
+  <div class="empty-note" id="emptyNote">
+    <b>Engine:</b> mozjpeg · libwebp · oxipng · UPNG quantizer, compiled to WebAssembly, running in a worker pool.<br>
+    <b>Why not Canvas:</b> <code>canvas.toBlob()</code> re-encodes PNG as 32-bit RGBA with no palette
+    quantization — flat graphics come out <i>larger</i> than the original. This build never touches it.<br>
+    <b>Tip:</b> buttons, icons and text baked into PNG belong in SVG or live HTML. Imgpress flags those for you.
+  </div>
+
+  <div class="img-list" id="list"></div>
+</main>
+
+<!-- ── Mobile action bar ────────────────────────────────────────────────── -->
+<nav class="mobile-bar">
+  <button class="btn" id="btnAdd3">+ Files</button>
+  <button class="btn" id="btnFolder3">+ Folder</button>
+  <button class="btn btn-primary" id="btnZip2" disabled>⬇ All</button>
+</nav>
+
+<!-- Two inputs: webkitdirectory and multiple cannot coexist on one element. -->
+<input type="file" id="fileInput" accept="image/*" multiple hidden>
+<input type="file" id="dirInput" webkitdirectory directory multiple hidden>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     ENGINE SOURCE — never executed as-is. Instantiated as a module Worker
+     via Blob URL (primary) or imported into the main thread (fallback).
+     ══════════════════════════════════════════════════════════════════════ -->
+<script id="engineSrc" type="text/plain">
+/* ── codec registry ─────────────────────────────────────────────────────── */
+const PKG = {
+  jpeg:   '@jsquash/jpeg@1.6.0',
+  webp:   '@jsquash/webp@1.5.0',
+  oxipng: '@jsquash/oxipng@2.3.0',
+  upng:   'upng-js@2.1.0'
+};
+let CDN = 'https://esm.sh';
+const mods = {};
+
+function pkgUrl(spec){
+  if (CDN.indexOf('jsdelivr') >= 0) return CDN + '/' + spec + '/+esm';
+  if (CDN.indexOf('unpkg')    >= 0) return CDN + '/' + spec + '?module';
+  return CDN + '/' + spec;
+}
+function load(key){
+  if (!mods[key]) mods[key] = import(pkgUrl(PKG[key]));
+  return mods[key];
+}
+export function setCdn(url){ CDN = url; for (const k in mods) delete mods[k]; }
+
+/* Probe every codec once so the UI can report exactly what is available. */
+export async function health(){
+  const out = {};
+  await Promise.all(Object.keys(PKG).map(async k => {
+    try { await load(k); out[k] = true; }
+    catch (e) { out[k] = false; delete mods[k]; }
+  }));
+  return out;
+}
+
+/* ── decode ─────────────────────────────────────────────────────────────── */
+async function toImageData(file, maxW){
+  let opts = { imageOrientation: 'from-image' };
+  let bmp  = await createImageBitmap(file, opts);
+  if (maxW && bmp.width > maxW){
+    const w = maxW, h = Math.max(1, Math.round(bmp.height * maxW / bmp.width));
+    const scaled = await createImageBitmap(file, {
+      imageOrientation: 'from-image',
+      resizeWidth: w, resizeHeight: h, resizeQuality: 'high'
+    });
+    bmp.close();
+    bmp = scaled;
+  }
+  const cv  = new OffscreenCanvas(bmp.width, bmp.height);
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(bmp, 0, 0);
+  const id = ctx.getImageData(0, 0, bmp.width, bmp.height);
+  bmp.close();
+  return id;
+}
+
+/* Flatten alpha onto a solid colour — JPEG has no alpha channel. */
+function flatten(id, bg){
+  const r0 = (bg >> 16) & 255, g0 = (bg >> 8) & 255, b0 = bg & 255;
+  const d = new Uint8ClampedArray(id.data);
+  for (let i = 0; i < d.length; i += 4){
+    const a = d[i+3];
+    if (a === 255) continue;
+    const t = a / 255;
+    d[i]   = Math.round(d[i]   * t + r0 * (1 - t));
+    d[i+1] = Math.round(d[i+1] * t + g0 * (1 - t));
+    d[i+2] = Math.round(d[i+2] * t + b0 * (1 - t));
+    d[i+3] = 255;
+  }
+  return new ImageData(d, id.width, id.height);
+}
+
+/* ── analysis ───────────────────────────────────────────────────────────── */
+const IAB = [
+  [300,250],[728,90],[160,600],[300,600],[320,50],[320,100],[970,250],[336,280],
+  [300,50],[468,60],[970,90],[250,250],[200,200],[120,600],[240,400],[980,120],
+  [750,300],[750,200],[580,400],[930,180],[300,1050],[640,360],[1080,1080]
+];
+const COLOR_CAP = 4096;
+
+export function analyse(id){
+  const d = id.data, n = d.length;
+  const set = new Set();
+  let many = false, hasAlpha = false, semiAlpha = false;
+
+  for (let i = 0; i < n; i += 4){
+    const a = d[i+3];
+    if (a < 255){ hasAlpha = true; if (a > 0) semiAlpha = true; }
+    if (!many){
+      set.add(((d[i] << 24) | (d[i+1] << 16) | (d[i+2] << 8) | a) >>> 0);
+      if (set.size > COLOR_CAP) many = true;
+    }
+  }
+
+  /* Edge density — fraction of horizontally adjacent pairs with a hard luma jump.
+     High on text/UI/vector art, low on photographs and gradients. */
+  const w = id.width, h = id.height;
+  let edges = 0, samples = 0;
+  const stepY = Math.max(1, Math.floor(h / 160));
+  const stepX = Math.max(1, Math.floor(w / 160));
+  for (let y = 0; y < h; y += stepY){
+    for (let x = 0; x + stepX < w; x += stepX){
+      const i = (y * w + x) * 4, j = (y * w + x + stepX) * 4;
+      const l1 = d[i] * .299 + d[i+1] * .587 + d[i+2] * .114;
+      const l2 = d[j] * .299 + d[j+1] * .587 + d[j+2] * .114;
+      if (Math.abs(l1 - l2) > 40) edges++;
+      samples++;
+    }
+  }
+  const edgeDensity = samples ? edges / samples : 0;
+
+  /* Is this a 1.5×/2×/3× render of a standard ad slot? */
+  let retina = null;
+  for (const f of [3, 2, 1.5]){
+    const bw = w / f, bh = h / f;
+    if (Number.isInteger(bw) && Number.isInteger(bh)){
+      for (const s of IAB){
+        if (s[0] === bw && s[1] === bh){ retina = { factor: f, w: bw, h: bh }; break; }
+      }
+    }
+    if (retina) break;
+  }
+  const isIab = IAB.some(s => s[0] === w && s[1] === h);
+
+  return {
+    w, h,
+    colors: many ? -1 : set.size,       /* -1 means "more than COLOR_CAP" */
+    hasAlpha, semiAlpha, edgeDensity, retina, isIab
+  };
+}
+
+/* ── encoders ───────────────────────────────────────────────────────────── */
+async function encJpeg(id, q, o){
+  const { encode } = await load('jpeg');
+  const flat = id.__flat || flatten(id, 0xFFFFFF);
+  return encode(flat, {
+    quality: q,
+    baseline: false,
+    arithmetic: false,
+    progressive: !!o.progressive,
+    optimize_coding: true,
+    smoothing: 0,
+    color_space: 3,                    /* MozJpegColorSpace.YCbCr */
+    quant_table: 3,
+    trellis_multipass: !!o.trellis,
+    trellis_opt_zero:  !!o.trellis,
+    trellis_opt_table: !!o.trellis,
+    trellis_loops: o.trellis ? 2 : 1,
+    auto_subsample: true,
+    chroma_subsample: 2,
+    separate_chroma_quality: false,
+    chroma_quality: q
+  });
+}
+
+async function encWebp(id, q, o, lossless){
+  const { encode } = await load('webp');
+  return encode(id, {
+    quality: q, target_size: 0, target_PSNR: 0,
+    method: o.trellis ? 6 : 4,
+    sns_strength: 50, filter_strength: 60, filter_sharpness: 0, filter_type: 1,
+    partitions: 0, segments: 4, pass: 1, show_compressed: 0, preprocessing: 0,
+    autofilter: 0, partition_limit: 0,
+    alpha_compression: 1, alpha_filtering: 1, alpha_quality: 100,
+    lossless: lossless ? 1 : 0, exact: 0, image_hint: 0,
+    emulate_jpeg_size: 0, thread_level: 0, low_memory: 0,
+    near_lossless: 100, use_delta_palette: 0, use_sharp_yuv: 1
+  });
+}
+
+/* PNG: UPNG does the palette quantization (cnum) + deflate, oxipng squeezes
+   the result further. oxipng is optional — if it fails we keep UPNG's output. */
+async function encPng(id, cnum){
+  const UPNG = (await load('upng')).default || (await load('upng'));
+  let buf = UPNG.encode([id.data.buffer.slice(0)], id.width, id.height, cnum);
+  try {
+    const { optimise } = await load('oxipng');
+    const opt = await optimise(buf, { level: 3, interlace: false, optimiseAlpha: true });
+    if (opt && opt.byteLength && opt.byteLength < buf.byteLength) buf = opt;
+  } catch (e) { /* oxipng unavailable — UPNG output stands */ }
+  return buf;
+}
+
+const PNG_STEPS = [4, 8, 16, 24, 32, 48, 64, 96, 128, 192, 256];
+/* Calibrated against a 450×375 anti-aliased CTA button (222 unique colours,
+   gradient + soft shadow — i.e. a real banner asset, not a synthetic swatch):
+     256c → −41% vs a canvas-equivalent PNG, PSNR 74.2 dB
+     128c → −44%, 71.8 dB
+      64c → −60%, 61.5 dB
+      32c → −73%, 55.0 dB
+      16c → −80%, 43.8 dB
+   Everything above ~40 dB is visually indistinguishable on flat art, so a
+   linear quality→colours ramp wastes most of the available saving. */
+const Q_BANDS = [[97,256],[90,192],[82,128],[72,96],[62,64],[50,48],[38,32],[26,24],[16,16],[8,8]];
+function qToCnum(q){
+  for (const [th, c] of Q_BANDS) if (q >= th) return c;
+  return 4;
+}
+
+async function encodeAs(fmt, id, q, o){
+  switch (fmt){
+    case 'jpeg': return { buf: await encJpeg(id, q, o), fmt: 'jpeg', ext: 'jpg', mime: 'image/jpeg' };
+    case 'webp': return { buf: await encWebp(id, q, o, false), fmt: 'webp', ext: 'webp', mime: 'image/webp' };
+    case 'webpll': return { buf: await encWebp(id, 100, o, true), fmt: 'webpll', ext: 'webp', mime: 'image/webp' };
+    case 'png8': {
+      /* Continuous-tone artwork with alpha bands badly below ~192 colours, and
+         picking purely by byte count would always choose the ugliest option.
+         Floor the palette for that case instead of trusting the size race. */
+      const cn = Math.max(qToCnum(q), o.cnumFloor || 0);
+      return { buf: await encPng(id, cn), fmt: 'png8', ext: 'png', mime: 'image/png' };
+    }
+    case 'png':  return { buf: await encPng(id, 0), fmt: 'png', ext: 'png', mime: 'image/png' };
+    default: throw new Error('unknown format: ' + fmt);
+  }
+}
+
+/* ── target-size search ─────────────────────────────────────────────────── */
+async function searchToTarget(fmt, id, targetBytes, o){
+  if (fmt === 'png' || fmt === 'webpll'){
+    const r = await encodeAs(fmt, id, 100, o);
+    return { r, q: null, hit: r.buf.byteLength <= targetBytes };
+  }
+  if (fmt === 'png8'){
+    let best = null, bestC = null;
+    for (let lo = 0, hi = PNG_STEPS.length - 1; lo <= hi;){
+      const mid = (lo + hi) >> 1;
+      const buf = await encPng(id, PNG_STEPS[mid]);
+      if (buf.byteLength <= targetBytes){
+        best = { buf, fmt: 'png8', ext: 'png', mime: 'image/png' };
+        bestC = PNG_STEPS[mid]; lo = mid + 1;
+      } else hi = mid - 1;
+    }
+    if (best) return { r: best, q: bestC, hit: true };
+    const r = await encodeAs('png8', id, 0, o);
+    return { r, q: PNG_STEPS[0], hit: false };
+  }
+  /* jpeg / webp — bisect on quality */
+  let lo = 20, hi = 95, best = null, bestQ = null;
+  const top = await encodeAs(fmt, id, hi, o);
+  if (top.buf.byteLength <= targetBytes) return { r: top, q: hi, hit: true };
+  for (let i = 0; i < 8 && lo <= hi; i++){
+    const mid = (lo + hi) >> 1;
+    const r = await encodeAs(fmt, id, mid, o);
+    if (r.buf.byteLength <= targetBytes){ best = r; bestQ = mid; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  if (best) return { r: best, q: bestQ, hit: true };
+  const floorR = await encodeAs(fmt, id, 20, o);
+  return { r: floorR, q: 20, hit: false };
+}
+
+/* ── auto format choice ─────────────────────────────────────────────────── */
+export function autoCandidates(st){
+  /* Never auto-select WebP: many publishers still reject it inside HTML5
+     creatives. It is offered as a hint and as a manual choice instead. */
+  if (st.hasAlpha) return ['png8'];
+  /* Low colour count alone justifies trying PNG-8 — edge density must NOT gate
+     this. A single-colour or near-flat asset has zero edges yet is exactly the
+     case where PNG-8 wins by an order of magnitude over JPEG. Both candidates
+     are encoded and the smaller one wins, so the encoder decides, not a guess. */
+  return (st.colors !== -1 && st.colors <= 256) ? ['png8', 'jpeg'] : ['jpeg'];
+}
+
+/* ── main entry ─────────────────────────────────────────────────────────── */
+export async function process(job){
+  const { file, mode, fmt, quality, targetKB } = job;
+  const opts = Object.assign({}, job.opts);
+  const id = await toImageData(file, opts.maxW || 0);
+  const st = analyse(id);
+  /* Flatten once, not once per binary-search iteration. */
+  id.__flat = st.hasAlpha ? flatten(id, 0xFFFFFF) : id;
+  /* >256 colours plus alpha means continuous tone, not flat art. The analyser
+     caps its exact count at 4096, so testing for -1 alone would miss a 500-
+     colour photo cut-out and quantise it into visible banding. */
+  opts.cnumFloor = (st.hasAlpha && (st.colors === -1 || st.colors > 256)) ? 192 : 0;
+
+  const wanted = fmt === 'auto' ? autoCandidates(st)
+               : fmt === 'keep' ? [keepFmt(job.ext, st)]
+               : [fmt];
+
+  const tried = [];
+  let picked = null, pickedQ = null, hit = true;
+
+  for (const f of wanted){
+    if (mode === 'target' && targetKB > 0){
+      const s = await searchToTarget(f, id, targetKB * 1024, opts);
+      tried.push({ fmt: f, size: s.r.buf.byteLength });
+      if (!picked || s.r.buf.byteLength < picked.buf.byteLength){
+        picked = s.r; pickedQ = s.q; hit = s.hit;
+      }
+    } else {
+      const r = await encodeAs(f, id, quality, opts);
+      tried.push({ fmt: f, size: r.buf.byteLength });
+      if (!picked || r.buf.byteLength < picked.buf.byteLength){
+        picked = r; pickedQ = (f === 'png' || f === 'webpll') ? null
+                            : (f === 'png8' ? qToCnum(quality) : quality);
+      }
+    }
+  }
+
+  /* WebP comparison — informational only, never auto-selected. */
+  let webpHint = null;
+  if (opts.compareWebp && picked.fmt.indexOf('webp') !== 0){
+    try {
+      const wq = st.hasAlpha || st.edgeDensity > 0.06;
+      const r = wq ? await encodeAs('webpll', id, 100, opts)
+                   : await encodeAs('webp', id, quality, opts);
+      webpHint = { size: r.buf.byteLength, lossless: wq };
+    } catch (e) { /* webp codec unavailable */ }
+  }
+
+  return {
+    stats: st,
+    buf: picked.buf,
+    outFmt: picked.fmt,
+    ext: picked.ext,
+    mime: picked.mime,
+    q: pickedQ,
+    hitTarget: hit,
+    tried,
+    webpHint
+  };
+}
+
+function keepFmt(ext, st){
+  if (ext === 'png') return st.hasAlpha || st.colors !== -1 ? 'png8' : 'png';
+  if (ext === 'webp') return 'webp';
+  return 'jpeg';
+}
+
+/* ── worker plumbing ────────────────────────────────────────────────────── */
+if (typeof self !== 'undefined' && typeof self.postMessage === 'function' && !self.document){
+  self.onmessage = async (e) => {
+    const m = e.data;
+    try {
+      if (m.type === 'cdn'){ setCdn(m.cdn); self.postMessage({ id: m.id, ok: true }); return; }
+      if (m.type === 'health'){ self.postMessage({ id: m.id, ok: true, res: await health() }); return; }
+      if (m.type === 'process'){
+        const res = await process(m.job);
+        self.postMessage({ id: m.id, ok: true, res }, [res.buf]);
+        return;
+      }
+      throw new Error('unknown message: ' + m.type);
+    } catch (err){
+      self.postMessage({ id: m.id, ok: false, err: String((err && err.message) || err) });
+    }
+  };
+}
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     APPLICATION
+     ══════════════════════════════════════════════════════════════════════ -->
+<script type="module">
 'use strict';
 
-// ── CONSTANTS ──────────────────────────────────────────────────────────────
-const SUPPORTED = new Set(['jpg','jpeg','png','webp','gif','bmp']);
+/* ── dom refs ───────────────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const el = {
+  gq: $('gq'), gqVal: $('gqVal'), stats: $('stats'),
+  budgetWrap: $('budgetWrap'), budgetFill: $('budgetFill'), budgetTxt: $('budgetTxt'),
+  settings: $('settings'), health: $('health'), healthTxt: $('healthTxt'),
+  healthActions: $('healthActions'),
+  dropzone: $('dropzone'), dzTxt: $('dzTxt'), list: $('list'),
+  dropStatus: $('dropStatus'),
+  emptyNote: $('emptyNote'), fileInput: $('fileInput'), dirInput: $('dirInput'),
+  setFormat: $('setFormat'), setBudget: $('setBudget'), setMaxW: $('setMaxW'),
+  setProgressive: $('setProgressive'), setTrellis: $('setTrellis'),
+  setCmpWebp: $('setCmpWebp'), setCdn: $('setCdn'),
+  btnZip: $('btnZip'), btnZip2: $('btnZip2')
+};
 
-// Output format per input extension — keeps same family, forces JPEG for old/unsupported formats
-const OUTPUT_FMT = { jpg:'jpg', jpeg:'jpg', png:'png', webp:'webp', gif:'jpg', bmp:'jpg' };
-const MIME = { jpg:'image/jpeg', png:'image/png', webp:'image/webp' };
+/* ── state ──────────────────────────────────────────────────────────────── */
+const SUPPORTED = new Set(['jpg','jpeg','png','webp','gif','bmp','avif']);
+let items = [], nextId = 1, globalQuality = 78, codecs = null;
+const timers = new Map();
 
-// ── STATE ──────────────────────────────────────────────────────────────────
-let items = [];
-let nextId = 0;
-let globalQuality = 80;
-const debounceTimers = {};
+const cfg = () => ({
+  progressive: el.setProgressive.checked,
+  trellis:     el.setTrellis.checked,
+  compareWebp: el.setCmpWebp.checked,
+  maxW:        parseInt(el.setMaxW.value) || 0
+});
 
-// ── UTILS ──────────────────────────────────────────────────────────────────
-function fmtBytes(b) {
-  if (b == null) return '—';
-  if (b < 1024)       return b + ' B';
-  if (b < 1024*1024)  return (b/1024).toFixed(1) + ' KB';
-  return (b/1024/1024).toFixed(2) + ' MB';
-}
-function pctSaved(orig, comp) {
-  if (!orig || !comp) return null;
-  return Math.round((1 - comp/orig) * 100);
-}
-function ext(name) { return name.split('.').pop().toLowerCase(); }
-function outputName(origName, fmt) {
-  const base = origName.replace(/\.[^.]+$/, '');
-  return fmt === 'jpg' ? base + '.jpg' : base + '.' + fmt;
-}
-function hasMime(file) { return file.type.startsWith('image/'); }
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-                  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+/* ── utils ──────────────────────────────────────────────────────────────── */
+const fmtBytes = b => b == null ? '—'
+  : b < 1024 ? b + ' B'
+  : b < 1048576 ? (b/1024).toFixed(1) + ' KB'
+  : (b/1048576).toFixed(2) + ' MB';
+const pct = (a, b) => (!a || b == null) ? null : Math.round((1 - b/a) * 100);
+const ext = n => (n.split('.').pop() || '').toLowerCase();
+const baseName = n => n.replace(/\.[^.]+$/, '');
+const FMT_LABEL = { jpeg:'JPEG', webp:'WebP', webpll:'WebP·LL', png8:'PNG-8', png:'PNG' };
 
-// ── COMPRESSION ENGINE ─────────────────────────────────────────────────────
-async function drawToCanvas(file) {
-  const bm = await createImageBitmap(file);
-  const cv = document.createElement('canvas');
-  cv.width = bm.width; cv.height = bm.height;
-  const ctx = cv.getContext('2d');
-  return {cv, ctx, bm, w: bm.width, h: bm.height};
-}
+/* ── worker pool ────────────────────────────────────────────────────────── */
+const engineBlob = new Blob([$('engineSrc').textContent], { type: 'text/javascript' });
+const engineUrl  = URL.createObjectURL(engineBlob);
+const POOL_SIZE  = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 4) - 1));
 
-function blobAt(cv, fmt, q) {
-  // toBlob yields null when the canvas is too large / out of memory — reject instead of
-  // letting a null blob surface as a generic TypeError downstream.
-  return new Promise((res, rej) => cv.toBlob(
-    b => b ? res(b) : rej(new Error('Image too large to compress')),
-    MIME[fmt], q));
-}
+let workers = [], free = [], queue = [], msgId = 0;
+const pending = new Map();
+let inlineEngine = null;   /* main-thread fallback if Workers are blocked */
 
-async function compressQuality(file, fmt, quality) {
-  // quality: 1–100
-  const {cv, ctx, bm} = await drawToCanvas(file);
-  if (fmt === 'jpg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height); }
-  ctx.drawImage(bm, 0, 0);
-  bm.close?.();
-  if (fmt === 'png') return blobAt(cv, 'png', undefined);  // lossless, quality ignored
-  return blobAt(cv, fmt, quality / 100);
-}
-
-async function compressToTarget(file, fmt, targetKB) {
-  const targetBytes = targetKB * 1024;
-  const {cv, ctx, bm} = await drawToCanvas(file);
-  if (fmt === 'jpg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height); }
-  ctx.drawImage(bm, 0, 0);
-  bm.close?.();
-
-  if (fmt === 'png') {
-    const blob = await blobAt(cv, 'png', undefined);
-    return { blob, quality: null, warn: blob.size > targetBytes };
-  }
-
-  // High quality first
-  const hi = await blobAt(cv, fmt, 0.95);
-  if (hi.size <= targetBytes) return { blob: hi, quality: 95, warn: false };
-
-  // Binary search
-  let lo = 0.05, hi_ = 0.95, best = null, bestQ = 5;
-  for (let i = 0; i < 10; i++) {
-    const mid = (lo + hi_) / 2;
-    const b = await blobAt(cv, fmt, mid);
-    if (b.size <= targetBytes) { best = b; bestQ = Math.round(mid * 100); lo = mid; }
-    else hi_ = mid;
-  }
-  if (best) return { blob: best, quality: bestQ, warn: false };
-
-  // Even min quality exceeds target
-  const minBlob = await blobAt(cv, fmt, 0.05);
-  return { blob: minBlob, quality: 5, warn: true };
-}
-
-// ── FILE DIMENSIONS ────────────────────────────────────────────────────────
-async function getImgDims(file) {
-  return new Promise((res, rej) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload  = () => { res({w: img.naturalWidth, h: img.naturalHeight}); URL.revokeObjectURL(url); };
-    img.onerror = () => { rej(); URL.revokeObjectURL(url); };
-    img.src = url;
-  });
-}
-
-// ── FOLDER TRAVERSAL ───────────────────────────────────────────────────────
-async function traverseEntry(entry, files) {
-  if (entry.isFile) {
-    await new Promise(res => entry.file(f => { files.push(f); res(); }, res));
-  } else if (entry.isDirectory) {
-    const reader = entry.createReader();
-    const readBatch = () => new Promise(res => reader.readEntries(async entries => {
-      if (!entries.length) { res(); return; }
-      for (const e of entries) await traverseEntry(e, files);
-      await readBatch();
-      res();
-    }));
-    await readBatch();
+function spawnPool(){
+  killPool();
+  try {
+    for (let i = 0; i < POOL_SIZE; i++){
+      const w = new Worker(engineUrl, { type: 'module' });
+      w.onmessage = e => {
+        const p = pending.get(e.data.id);
+        if (p){ pending.delete(e.data.id); e.data.ok ? p.res(e.data.res) : p.rej(new Error(e.data.err)); }
+        free.push(w); drain();
+      };
+      w.onerror = () => { /* surfaced through the pending promise timeout */ };
+      workers.push(w); free.push(w);
+    }
+    return true;
+  } catch (err){
+    killPool();
+    return false;
   }
 }
+function killPool(){
+  workers.forEach(w => w.terminate());
+  workers = []; free = []; pending.clear();
+}
+function send(msg){
+  return new Promise((res, rej) => { queue.push({ msg, res, rej }); drain(); });
+}
+function drain(){
+  while (queue.length && free.length){
+    const job = queue.shift();
+    const w = free.pop();
+    const id = ++msgId;
+    pending.set(id, job);
+    w.postMessage(Object.assign({ id }, job.msg));
+  }
+}
+/* Fallback: import the same module into the main thread. */
+async function sendInline(msg){
+  if (!inlineEngine) inlineEngine = await import(engineUrl);
+  if (msg.type === 'cdn')     { inlineEngine.setCdn(msg.cdn); return true; }
+  if (msg.type === 'health')  return inlineEngine.health();
+  if (msg.type === 'process') return inlineEngine.process(msg.job);
+}
+const call = msg => workers.length ? send(msg) : sendInline(msg);
 
-// ── ITEM MANAGEMENT ────────────────────────────────────────────────────────
-async function addFiles(fileList) {
-  const arr = Array.from(fileList).filter(f => SUPPORTED.has(ext(f.name)));
-  if (!arr.length) { toast('No supported image files found', true); return; }
+/* A worker whose module graph fails to load (CSP, blocked CDN) never answers —
+   it does not throw at construction time. Every handshake therefore needs a
+   deadline, otherwise the UI sits on "Loading codecs…" forever. */
+function withTimeout(promise, ms, label){
+  let t;
+  return Promise.race([
+    promise.finally(() => clearTimeout(t)),
+    new Promise((_, rej) => { t = setTimeout(() => rej(new Error(label + ' timed out after ' + (ms/1000) + 's')), ms); })
+  ]);
+}
 
-  for (const file of arr) {
-    const e = ext(file.name);
-    const fmt = OUTPUT_FMT[e] || 'jpg';
+/* ── codec health ───────────────────────────────────────────────────────── */
+async function checkCodecs(){
+  el.health.className = 'health state-loading';
+  el.healthTxt.textContent = 'Loading WASM codecs from ' + el.setCdn.value.replace(/^https?:\/\//, '') + '…';
+  el.healthActions.replaceChildren();
+
+  if (!workers.length && !inlineEngine){
+    const ok = spawnPool();
+    if (!ok) el.healthTxt.textContent = 'Web Workers blocked — running on the main thread…';
+  }
+
+  try {
+    await withTimeout(call({ type: 'cdn', cdn: el.setCdn.value }), 8000, 'Worker handshake');
+    codecs = await withTimeout(call({ type: 'health' }), 45000, 'Codec download');
+  } catch (err){
+    /* Workers unreachable? Fall back to the main thread once before giving up. */
+    if (workers.length){
+      killPool();
+      el.healthTxt.textContent = 'Workers unavailable (' + err.message + ') — retrying on the main thread…';
+      try {
+        await withTimeout(call({ type: 'cdn', cdn: el.setCdn.value }), 8000, 'Inline handshake');
+        codecs = await withTimeout(call({ type: 'health' }), 45000, 'Codec download');
+      } catch (err2){ codecs = null; err = err2; }
+    } else codecs = null;
+
+    if (!codecs){
+      el.health.className = 'health state-fail';
+      el.healthTxt.textContent = 'Codec load failed: ' + err.message +
+        ' — switch CDN in Settings, or self-host the packages next to this file.';
+      addHealthBtn('↻ Retry', checkCodecs);
+      return;
+    }
+  }
+
+  const names = { jpeg:'mozjpeg', webp:'libwebp', oxipng:'oxipng', upng:'UPNG' };
+  const okList = [], badList = [];
+  for (const k in names) (codecs[k] ? okList : badList).push(names[k]);
+
+  if (!codecs.jpeg && !codecs.upng){
+    el.health.className = 'health state-fail';
+    el.healthTxt.textContent = 'No encoder available (' + badList.join(', ') + ' failed to load). ' +
+      'Your network may be blocking the CDN — switch CDN in Settings, or self-host the packages.';
+    addHealthBtn('↻ Retry', checkCodecs);
+    return;
+  }
+  if (badList.length){
+    el.health.className = 'health state-fail';
+    el.healthTxt.textContent = 'Loaded: ' + okList.join(' · ') + '  —  unavailable: ' + badList.join(' · ') +
+      (badList.indexOf('oxipng') >= 0 && badList.length === 1
+        ? ' (optional — PNG still compresses, just ~5–10% larger)' : '');
+    addHealthBtn('↻ Retry', checkCodecs);
+    return;
+  }
+  el.health.className = 'health state-ok';
+  el.healthTxt.textContent = 'Codecs ready: ' + okList.join(' · ') +
+    (workers.length ? '  ·  ' + workers.length + ' worker' + (workers.length > 1 ? 's' : '') : '  ·  main thread');
+  setTimeout(() => { if (el.health.classList.contains('state-ok')) el.health.classList.add('hide'); }, 3200);
+}
+function addHealthBtn(label, fn){
+  const b = document.createElement('button');
+  b.className = 'btn btn-ghost';
+  b.textContent = label;
+  b.addEventListener('click', fn);
+  el.healthActions.appendChild(b);
+}
+
+/* ── file intake ────────────────────────────────────────────────────────── */
+async function traverse(entry, out){
+  if (entry.isFile) await new Promise(r => entry.file(f => { out.push(f); r(); }, r));
+  else if (entry.isDirectory){
+    const rd = entry.createReader();
+    const step = () => new Promise(r => rd.readEntries(async list => {
+      if (!list.length) return r();
+      for (const e of list) await traverse(e, out);
+      await step(); r();
+    }, r));
+    await step();
+  }
+}
+
+function addFiles(files){
+  /* Accepts a FileList, a DataTransferFileList or a plain Array — normalise
+     first so no caller depends on the source being iterable. */
+  const src = Array.from(files || []);
+  const accepted = [];
+  let svgSkipped = 0;
+  for (const f of src){
+    if (!f || !f.name) continue;
+    if (f.size === 0) continue;                       /* folder stubs, .DS_Store */
+    if (/^\./.test(f.name)) continue;                 /* dotfiles from folder drops */
+    /* SVG passes a naive image/* test but must never be rasterised — it is
+       already vector, already small, and it is the format this tool recommends
+       people migrate TO. Turning one into a PNG is strictly a downgrade. */
+    if (ext(f.name) === 'svg' || (f.type || '') === 'image/svg+xml'){ svgSkipped++; continue; }
+    if (!SUPPORTED.has(ext(f.name)) && !(f.type || '').startsWith('image/')) continue;
+    accepted.push(f);
+  }
+  if (svgSkipped) setDropStatus(svgSkipped + ' SVG file' + (svgSkipped > 1 ? 's' : '') +
+    ' skipped — SVG is vector and already optimal. Run it through SVGO, not a raster compressor.');
+  if (!accepted.length){
+    if (src.length && !svgSkipped) setDropStatus('No supported images in that drop (' + src.length +
+      ' file' + (src.length > 1 ? 's' : '') + ' skipped).');
+    return;
+  }
+  for (const f of accepted){
     const item = {
-      id: nextId++,
-      file, name: file.name, ext: e,
-      w: null, h: null,
-      origSize: file.size,
-      fmt,
-      quality: globalQuality,
-      targetKB: '',
-      blob: null, compSize: null,
-      status: 'pending', warn: false,
-      thumbUrl: URL.createObjectURL(file),
+      id: nextId++, file: f, name: f.name, ext: ext(f.name),
+      origSize: f.size, thumbUrl: URL.createObjectURL(f),
+      fmt: 'auto', mode: 'quality', quality: globalQuality, targetKB: '',
+      status: 'pending', out: null, node: null
     };
     items.push(item);
-    renderItem(item);
-
-    // Load dims async
-    getImgDims(file).then(({w,h}) => {
-      item.w = w; item.h = h;
-      const el = document.getElementById(`dims-${item.id}`);
-      if (el) el.textContent = `${w} × ${h} px`;
-    }).catch(() => {});
-
-    triggerCompress(item);
+    buildCard(item);
+    run(item);
   }
-
-  updateDropZone();
-  updateStats();
-  document.getElementById('dlAllBtn').disabled = false;
+  syncShell();
 }
 
-function removeItem(id) {
-  const item = items.find(it => it.id === id);
-  if (item) URL.revokeObjectURL(item.thumbUrl);
-  items = items.filter(it => it.id !== id);
-
-  const card = document.getElementById(`card-${id}`);
-  if (card) {
-    card.classList.add('removing');
-    setTimeout(() => card.remove(), 220);
-  }
-
-  if (!items.length) {
-    resetDropZone();
-    document.getElementById('dlAllBtn').disabled = true;
-  }
-  updateStats();
+/* ── card construction — DOM API only, no HTML string interpolation ─────── */
+function mk(tag, cls, text){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
 }
 
-// ── COMPRESSION TRIGGER ────────────────────────────────────────────────────
-function triggerCompress(item) {
-  clearTimeout(debounceTimers[item.id]);
-  debounceTimers[item.id] = setTimeout(() => enqueueCompress(item), 320);
-}
+function buildCard(item){
+  const card = mk('div', 'img-card s-working');
 
-// Simple FIFO queue — at most 3 compression jobs run concurrently
-const MAX_CONCURRENT_JOBS = 3;
-let activeJobs = 0;
-const compressQueue = [];
+  /* ── head ── */
+  const head = mk('div', 'c-head');
+  const tb = mk('div', 'thumb-box');
+  const img = document.createElement('img');
+  img.src = item.thumbUrl; img.alt = '';
+  img.addEventListener('load',  () => img.classList.add('loaded'));
+  img.addEventListener('error', () => { img.remove(); tb.appendChild(mk('span', 'ph', '🖼')); });
+  tb.appendChild(img);
 
-function enqueueCompress(item) {
-  if (!compressQueue.includes(item)) compressQueue.push(item);
-  pumpCompressQueue();
-}
+  const idCol = mk('div', 'c-id');
+  const name = mk('div', 'c-name', item.name);
+  name.title = item.name;
+  const tags = mk('div', 'c-tags');
+  const sizes = mk('div', 'c-sizes');
+  sizes.append(
+    mk('span', 'sz-o', fmtBytes(item.origSize)),
+    mk('span', 'sz-arw', '→'),
+    mk('span', 'sz-n pend', 'analysing…')
+  );
+  idCol.append(name, tags, sizes);
 
-function pumpCompressQueue() {
-  while (activeJobs < MAX_CONCURRENT_JOBS && compressQueue.length) {
-    const item = compressQueue.shift();
-    activeJobs++;
-    doCompress(item).finally(() => {
-      activeJobs--;
-      pumpCompressQueue();
-    });
-  }
-}
+  const x = mk('button', 'btn-x', '✕');
+  x.title = 'Remove';
+  x.addEventListener('click', () => removeItem(item.id));
+  head.append(tb, idCol, x);
 
-async function doCompress(item) {
-  item.status = 'compressing';
-  syncCardStatus(item);
-  try {
-    let blob, quality = item.quality, warn = false;
+  /* ── hints ── */
+  const hints = mk('div', 'c-hints');
 
-    if (item.targetKB && parseFloat(item.targetKB) > 0) {
-      const r = await compressToTarget(item.file, item.fmt, parseFloat(item.targetKB));
-      blob = r.blob; warn = r.warn;
-      if (r.quality !== null) { quality = r.quality; item.quality = quality; }
-      else quality = null;
-    } else {
-      blob = await compressQuality(item.file, item.fmt, item.quality);
-    }
+  /* ── controls ── */
+  const ctrl = mk('div', 'c-ctrl');
 
-    if (!blob) throw new Error('Image too large to compress');
-    item.blob = blob;
-    item.compSize = blob.size;
-    item.warn = warn;
-    item.status = 'done';
-    item.errorMsg = null;
-  } catch (e) {
-    console.error(e);
-    item.blob = null; item.compSize = null;
-    item.errorMsg = (e && e.message === 'Image too large to compress') ? e.message : null;
-    item.status = 'error';
-  }
-  syncCardStatus(item);
-  updateStats();
-}
+  const cFmt = mk('div', 'ctrl-cell fmt');
+  const sel = mk('select', 'sel');
+  [['auto','Auto'],['jpeg','JPEG'],['webp','WebP'],['webpll','WebP lossless'],
+   ['png8','PNG-8'],['png','PNG lossless'],['keep','Keep format']]
+    .forEach(([v, t]) => { const o = mk('option', null, t); o.value = v; sel.appendChild(o); });
+  sel.value = item.fmt;
+  sel.addEventListener('change', () => { item.fmt = sel.value; run(item); });
+  cFmt.append(mk('span', 'lbl', 'Format'), sel);
 
-// ── SETTERS ────────────────────────────────────────────────────────────────
-function setQuality(id, val) {
-  const item = items.find(it => it.id === id);
-  if (!item) return;
-  item.quality = parseInt(val);
-  document.getElementById(`qval-${id}`).textContent = val + '%';
-  // Clear target if user is dragging quality
-  const tinp = document.getElementById(`target-${id}`);
-  if (tinp && item.targetKB) {
-    item.targetKB = '';
-    tinp.value = '';
-    tinp.classList.remove('active');
-  }
-  triggerCompress(item);
-}
-
-function setTarget(id, val) {
-  const item = items.find(it => it.id === id);
-  if (!item) return;
-  item.targetKB = val.trim();
-  const tinp = document.getElementById(`target-${id}`);
-  if (tinp) tinp.classList.toggle('active', !!item.targetKB);
-  triggerCompress(item);
-}
-
-function applyGlobalQuality(val) {
-  globalQuality = parseInt(val);
-  document.getElementById('gqVal').textContent = val + '%';
-  items.forEach(it => {
-    if (!it.targetKB && it.fmt !== 'png') {
-      it.quality = globalQuality;
-      const qv = document.getElementById(`qval-${it.id}`);
-      const qs = document.querySelector(`#card-${it.id} .q-slider`);
-      if (qv) qv.textContent = globalQuality + '%';
-      if (qs) qs.value = globalQuality;
-      triggerCompress(it);
-    }
+  const cQ = mk('div', 'ctrl-cell q');
+  const rng = document.createElement('input');
+  rng.type = 'range'; rng.min = '1'; rng.max = '100'; rng.value = String(item.quality);
+  rng.setAttribute('aria-label', 'Quality for ' + item.name);
+  const qv = mk('span', 'q-val', item.quality + '%');
+  rng.addEventListener('input', () => {
+    item.quality = parseInt(rng.value); item.mode = 'quality';
+    item.targetKB = ''; tgt.value = '';
+    qv.textContent = item.quality + '%'; qv.classList.remove('auto');
+    debounce(item);
   });
+  cQ.append(mk('span', 'lbl', 'Quality'), rng, qv);
+
+  const cT = mk('div', 'ctrl-cell tgt');
+  const tgtWrap = mk('div', 'tgt-wrap');
+  const tgt = document.createElement('input');
+  tgt.type = 'number'; tgt.className = 'num'; tgt.placeholder = '—'; tgt.min = '1';
+  tgt.title = 'Max output size in KB. Overrides the quality slider.';
+  tgt.addEventListener('input', () => {
+    item.targetKB = tgt.value;
+    item.mode = tgt.value ? 'target' : 'quality';
+    debounce(item);
+  });
+  tgtWrap.append(mk('span', 'lbl', 'Target'), tgt, mk('span', 'lbl', 'KB'));
+  cT.appendChild(tgtWrap);
+
+  const cD = mk('div', 'ctrl-cell dl');
+  const dl = mk('button', 'btn', '⬇ Download');
+  dl.disabled = true;
+  dl.addEventListener('click', () => downloadItem(item));
+  cD.appendChild(dl);
+
+  ctrl.append(cFmt, cQ, cT, cD);
+
+  /* ── foot ── */
+  const foot = mk('div', 'c-foot');
+  const spin = mk('span', 'spin on');
+  const msg = mk('span', 'c-msg', '');
+  foot.append(spin, msg);
+
+  card.append(head, hints, ctrl, foot);
+  el.list.appendChild(card);
+
+  item.node = { card, tags, sizes, hints, foot, spin, msg, dl, rng, qv, tgt, sel };
 }
 
-// ── RENDER ─────────────────────────────────────────────────────────────────
-function renderItem(item) {
-  const isPng  = item.fmt === 'png';
-  const isGifBmp = ['gif','bmp'].includes(item.ext);
-
-  // Format note for GIF/BMP
-  let fmtNote = '';
-  if (isGifBmp) {
-    fmtNote = `<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:8px;font-style:italic;">
-      ℹ ${item.ext.toUpperCase()} is converted to JPEG (browser cannot re-encode ${item.ext.toUpperCase()})
-    </div>`;
-  }
-
-  // PNG info box
-  let pngBox = '';
-  if (isPng) {
-    pngBox = `<div class="png-box">
-      <span>ℹ</span>
-      <span><strong>PNG is lossless</strong> — browser re-encodes and strips metadata. Typical savings: <strong>0–20%</strong>.
-      Quality slider has no effect. For major compression, save as JPEG or WebP in your editor first.</span>
-    </div>`;
-  }
-
-  // Quality row (hidden for PNG)
-  const qHide = isPng ? 'style="display:none"' : '';
-
-  const html = `
-  <div class="img-card s-pending" id="card-${item.id}">
-    <div class="card-inner">
-      <img class="thumb" id="thumb-${item.id}"
-        src="${item.thumbUrl}"
-        onload="this.classList.add('loaded')"
-        onerror="this.outerHTML='<div class=\\"thumb-ph\\">🖼</div>'">
-      <div class="card-body">
-        <div class="card-title">
-          <span class="card-name" title="${esc(item.name)}">${esc(item.name)}</span>
-          <span class="card-dims" id="dims-${item.id}"></span>
-          <button class="btn-remove" onclick="removeItem(${item.id})" title="Remove">✕</button>
-        </div>
-        <div class="size-row" id="sizerow-${item.id}">
-          <span class="sz-orig">${fmtBytes(item.origSize)}</span>
-          <span class="sz-arrow">→</span>
-          <span class="sz-new pending" id="sznew-${item.id}">calculating…</span>
-        </div>
-        ${fmtNote}
-        ${pngBox}
-        <div class="quality-row" id="qrow-${item.id}" ${qHide}>
-          <span class="q-label">Quality</span>
-          <input type="range" class="q-slider" min="1" max="100" value="${item.quality}"
-            oninput="setQuality(${item.id}, this.value)">
-          <span class="q-val" id="qval-${item.id}">${item.quality}%</span>
-          <div class="target-wrap">
-            <span class="q-label">Target</span>
-            <input type="number" class="target-inp" id="target-${item.id}"
-              placeholder="— KB" min="1" step="1" value="${item.targetKB}"
-              title="Optional: set a max file size in KB. Overrides quality slider."
-              oninput="setTarget(${item.id}, this.value)">
-            <span class="q-label">KB</span>
-          </div>
-        </div>
-        <div class="actions-row">
-          <button class="btn-dl" id="dlbtn-${item.id}" onclick="downloadItem(${item.id})" disabled>
-            ⬇ Download
-          </button>
-          <span class="spin" id="spin-${item.id}"></span>
-          <span class="warn-msg" id="warn-${item.id}">⚠ Can't reach target at min quality</span>
-        </div>
-      </div>
-    </div>
-  </div>`;
-
-  document.getElementById('imgList').insertAdjacentHTML('beforeend', html);
+function debounce(item){
+  clearTimeout(timers.get(item.id));
+  timers.set(item.id, setTimeout(() => run(item), 280));
 }
 
-function syncCardStatus(item) {
-  const card   = document.getElementById(`card-${item.id}`);
-  const spin   = document.getElementById(`spin-${item.id}`);
-  const dlBtn  = document.getElementById(`dlbtn-${item.id}`);
-  const sznew  = document.getElementById(`sznew-${item.id}`);
-  const warnEl = document.getElementById(`warn-${item.id}`);
-  const sizeRow= document.getElementById(`sizerow-${item.id}`);
-  if (!card) return;
+/* ── run one item ───────────────────────────────────────────────────────── */
+async function run(item){
+  const n = item.node;
+  if (!n) return;
+  item.status = 'working';
+  n.card.className = 'img-card s-working';
+  n.spin.classList.add('on');
+  n.dl.disabled = true;
+  n.foot.hidden = false;
+  n.msg.className = 'c-msg';
+  n.msg.textContent = '';
+  n.sizes.replaceChildren(
+    mk('span', 'sz-o', fmtBytes(item.origSize)),
+    mk('span', 'sz-arw', '→'),
+    mk('span', 'sz-n pend', 'compressing…')
+  );
+  syncShell();
 
-  // Border colour
-  card.className = `img-card s-${item.status}`;
-
-  if (item.status === 'compressing') {
-    spin.style.display  = 'inline-block';
-    dlBtn.disabled      = true;
-    sznew.textContent   = 'calculating…';
-    sznew.className     = 'sz-new pending';
-    if (warnEl) warnEl.style.display = 'none';
-    return;
-  }
-
-  spin.style.display = 'none';
-
-  if (item.status === 'done') {
-    dlBtn.disabled = false;
-    const pct  = pctSaved(item.origSize, item.compSize);
-    const cls  = item.warn ? 'warn' : 'ok';
-    const bCls = pct === null ? 'same' : pct > 0 ? 'good' : pct < 0 ? 'bigger' : 'same';
-    const bTxt = pct === null ? '—' : pct > 0 ? `−${pct}%` : pct < 0 ? `+${Math.abs(pct)}%` : '±0%';
-
-    let targetNote = '';
-    if (item.targetKB && item.quality && item.fmt !== 'png') {
-      targetNote = `<span class="sz-badge same">q=${item.quality}%</span>`;
-    }
-
-    sizeRow.innerHTML = `
-      <span class="sz-orig">${fmtBytes(item.origSize)}</span>
-      <span class="sz-arrow">→</span>
-      <span class="sz-new ${cls}">${fmtBytes(item.compSize)}</span>
-      <span class="sz-badge ${bCls}">${bTxt}</span>
-      ${targetNote}`;
-
-    if (warnEl) warnEl.style.display = item.warn ? 'inline' : 'none';
-    return;
-  }
-
-  if (item.status === 'error') {
-    dlBtn.disabled = true;
-    sznew.textContent = item.errorMsg || 'error';
-    sznew.className   = 'sz-new';
-    sznew.style.color = 'var(--clr-err)';
-  }
-}
-
-function updateStats() {
-  const el    = document.getElementById('tbStats');
-  if (!items.length) { el.innerHTML = 'No images loaded'; return; }
-
-  const done   = items.filter(it => it.status === 'done');
-  const tOrig  = items.reduce((s, it) => s + it.origSize, 0);
-  const tComp  = done.reduce((s, it) => s + (it.compSize||0), 0);
-  const pct    = done.length === items.length ? pctSaved(tOrig, tComp) : null;
-
-  let html = `${items.length} image${items.length>1?'s':''} · <span class="acc">${fmtBytes(tOrig)}</span>`;
-  if (done.length) {
-    html += ` → <span class="ok">${fmtBytes(tComp)}</span>`;
-    if (pct !== null) html += ` <span class="ok">(−${pct}%)</span>`;
-    else html += ` <span style="color:var(--muted)">(${done.length}/${items.length} done)</span>`;
-  }
-  el.innerHTML = html;
-}
-
-function updateDropZone() {
-  if (!items.length) return;
-  const dz = document.getElementById('dropZone');
-  if (!dz.classList.contains('mini')) {
-    dz.className = 'drop-zone mini';
-    dz.onclick   = null;
-    dz.innerHTML = `
-      <span class="dz-mini-txt">🗜 Drop more images or a folder to add</span>
-      <button class="btn" onclick="event.stopPropagation(); openPicker()">+ Add More</button>`;
-  }
-}
-
-function resetDropZone() {
-  const dz = document.getElementById('dropZone');
-  dz.className = 'drop-zone';
-  dz.onclick   = () => openPicker();
-  dz.innerHTML = `
-    <div class="dz-ico">🗜</div>
-    <div class="dz-h">Drop images or a folder here</div>
-    <div class="dz-p">Supports JPEG · PNG · WebP · GIF · BMP<br>Compresses in-browser — works fully offline · output keeps original extension</div>
-    <div class="dz-or">— or —</div>
-    <button class="btn" onclick="event.stopPropagation(); openPicker()">Browse Files</button>`;
-}
-
-// ── DOWNLOAD ───────────────────────────────────────────────────────────────
-function downloadItem(id) {
-  const item = items.find(it => it.id === id);
-  if (!item?.blob) return;
-  const a = document.createElement('a');
-  a.href     = URL.createObjectURL(item.blob);
-  a.download = outputName(item.name, item.fmt);
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-}
-
-async function downloadAll() {
-  const ready = items.filter(it => it.status === 'done' && it.blob);
-  if (!ready.length) { toast('No images ready yet', true); return; }
-
-  // Try to load JSZip from CDN for ZIP download
   try {
-    if (!window.JSZip) {
-      await new Promise((res, rej) => {
-        const s  = document.createElement('script');
-        s.src    = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-        s.onload = res;
-        s.onerror= rej;
-        document.head.appendChild(s);
-      });
+    const res = await call({ type: 'process', job: {
+      file: item.file, ext: item.ext,
+      mode: item.mode, fmt: item.fmt,
+      quality: item.quality,
+      targetKB: parseInt(item.targetKB) || 0,
+      opts: cfg()
+    }});
+
+    let size = res.buf.byteLength, kept = false;
+
+    /* Hard rule: automatic modes never hand back a file bigger than the input. */
+    if ((item.fmt === 'auto' || item.fmt === 'keep') && size >= item.origSize){
+      kept = true;
+      size = item.origSize;
     }
-    const zip = new window.JSZip();
-    const usedNames = new Set();
-    ready.forEach(it => {
-      let name = outputName(it.name, it.fmt);
-      if (usedNames.has(name)) {
-        const dot  = name.lastIndexOf('.');
-        const base = dot > 0 ? name.slice(0, dot) : name;
-        const ext  = dot > 0 ? name.slice(dot) : '';
-        let n = 1;
-        while (usedNames.has(`${base} (${n})${ext}`)) n++;
-        name = `${base} (${n})${ext}`;
+
+    item.out = {
+      buf: res.buf, size, kept,
+      fmt: kept ? null : res.outFmt,
+      ext: kept ? item.ext : res.ext,
+      mime: kept ? (item.file.type || 'application/octet-stream') : res.mime,
+      q: res.q, hitTarget: res.hitTarget, stats: res.stats,
+      webpHint: res.webpHint, tried: res.tried
+    };
+    item.status = 'done';
+    paintDone(item);
+  } catch (err){
+    item.status = 'error';
+    item.out = null;
+    n.card.className = 'img-card s-error';
+    n.spin.classList.remove('on');
+    n.sizes.replaceChildren(
+      mk('span', 'sz-o', fmtBytes(item.origSize)),
+      mk('span', 'sz-arw', '→'),
+      mk('span', 'sz-n bad', 'failed')
+    );
+    n.msg.className = 'c-msg err';
+    n.msg.textContent = String(err.message || err);
+  }
+  syncShell();
+}
+
+/* ── paint a finished card ──────────────────────────────────────────────── */
+function paintDone(item){
+  const n = item.node, o = item.out, st = o.stats;
+  n.spin.classList.remove('on');
+  n.dl.disabled = false;
+
+  const saved = pct(item.origSize, o.size);
+  const warn = o.kept || (item.mode === 'target' && !o.hitTarget) || saved <= 0;
+  n.card.className = 'img-card ' + (o.kept || warn ? 's-warn' : 's-done');
+
+  /* sizes */
+  const badgeCls = saved > 0 ? 'good' : saved < 0 ? 'bad' : 'flat';
+  const badgeTxt = saved > 0 ? '−' + saved + '%' : saved < 0 ? '+' + Math.abs(saved) + '%' : '±0%';
+  const parts = [
+    mk('span', 'sz-o', fmtBytes(item.origSize)),
+    mk('span', 'sz-arw', '→'),
+    mk('span', 'sz-n ' + (saved > 0 ? 'ok' : 'bad'), fmtBytes(o.size)),
+    mk('span', 'badge ' + badgeCls, badgeTxt)
+  ];
+  if (o.fmt) parts.push(mk('span', 'tag dim', FMT_LABEL[o.fmt] || o.fmt));
+  n.sizes.replaceChildren(...parts);
+
+  /* tags */
+  const tags = [ mk('span', 'tag', st.w + '×' + st.h) ];
+  if (st.colors !== -1) tags.push(mk('span', 'tag', st.colors + ' colors'));
+  if (st.hasAlpha) tags.push(mk('span', 'tag alpha', st.semiAlpha ? 'alpha soft' : 'alpha'));
+  if (st.colors !== -1 && st.colors <= 256 && st.edgeDensity > 0.02) tags.push(mk('span', 'tag flat', 'flat art'));
+  if (st.retina) tags.push(mk('span', 'tag retina', st.retina.factor + '× of ' + st.retina.w + '×' + st.retina.h));
+  else if (st.isIab) tags.push(mk('span', 'tag', 'IAB slot'));
+  n.tags.replaceChildren(...tags);
+
+  /* quality readout */
+  if (o.q == null){ n.qv.textContent = '—'; n.qv.classList.remove('auto'); }
+  else if (o.fmt === 'png8'){ n.qv.textContent = o.q + 'c'; n.qv.classList.add('auto'); }
+  else { n.qv.textContent = o.q + '%'; n.qv.classList.toggle('auto', item.mode === 'target'); }
+
+  /* hints */
+  const hints = [];
+  if (o.kept) hints.push(['w', '⚠',
+    'Original is already smaller than anything we can produce — keeping the original bytes untouched.']);
+
+  if (st.colors !== -1 && st.colors <= 4)
+    hints.push(['w', '◆', 'Only ' + st.colors + ' colour' + (st.colors > 1 ? 's' : '') + ' in ' +
+      st.w + '×' + st.h + ' px. This should not be an image file at all — a CSS ' +
+      (st.colors === 1 ? 'background-color' : 'gradient or background-color') + ' costs zero bytes.']);
+  else if (st.colors !== -1 && st.colors <= 48 && st.edgeDensity > 0.03)
+    hints.push(['i', '◆', 'Flat vector-style art (' + st.colors + ' colors). SVG or live HTML/CSS would be a ' +
+      'fraction of this size and stay sharp at every DPI.']);
+
+  if (st.hasAlpha && (st.colors === -1 || st.colors > 256))
+    hints.push(['w', '⚠', 'Continuous-tone artwork with transparency — the worst case for PNG. ' +
+      'The palette is floored at 192 colours to avoid banding, which caps how far this can shrink. ' +
+      'WebP or AVIF with an alpha channel is the real fix if your network allows it.']);
+
+  if (!st.hasAlpha && (item.ext === 'png'))
+    hints.push(['i', '◆', 'No transparency used — PNG buys you nothing here. JPEG or WebP is the right call.']);
+
+  if (st.retina)
+    hints.push(['i', '◆', 'This is a ' + st.retina.factor + '× render of the ' + st.retina.w + '×' + st.retina.h +
+      ' slot. Confirm the network actually serves it at ' + st.retina.factor + '× before paying the weight.']);
+
+  if (o.webpHint && o.webpHint.size < o.size * 0.85)
+    hints.push(['i', '◆', 'WebP' + (o.webpHint.lossless ? ' lossless' : '') + ' would be ' +
+      fmtBytes(o.webpHint.size) + ' (−' + pct(o.size, o.webpHint.size) + '% vs this output). ' +
+      'Check your ad network accepts WebP inside HTML5 creatives first.']);
+
+  if (item.mode === 'target' && !o.hitTarget)
+    hints.push(['e', '⚠', 'Cannot reach ' + item.targetKB + ' KB even at the floor quality. ' +
+      'Reduce the pixel dimensions instead — Settings → Max width.']);
+
+  if (st.w > 2000)
+    hints.push(['w', '⚠', st.w + ' px wide is far beyond any standard ad slot. Downscale it.']);
+
+  n.hints.replaceChildren(...hints.map(([k, ico, txt]) => {
+    const h = mk('div', 'hint ' + k);
+    h.append(mk('i', 'h-ico', ico), mk('span', null, txt));
+    return h;
+  }));
+  n.hints.hidden = hints.length === 0;
+
+  n.msg.className = 'c-msg' + (warn ? ' warn' : '');
+  n.msg.textContent = o.tried && o.tried.length > 1
+    ? 'Tried ' + o.tried.map(t => (FMT_LABEL[t.fmt] || t.fmt) + ' ' + fmtBytes(t.size)).join(' · ')
+    : '';
+  n.foot.hidden = !n.msg.textContent;
+}
+
+/* ── remove / clear ─────────────────────────────────────────────────────── */
+function removeItem(id){
+  const i = items.findIndex(t => t.id === id);
+  if (i < 0) return;
+  const item = items[i];
+  item.node.card.classList.add('removing');
+  setTimeout(() => {
+    URL.revokeObjectURL(item.thumbUrl);
+    item.node.card.remove();
+    items.splice(items.indexOf(item), 1);
+    syncShell();
+  }, 240);
+}
+
+/* ── shell: stats, budget, dropzone, buttons ────────────────────────────── */
+function syncShell(){
+  const has = items.length > 0;
+  el.dropzone.classList.toggle('empty', !has);
+  el.emptyNote.hidden = has;
+  el.dzTxt.replaceChildren();
+  if (has){
+    el.dzTxt.append(
+      mk('b', null, 'Drop more images or a folder anywhere on this page'),
+      document.createElement('br'),
+      document.createTextNode('or paste from the clipboard')
+    );
+  } else {
+    el.dzTxt.append(
+      mk('b', null, 'Drop images or a folder here'), document.createElement('br'),
+      document.createTextNode('JPG · PNG · WebP · GIF · BMP — paste from clipboard works too')
+    );
+  }
+
+  const done = items.filter(t => t.status === 'done');
+  const tOrig = items.reduce((s, t) => s + t.origSize, 0);
+  const tOut  = done.reduce((s, t) => s + t.out.size, 0);
+  const anyDl = done.length > 0;
+  el.btnZip.disabled = !anyDl;
+  el.btnZip2.disabled = !anyDl;
+
+  el.stats.replaceChildren();
+  if (!has){ el.stats.textContent = 'No images loaded'; }
+  else {
+    const p = done.length === items.length ? pct(tOrig, tOut) : null;
+    el.stats.append(
+      mk('b', null, String(items.length)),
+      document.createTextNode(' image' + (items.length > 1 ? 's' : '') + ' · '),
+      mk('span', 's-from', fmtBytes(tOrig)),
+      document.createTextNode(' → '),
+      mk('span', 's-to', fmtBytes(tOut))
+    );
+    if (p != null) el.stats.append(document.createTextNode('  (' + (p >= 0 ? '−' : '+') + Math.abs(p) + '%)'));
+    else el.stats.append(document.createTextNode('  · ' + (items.length - done.length) + ' pending'));
+  }
+
+  /* budget meter */
+  const cap = parseInt(el.setBudget.value) || 0;
+  el.budgetWrap.hidden = !(cap && has);
+  if (cap && has){
+    const used = tOut + items.filter(t => t.status !== 'done').reduce((s, t) => s + t.origSize, 0);
+    const r = used / (cap * 1024);
+    el.budgetFill.style.width = Math.min(100, r * 100).toFixed(1) + '%';
+    el.budgetFill.className = 'budget-fill' + (r > 1 ? ' over' : r > 0.8 ? ' mid' : '');
+    el.budgetTxt.className = 'budget-txt' + (r > 1 ? ' over' : '');
+    el.budgetTxt.replaceChildren(mk('b', null, fmtBytes(used)), document.createTextNode(' / ' + cap + ' KB'));
+  }
+}
+
+/* ── download one ───────────────────────────────────────────────────────── */
+function outName(item){
+  return baseName(item.name) + '.' + item.out.ext;
+}
+function outBlob(item){
+  return item.out.kept ? item.file : new Blob([item.out.buf], { type: item.out.mime });
+}
+function saveBlob(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function downloadItem(item){ if (item.out) saveBlob(outBlob(item), outName(item)); }
+
+/* ── ZIP (store-only; image bytes gain nothing from deflate) ─────────────── */
+const CRC_T = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++){
+    let c = i;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function dosTime(d){
+  return [((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF,
+          (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF];
+}
+function zip(entries){
+  const enc = new TextEncoder(), now = new Date(), [tm, dt] = dosTime(now);
+  const chunks = [], central = [];
+  let offset = 0;
+
+  for (const e of entries){
+    const nameU8 = enc.encode(e.name);
+    const crc = crc32(e.data), len = e.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034B50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0, true);
+    lh.setUint16(8, 0, true); lh.setUint16(10, tm, true); lh.setUint16(12, dt, true);
+    lh.setUint32(14, crc, true); lh.setUint32(18, len, true); lh.setUint32(22, len, true);
+    lh.setUint16(26, nameU8.length, true); lh.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(lh.buffer), nameU8, e.data);
+
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014B50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, tm, true); ch.setUint16(14, dt, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, len, true); ch.setUint32(24, len, true);
+    ch.setUint16(28, nameU8.length, true); ch.setUint16(30, 0, true); ch.setUint16(32, 0, true);
+    ch.setUint16(34, 0, true); ch.setUint16(36, 0, true); ch.setUint32(38, 0, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), nameU8);
+    offset += 30 + nameU8.length + len;
+  }
+
+  const cSize = central.reduce((s, c) => s + c.length, 0);
+  const eocd = new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0, 0x06054B50, true);
+  eocd.setUint16(8, entries.length, true); eocd.setUint16(10, entries.length, true);
+  eocd.setUint32(12, cSize, true); eocd.setUint32(16, offset, true);
+  eocd.setUint16(20, 0, true);
+
+  return new Blob([...chunks, ...central, new Uint8Array(eocd.buffer)], { type: 'application/zip' });
+}
+
+async function downloadAll(){
+  const done = items.filter(t => t.status === 'done');
+  if (!done.length) return;
+  if (done.length === 1){ downloadItem(done[0]); return; }
+
+  const used = new Set(), entries = [];
+  for (const it of done){
+    let name = outName(it), i = 2;
+    while (used.has(name.toLowerCase())){ name = baseName(outName(it)) + '-' + (i++) + '.' + it.out.ext; }
+    used.add(name.toLowerCase());
+    const ab = it.out.kept ? await it.file.arrayBuffer() : it.out.buf;
+    entries.push({ name, data: new Uint8Array(ab) });
+  }
+  saveBlob(zip(entries), 'imgpress-' + new Date().toISOString().slice(0, 10) + '.zip');
+}
+
+/* ── events ─────────────────────────────────────────────────────────────── */
+el.gq.addEventListener('input', () => {
+  globalQuality = parseInt(el.gq.value);
+  el.gqVal.textContent = globalQuality + '%';
+  for (const it of items){
+    if (it.mode === 'target') continue;
+    it.quality = globalQuality;
+    it.node.rng.value = String(globalQuality);
+    it.node.qv.textContent = globalQuality + '%';
+    debounce(it);
+  }
+});
+
+[el.fileInput, el.dirInput].forEach(inp =>
+  inp.addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; })
+);
+['btnAdd','btnAdd2','btnAdd3'].forEach(id => $(id).addEventListener('click', () => el.fileInput.click()));
+['btnFolder','btnFolder2','btnFolder3'].forEach(id => {
+  const b = $(id); if (b) b.addEventListener('click', () => el.dirInput.click());
+});
+['btnZip','btnZip2'].forEach(id => $(id).addEventListener('click', downloadAll));
+['btnSettings','btnBurger'].forEach(id => $(id).addEventListener('click', () => el.settings.classList.toggle('open')));
+
+el.setCdn.addEventListener('change', () => { el.health.classList.remove('hide'); checkCodecs(); });
+$('btnReloadCodecs').addEventListener('click', () => {
+  killPool(); inlineEngine = null;
+  el.health.classList.remove('hide'); checkCodecs();
+});
+/* Output format is a broadcast: it overwrites every per-card choice. */
+el.setFormat.addEventListener('change', () => {
+  for (const it of items){
+    it.fmt = el.setFormat.value;
+    it.node.sel.value = it.fmt;
+    debounce(it);
+  }
+});
+/* Encoder options only trigger a re-encode; per-card formats are preserved. */
+[el.setMaxW, el.setProgressive, el.setTrellis, el.setCmpWebp].forEach(n =>
+  n.addEventListener('change', () => items.forEach(debounce))
+);
+el.setBudget.addEventListener('change', syncShell);
+
+/* ── drag & drop ────────────────────────────────────────────────────────────
+   Depth counting via dragenter/dragleave pairs is unreliable: leave events go
+   missing when the pointer exits the window fast, when the drag ends over a
+   child that is removed, or when the user drops outside. The highlight then
+   sticks forever. A watchdog refreshed by dragover is immune to all of it —
+   dragover fires continuously (~every 50-350ms) for as long as a drag is live,
+   so if it stops arriving the drag is over, whatever the reason. */
+const dz = el.dropzone;
+let dragTimer = null;
+
+function beginDrag(){
+  dz.classList.add('drag');
+  document.body.classList.add('dragging');
+  clearTimeout(dragTimer);
+  dragTimer = setTimeout(endDrag, 700);
+}
+function endDrag(){
+  clearTimeout(dragTimer); dragTimer = null;
+  dz.classList.remove('drag');
+  document.body.classList.remove('dragging');
+  setDropStatus('');
+}
+let statusTimer = null;
+function setDropStatus(txt){
+  clearTimeout(statusTimer);
+  el.dropStatus.textContent = txt || '';
+  el.dropStatus.hidden = !txt;
+  /* Rejection notices are informational, not persistent state — retire them. */
+  if (txt) statusTimer = setTimeout(() => {
+    el.dropStatus.textContent = ''; el.dropStatus.hidden = true;
+  }, 7000);
+}
+
+/* dragover must preventDefault on every target, otherwise the browser refuses
+   the drop and navigates to the file instead. */
+['dragenter','dragover'].forEach(ev => document.addEventListener(ev, e => {
+  if (!e.dataTransfer) return;
+  e.preventDefault();
+  try { e.dataTransfer.dropEffect = 'copy'; } catch (err){}
+  beginDrag();
+}, false));
+document.addEventListener('dragleave', e => { e.preventDefault(); }, false);
+document.addEventListener('dragend', endDrag, false);
+window.addEventListener('blur', endDrag);
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  endDrag();
+  const dt = e.dataTransfer;
+  if (!dt) return;
+
+  /* DataTransferItemList is NOT declared iterable in the HTML spec — it only
+     exposes .length and an indexed getter. `for (const it of dt.items)` throws
+     a TypeError, which killed the whole handler before a single file was read.
+     Index it manually.
+
+     Second constraint: webkitGetAsEntry() must be called synchronously, while
+     the drop event is still being dispatched. The entries are collected first
+     and only then awaited, because the item list is neutered after the tick. */
+  let entries = [];
+  try {
+    const list = dt.items;
+    if (list && list.length){
+      for (let i = 0; i < list.length; i++){
+        const it = list[i];
+        if (!it || it.kind !== 'file') continue;
+        const en = it.webkitGetAsEntry ? it.webkitGetAsEntry() : null;
+        if (en) entries.push(en);
       }
-      usedNames.add(name);
-      zip.file(name, it.blob);
-    });
-    const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
-    const a = document.createElement('a');
-    a.href     = URL.createObjectURL(zipBlob);
-    a.download = `compressed_${Date.now()}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    toast(`✓ ${ready.length} images packed → ZIP`);
-  } catch (_) {
-    // Offline fallback: sequential individual downloads
-    toast(`Downloading ${ready.length} files one by one…`);
-    for (let i = 0; i < ready.length; i++) {
-      await new Promise(r => setTimeout(r, i === 0 ? 0 : 350));
-      downloadItem(ready[i].id);
     }
-  }
-}
+  } catch (err){ entries = []; }
 
-// ── DRAG & DROP ────────────────────────────────────────────────────────────
-function onDragOver(e) {
-  e.preventDefault();
-  document.getElementById('mainWrap').classList.add('drag-over');
-  document.getElementById('dropZone').classList.add('drag-over');
-}
-function onDragLeave(e) {
-  if (!e.currentTarget.contains(e.relatedTarget)) {
-    document.getElementById('mainWrap').classList.remove('drag-over');
-    document.getElementById('dropZone').classList.remove('drag-over');
-  }
-}
-async function onDrop(e) {
-  e.preventDefault();
-  document.getElementById('mainWrap').classList.remove('drag-over');
-  document.getElementById('dropZone').classList.remove('drag-over');
-
-  const files = [];
-  const dtItems = e.dataTransfer.items;
-
-  if (dtItems?.length) {
-    const entries = [];
-    for (const item of dtItems) {
-      const entry = item.webkitGetAsEntry?.();
-      if (entry) entries.push(entry);
+  if (entries.length){
+    const files = [];
+    const dirs = entries.filter(en => en.isDirectory).length;
+    if (dirs) setDropStatus('Scanning ' + dirs + ' folder' + (dirs > 1 ? 's' : '') + '…');
+    for (const en of entries){
+      try { await traverse(en, files); } catch (err){ /* unreadable entry — skip */ }
     }
-    for (const entry of entries) await traverseEntry(entry, files);
-  } else if (e.dataTransfer.files?.length) {
-    files.push(...e.dataTransfer.files);
+    setDropStatus('');
+    if (files.length){ addFiles(files); return; }
   }
+  /* Fallback for browsers/sources that only populate .files */
+  if (dt.files && dt.files.length) addFiles(dt.files);
+});
 
-  if (files.length) addFiles(files);
-}
+/* Designers paste screenshots constantly — accept the clipboard too. */
+document.addEventListener('paste', e => {
+  const cd = e.clipboardData;
+  if (!cd || !cd.files || !cd.files.length) return;
+  const imgs = [];
+  for (let i = 0; i < cd.files.length; i++){
+    const f = cd.files[i];
+    if ((f.type || '').startsWith('image/')) imgs.push(f);
+  }
+  if (!imgs.length) return;
+  e.preventDefault();
+  addFiles(imgs);
+});
 
-// ── FILE PICKER ────────────────────────────────────────────────────────────
-function openPicker() {
-  document.getElementById('fileInput').click();
-}
-function onFileInputChange(e) {
-  if (e.target.files.length) addFiles(e.target.files);
-  e.target.value = ''; // allow re-selecting same file
-}
+window.addEventListener('beforeunload', () => items.forEach(i => URL.revokeObjectURL(i.thumbUrl)));
 
-// ── TOAST ──────────────────────────────────────────────────────────────────
-let toastTimer;
-function toast(msg, isErr = false) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className   = 'toast show' + (isErr ? ' err' : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
-}
+/* ── boot ───────────────────────────────────────────────────────────────── */
+el.gq.value = String(globalQuality);
+el.gqVal.textContent = globalQuality + '%';
+syncShell();
+checkCodecs();
 </script>
 </body>
 </html>
