@@ -44,7 +44,12 @@
   --sans:'DM Sans',system-ui,sans-serif;
   --r:8px;
   --r-sm:6px;
-  --tb-pad-l:112px;   /* space reserved for the Hub's shell chrome */
+  /* Space reserved for the Hub shell's floating "← HUB" button. That button is
+     position:fixed in the PARENT document at left:20px (left:12px under 640px)
+     and paints over this iframe, so no CSS here can see or avoid it. This value
+     is a safe fallback; boot() measures the real button and overwrites it, and
+     drops it to 16px when the tool runs standalone rather than inside the Hub. */
+  --tb-pad-l:112px;
   --tb-h:50px;
 }
 
@@ -75,6 +80,12 @@ button,input,select{font-family:inherit;color:inherit}
 button{cursor:pointer}
 .mono{font-family:var(--mono)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* The UA stylesheet's [hidden]{display:none} is a plain author-overridable
+   rule, so ANY class with an explicit display wins and the element stays
+   visible. Several containers here are flex and toggled via .hidden, so this
+   has to be forced or the attribute silently does nothing. */
+[hidden]{display:none!important}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TOP BAR
@@ -236,6 +247,26 @@ select.sel option{background:#323232;color:var(--text)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.28}}
 .health-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
 .health .btn{font-size:9.5px;padding:5px 10px}
+.health.state-fail{align-items:flex-start}
+#healthTxt{flex:1;min-width:0;line-height:1.7}
+
+/* file:// recovery instructions */
+.howto{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.howto-step{color:var(--muted);font-size:9.5px;letter-spacing:.2px}
+.howto-cmd{
+  display:inline-block;width:fit-content;max-width:100%;
+  background:rgba(0,0,0,.34);border:1px solid var(--border2);
+  border-radius:var(--r-sm);padding:6px 10px;
+  font-family:var(--mono);font-size:10.5px;color:var(--text);
+  cursor:pointer;user-select:all;position:relative;
+  transition:border-color .15s,background .15s;
+}
+.howto-cmd:hover{border-color:var(--accent);background:rgba(0,0,0,.46)}
+.howto-cmd::before{content:'$ ';color:var(--accent);opacity:.8}
+.howto-cmd[data-copied]::after{
+  content:'copied';position:absolute;right:-56px;top:50%;transform:translateY(-50%);
+  color:var(--ok);font-size:9px;letter-spacing:1px;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    WORKSPACE
@@ -444,10 +475,14 @@ select.sel{min-width:0;max-width:100%}
 
 /* ── ≤1080px : stats move under the bar, controls reflow to 2 columns ────── */
 @media (max-width:1080px){
-  :root{--tb-pad-l:16px}
-  .topbar{flex-wrap:wrap;padding-top:8px;padding-bottom:8px;gap:8px 0}
-  .tb-mid{order:3;flex-basis:100%;padding-top:2px}
+  /* --tb-pad-l is deliberately NOT reset here. The Hub's back button does not
+     move or shrink until 640px, so clearing the reservation at 1080px put the
+     logo straight underneath it. */
+  .topbar{flex-wrap:wrap;padding-top:8px;padding-bottom:8px;gap:8px 14px}
+  /* Row 1: logo + actions. Row 2: quality, stats, budget together. */
+  .tb-mid{order:3;flex:1 1 320px;padding-top:2px}
   .tb-right{order:2}
+  .budget{order:4}
   .settings,.health{padding-left:16px;padding-right:16px}
   .c-ctrl{grid-template-columns:max-content minmax(140px,1fr);gap:10px 14px}
   .c-ctrl .ctrl-cell.tgt{grid-column:1/-1}
@@ -458,7 +493,9 @@ select.sel{min-width:0;max-width:100%}
 /* ── ≤760px : true mobile ───────────────────────────────────────────────── */
 @media (max-width:760px){
   html{font-size:13.5px}
-  .topbar{padding:8px 12px;gap:8px}
+  /* Left reservation stays — only the right side tightens. Below 640px the Hub
+     button moves to left:12px with tighter padding, so 100px is enough there. */
+  .topbar{padding:8px 12px 8px var(--tb-pad-l);gap:8px}
   .logo{font-size:15px;letter-spacing:2px}
   .burger{display:inline-flex}
   .tb-mid{order:4}
@@ -495,6 +532,10 @@ select.sel{min-width:0;max-width:100%}
 }
 
 /* ── ≤420px : small phones ──────────────────────────────────────────────── */
+@media (max-width:640px){
+  :root{--tb-pad-l:100px}   /* Hub button shifts to left:12px with tighter padding */
+}
+
 @media (max-width:420px){
   .logo{font-size:13.5px;letter-spacing:1.5px}
   .thumb-box{width:42px;height:42px}
@@ -642,6 +683,8 @@ select.sel{min-width:0;max-width:100%}
     <b>Engine:</b> mozjpeg · libwebp · oxipng · UPNG quantizer, compiled to WebAssembly, running in a worker pool.<br>
     <b>Why not Canvas:</b> <code>canvas.toBlob()</code> re-encodes PNG as 32-bit RGBA with no palette
     quantization — flat graphics come out <i>larger</i> than the original. This build never touches it.<br>
+    <b>Requires HTTP:</b> must be served, not opened from disk — Web Workers and module loading are both
+    blocked on <code>file://</code>. Chrome or Edge recommended; images never leave your machine either way.<br>
     <b>Tip:</b> buttons, icons and text baked into PNG belong in SVG or live HTML. Imgpress flags those for you.
   </div>
 
@@ -696,24 +739,47 @@ export async function health(){
 }
 
 /* ── decode ─────────────────────────────────────────────────────────────── */
+function ctx2d(w, h, readback){
+  const cv = new OffscreenCanvas(w, h);
+  const cx = cv.getContext('2d', readback ? { willReadFrequently: true } : undefined);
+  cx.imageSmoothingEnabled = true;
+  cx.imageSmoothingQuality = 'high';
+  return cx;
+}
+
 async function toImageData(file, maxW){
-  let opts = { imageOrientation: 'from-image' };
-  let bmp  = await createImageBitmap(file, opts);
-  if (maxW && bmp.width > maxW){
-    const w = maxW, h = Math.max(1, Math.round(bmp.height * maxW / bmp.width));
-    const scaled = await createImageBitmap(file, {
-      imageOrientation: 'from-image',
-      resizeWidth: w, resizeHeight: h, resizeQuality: 'high'
-    });
+  /* createImageBitmap's resizeWidth / resizeHeight / resizeQuality options are
+     a Chrome-only extension — Firefox and Safari silently ignore them, so the
+     "Max width" setting would appear to do nothing there. Scaling is therefore
+     done on the canvas, which behaves identically everywhere.
+
+     A single bilinear step from a large ratio aliases badly (thin lines and
+     text drop out), so halve repeatedly until within ~2× of the target and let
+     the final draw cover the remainder. */
+  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const w = bmp.width, h = bmp.height;
+  let tw = w, th = h;
+  if (maxW && w > maxW){ tw = maxW; th = Math.max(1, Math.round(h * maxW / w)); }
+
+  if (tw === w && th === h){
+    const cx = ctx2d(w, h, true);
+    cx.drawImage(bmp, 0, 0);
     bmp.close();
-    bmp = scaled;
+    return cx.getImageData(0, 0, w, h);
   }
-  const cv  = new OffscreenCanvas(bmp.width, bmp.height);
-  const ctx = cv.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(bmp, 0, 0);
-  const id = ctx.getImageData(0, 0, bmp.width, bmp.height);
-  bmp.close();
-  return id;
+
+  let src = bmp, sw = w, sh = h;
+  while (sw / 2 >= tw * 1.05){
+    const nw = Math.max(tw, Math.round(sw / 2)), nh = Math.max(th, Math.round(sh / 2));
+    const cx = ctx2d(nw, nh, false);
+    cx.drawImage(src, 0, 0, sw, sh, 0, 0, nw, nh);
+    if (src.close) src.close();
+    src = cx.canvas; sw = nw; sh = nh;
+  }
+  const cx = ctx2d(tw, th, true);
+  cx.drawImage(src, 0, 0, sw, sh, 0, 0, tw, th);
+  if (src.close) src.close();
+  return cx.getImageData(0, 0, tw, th);
 }
 
 /* Flatten alpha onto a solid colour — JPEG has no alpha channel. */
@@ -1118,8 +1184,64 @@ function withTimeout(promise, ms, label){
   ]);
 }
 
+/* ── preflight ──────────────────────────────────────────────────────────────
+   Everything below is feature detection, not user-agent sniffing. A browser
+   that grows the capability starts working without a code change, and a
+   Chromium build with a policy restriction is caught correctly instead of
+   being waved through because its UA string looks right. */
+function preflight(){
+  const bad = [];
+  if (location.protocol === 'file:') bad.push({
+    fatal: true, kind: 'file',
+    msg: 'Opened straight from disk (file://). Chrome refuses to start Web Workers ' +
+         'and refuses cross-origin module loads from a file:// page, so the codecs ' +
+         'can never load this way. Serve the folder over HTTP instead:'
+  });
+  if (typeof Worker === 'undefined')            bad.push({ fatal: false, msg: 'Web Workers unavailable — encoding will block the UI.' });
+  if (typeof OffscreenCanvas === 'undefined')   bad.push({ fatal: true, msg: 'OffscreenCanvas unsupported. Chrome 69+, Edge 79+ or Safari 16.4+ required.' });
+  if (typeof createImageBitmap === 'undefined') bad.push({ fatal: true, msg: 'createImageBitmap unsupported — images cannot be decoded.' });
+  if (typeof WebAssembly === 'undefined')       bad.push({ fatal: true, msg: 'WebAssembly unsupported — no encoder can run.' });
+  if (typeof ImageData === 'undefined')         bad.push({ fatal: true, msg: 'ImageData unsupported.' });
+  return bad;
+}
+
+function showPreflight(bad){
+  const fatal = bad.filter(b => b.fatal);
+  el.health.className = 'health state-fail';
+  el.health.classList.remove('hide');
+  el.healthActions.replaceChildren();
+  el.healthTxt.replaceChildren(document.createTextNode(bad.map(b => b.msg).join('  ')));
+
+  if (bad.some(b => b.kind === 'file')){
+    const box = mk('div', 'howto');
+    box.append(
+      mk('div', 'howto-step', 'In this folder, run either of these, then open the printed URL:'),
+      mk('code', 'howto-cmd', 'npx serve .'),
+      mk('code', 'howto-cmd', 'python3 -m http.server 8080'),
+      mk('div', 'howto-step', 'Any static host works too — GitHub Pages, or your internal server.')
+    );
+    el.healthTxt.appendChild(box);
+    /* One click to copy, because nobody wants to retype this. */
+    box.querySelectorAll('.howto-cmd').forEach(c => {
+      c.title = 'Click to copy';
+      c.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(c.textContent); c.dataset.copied = '1';
+              setTimeout(() => delete c.dataset.copied, 1400); } catch (err){}
+      });
+    });
+  }
+  return fatal.length > 0;
+}
+
 /* ── codec health ───────────────────────────────────────────────────────── */
+let softWarnings = '';
 async function checkCodecs(){
+  const bad = preflight();
+  if (bad.some(b => b.fatal)){ showPreflight(bad); return; }  /* do not chase codecs */
+  /* Non-fatal findings are appended to the success line rather than shown on
+     their own, otherwise the loading state would immediately overwrite them. */
+  softWarnings = bad.map(b => b.msg).join('  ');
+
   el.health.className = 'health state-loading';
   el.healthTxt.textContent = 'Loading WASM codecs from ' + el.setCdn.value.replace(/^https?:\/\//, '') + '…';
   el.healthActions.replaceChildren();
@@ -1171,10 +1293,12 @@ async function checkCodecs(){
     addHealthBtn('↻ Retry', checkCodecs);
     return;
   }
-  el.health.className = 'health state-ok';
+  el.health.className = 'health state-' + (softWarnings ? 'fail' : 'ok');
   el.healthTxt.textContent = 'Codecs ready: ' + okList.join(' · ') +
-    (workers.length ? '  ·  ' + workers.length + ' worker' + (workers.length > 1 ? 's' : '') : '  ·  main thread');
-  setTimeout(() => { if (el.health.classList.contains('state-ok')) el.health.classList.add('hide'); }, 3200);
+    (workers.length ? '  ·  ' + workers.length + ' worker' + (workers.length > 1 ? 's' : '') : '  ·  main thread') +
+    (softWarnings ? '  ·  ' + softWarnings : '');
+  if (!softWarnings)
+    setTimeout(() => { if (el.health.classList.contains('state-ok')) el.health.classList.add('hide'); }, 3200);
 }
 function addHealthBtn(label, fn){
   const b = document.createElement('button');
@@ -1785,6 +1909,57 @@ document.addEventListener('paste', e => {
 });
 
 window.addEventListener('beforeunload', () => items.forEach(i => URL.revokeObjectURL(i.thumbUrl)));
+
+/* ── Hub shell chrome ───────────────────────────────────────────────────────
+   The Hub renders a fixed-position "← HUB" button in the PARENT document that
+   paints on top of this iframe. Nothing in this document's CSS can detect it,
+   so the top bar has to reserve room for it — and a hardcoded number silently
+   rots the moment that button is restyled.
+
+   Since the iframe is same-origin, measure the real element instead. Falls back
+   to the CSS constant if the read is blocked, and collapses the reservation
+   entirely when this page is opened on its own rather than inside the Hub. */
+function findHubButton(){
+  try {
+    if (window.parent === window || !window.parent.document) return undefined;
+    return window.parent.document.querySelector('.tool-back') || null;
+  } catch (err){
+    return null;    /* cross-origin — cannot measure, keep the CSS fallback */
+  }
+}
+
+function syncHubChrome(){
+  const btn = findHubButton();
+
+  /* undefined = not framed at all → no Hub chrome to dodge. */
+  if (btn === undefined){
+    document.documentElement.style.setProperty('--tb-pad-l', '16px');
+    return;
+  }
+  /* null = framed but unreadable/absent → leave the CSS fallback in place. */
+  if (!btn) return;
+
+  const r = btn.getBoundingClientRect();
+  /* Zero width means it is still display:none (the Hub adds .visible after the
+     iframe loads). Keep the fallback and re-measure when that class lands. */
+  if (r.width > 0) {
+    document.documentElement.style.setProperty('--tb-pad-l', Math.ceil(r.right + 14) + 'px');
+  }
+}
+
+(function watchHubChrome(){
+  const btn = findHubButton();
+  syncHubChrome();
+  if (!btn) return;
+  try {
+    new MutationObserver(syncHubChrome).observe(btn, { attributes: true, attributeFilter: ['class', 'style'] });
+    new ResizeObserver(syncHubChrome).observe(btn);
+  } catch (err){
+    /* Observers unavailable — a couple of retries cover the reveal animation. */
+    [250, 700, 1500].forEach(t => setTimeout(syncHubChrome, t));
+  }
+  window.addEventListener('resize', syncHubChrome);
+})();
 
 /* ── boot ───────────────────────────────────────────────────────────────── */
 el.gq.value = String(globalQuality);
