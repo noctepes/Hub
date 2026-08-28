@@ -246,10 +246,6 @@
       border-color: var(--border-light)
     }
 
-    .project-bar .project-field-slim {
-      flex: 0 0 132px
-    }
-
     .project-field label {
       font-size: 10px;
       font-weight: 600;
@@ -300,7 +296,7 @@
 
     .config-sliders {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px
     }
 
@@ -1061,7 +1057,7 @@
 
     @media(max-width:1024px) {
       .config-sliders {
-        grid-template-columns: repeat(2, 1fr)
+        grid-template-columns: repeat(3, 1fr)
       }
     }
 
@@ -1115,7 +1111,7 @@
       }
 
       .config-sliders {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 8px
       }
 
@@ -1395,7 +1391,7 @@
 
     @media(max-width:400px) {
       .config-sliders {
-        grid-template-columns: repeat(2, 1fr)
+        grid-template-columns: repeat(3, 1fr)
       }
 
       .m-card-grid {
@@ -1597,10 +1593,6 @@
         <label id="lblClient">Khách hàng</label>
         <input id="clientName" class="project-input" placeholder="Tên khách hàng..." oninput="saveState()">
       </div>
-      <div class="project-field project-field-slim">
-        <label id="lblHoursPerDay">Giờ / ngày</label>
-        <input id="hoursPerDay" class="project-input" type="number" min="1" max="24" step="0.5" value="8" oninput="updateHoursPerDay()">
-      </div>
     </div>
 
     <!-- Presets + Sliders -->
@@ -1608,11 +1600,11 @@
       <div class="config-card config-presets">
         <label id="lblPresets">Presets nhanh</label>
         <div class="preset-chips">
-          <button id="chipBanner" class="preset-chip" onclick="applyPreset('banner', event)">HTML5 Banner</button>
-          <button id="chipRichMedia" class="preset-chip" onclick="applyPreset('richmedia', event)">Rich Media</button>
-          <button id="chipEdm" class="preset-chip" onclick="applyPreset('edm', event)">EDM / Email</button>
-          <button id="chipLanding" class="preset-chip" onclick="applyPreset('landing', event)">Landing Page</button>
-          <button id="chipCustom" class="preset-chip" onclick="applyPreset('custom', event)">Custom</button>
+          <button id="chipBanner" class="preset-chip" onclick="applyPreset('banner')">HTML5 Banner</button>
+          <button id="chipRichMedia" class="preset-chip" onclick="applyPreset('richmedia')">Rich Media</button>
+          <button id="chipEdm" class="preset-chip" onclick="applyPreset('edm')">EDM / Email</button>
+          <button id="chipLanding" class="preset-chip" onclick="applyPreset('landing')">Landing Page</button>
+          <button id="chipCustom" class="preset-chip" onclick="applyPreset('custom')">Custom</button>
         </div>
       </div>
       <div class="config-sliders">
@@ -1631,17 +1623,10 @@
           </div>
         </div>
         <div class="config-card config-slim">
-          <label id="lblMinCorrSlider">Phút sửa / Master</label>
+          <label id="lblMinCorrSlider">Phút / Sửa</label>
           <div class="value-row">
-            <input type="range" id="corrMinRange" min="0" max="60" value="0" step="1" oninput="updateCorrMin()">
+            <input type="range" id="corrMinRange" min="0" max="60" value="0" step="5" oninput="updateCorrMin()">
             <div class="value-display" id="corrMinDisplay">0<span class="value-unit"> min</span></div>
-          </div>
-        </div>
-        <div class="config-card config-slim">
-          <label id="lblMinCorrVerSlider">Phút sửa / Version</label>
-          <div class="value-row">
-            <input type="range" id="corrMinVerRange" min="0" max="30" value="0" step="1" oninput="updateCorrMinVer()">
-            <div class="value-display" id="corrMinVerDisplay">0<span class="value-unit"> min</span></div>
           </div>
         </div>
       </div>
@@ -1717,10 +1702,10 @@
       <div class="ss-item red">
         <div class="ss-label" id="ssCorrLabel">Sửa đổi</div>
         <div class="ss-value" id="sumCorr">0.00h</div>
-        <div class="ss-sub" id="sumCorrInfo">0 file · 0 vòng</div>
+        <div class="ss-sub" id="sumCorrInfo">0 tasks × 0 vòng × 0 phút</div>
       </div>
       <div class="ss-item purple">
-        <div class="ss-label" id="ssTasksLabel">Tổng đầu ra</div>
+        <div class="ss-label" id="ssTasksLabel">Tổng Tasks</div>
         <div class="ss-value" id="sumTasks">0</div>
         <div class="ss-sub" id="sumTasksInfo">0 master + 0 version</div>
       </div>
@@ -1770,9 +1755,7 @@
         lblPresets: 'Presets nhanh',
         chipBanner: 'HTML5 Banner', chipRichMedia: 'Rich Media',
         chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipCustom: 'Custom',
-        lblBuffer: 'Buffer', lblCorrRounds: 'Số vòng sửa',
-        lblMinCorr: 'Phút sửa / Master', lblMinCorrVer: 'Phút sửa / Version',
-        lblHoursPerDay: 'Giờ / ngày',
+        lblBuffer: 'Buffer', lblCorrRounds: 'Số vòng sửa', lblMinCorr: 'Phút / Sửa',
         lblConvTitle: '⇄ Quy đổi Giờ ⇄ Phút',
         convHourUnit: 'giờ', convMinUnit: 'phút',
         convOutEmpty: 'Nhập giờ hoặc phút để quy đổi',
@@ -1785,20 +1768,19 @@
         addTask: '+ Thêm Task',
         taskPlaceholder: 'VD: Banner 300x250', notesPlaceholder: 'Ghi chú / phạm vi...',
         lblBaseTime: 'Thời gian gốc', lblBuffer2: 'Buffer',
-        lblCorrections: 'Sửa đổi', lblTotalTasks: 'Tổng đầu ra', lblTotalEst: 'Tổng Ước tính',
+        lblCorrections: 'Sửa đổi', lblTotalTasks: 'Tổng Tasks', lblTotalEst: 'Tổng Ước tính',
         lblBreakdown: '📊 Phân bổ thời gian',
         lblLegMaster: 'Master', lblLegVersion: 'Versioning',
         lblLegBuffer: 'Buffer', lblLegCorr: 'Sửa đổi',
         footer: 'Task Estimation Calculator — Built for speed ⚡',
         copyToast: '✓ Đã sao chép', resetConfirm: 'Đặt lại tất cả?',
-        bufferPct: (p) => `${p}% (gốc + sửa)`,
-        corrInfo: (f, r, w) => `${f} file · ${r} vòng · hệ số ${w}`,
+        bufferPct: (p) => `${p}% so với gốc`,
+        corrInfo: (t, r, m) => `${t} tasks × ${r} vòng × ${m} phút`,
         tasksInfo: (m, v) => `${m} master + ${v} version`,
-        totalDay: (d, hpd) => `${d} ngày (${hpd}h/ngày)`,
+        totalDay: (d) => `${d} ngày (8h/ngày)`,
         baseDay: (d) => `${d} ngày`,
-        subMin: (m) => `${m} phút`,
         convResult: (h, m, hm) => `${h} giờ  =  ${m} phút  ·  ${hm}`,
-        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', qa: 'QA / Test', traffic: 'Trafficking', pm: 'Briefing / PM', custom: 'Custom' },
+        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', custom: 'Custom' },
         mCardMasterQty: 'Master Qty', mCardMinMaster: 'Phút/Master',
         mCardVersionQty: 'Version Qty', mCardMinVersion: 'Phút/Ver',
         mCardMaster: 'Master', mCardVersion: 'Version', mCardSubtotal: 'Tổng phụ',
@@ -1813,9 +1795,7 @@
         lblPresets: 'Quick Presets',
         chipBanner: 'HTML5 Banner', chipRichMedia: 'Rich Media',
         chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipCustom: 'Custom',
-        lblBuffer: 'Buffer', lblCorrRounds: 'Corr. Rounds',
-        lblMinCorr: 'Min / Corr. Master', lblMinCorrVer: 'Min / Corr. Version',
-        lblHoursPerDay: 'Hours / day',
+        lblBuffer: 'Buffer', lblCorrRounds: 'Corr. Rounds', lblMinCorr: 'Min / Corr.',
         lblConvTitle: '⇄ Hours ⇄ Minutes',
         convHourUnit: 'hrs', convMinUnit: 'min',
         convOutEmpty: 'Enter hours or minutes to convert',
@@ -1828,20 +1808,19 @@
         addTask: '+ Add Task',
         taskPlaceholder: 'e.g. Banner 300x250', notesPlaceholder: 'Notes / scope...',
         lblBaseTime: 'Base Time', lblBuffer2: 'Buffer',
-        lblCorrections: 'Corrections', lblTotalTasks: 'Total Output', lblTotalEst: 'Total Estimate',
+        lblCorrections: 'Corrections', lblTotalTasks: 'Total Tasks', lblTotalEst: 'Total Estimate',
         lblBreakdown: '📊 Time Breakdown',
         lblLegMaster: 'Master', lblLegVersion: 'Versioning',
         lblLegBuffer: 'Buffer', lblLegCorr: 'Corrections',
         footer: 'Task Estimation Calculator — Built for speed ⚡',
         copyToast: '✓ Copied to clipboard', resetConfirm: 'Reset everything?',
-        bufferPct: (p) => `${p}% (base + corr.)`,
-        corrInfo: (f, r, w) => `${f} files · ${r} rnd · factor ${w}`,
+        bufferPct: (p) => `${p}% of base`,
+        corrInfo: (t, r, m) => `${t} tasks × ${r} rnd × ${m} min`,
         tasksInfo: (m, v) => `${m} master + ${v} version`,
-        totalDay: (d, hpd) => `${d} days (${hpd}h/day)`,
+        totalDay: (d) => `${d} days (8h/day)`,
         baseDay: (d) => `${d} days`,
-        subMin: (m) => `${m} min`,
         convResult: (h, m, hm) => `${h.replace(',', '.')} hrs  =  ${m} min  ·  ${hm}`,
-        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', qa: 'QA / Test', traffic: 'Trafficking', pm: 'Briefing / PM', custom: 'Custom' },
+        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', custom: 'Custom' },
         mCardMasterQty: 'Master Qty', mCardMinMaster: 'Min/Master',
         mCardVersionQty: 'Version Qty', mCardMinVersion: 'Min/Ver',
         mCardMaster: 'Master', mCardVersion: 'Version', mCardSubtotal: 'Subtotal',
@@ -1900,8 +1879,6 @@
       set('lblBufferSlider', st.lblBuffer);
       set('lblCorrRoundsSlider', st.lblCorrRounds);
       set('lblMinCorrSlider', st.lblMinCorr);
-      set('lblMinCorrVerSlider', st.lblMinCorrVer);
-      set('lblHoursPerDay', st.lblHoursPerDay);
 
       // Converter
       set('lblConvTitle', st.lblConvTitle);
@@ -1950,27 +1927,12 @@
 
     /* ── Presets ───────────────────────────────────────────────────── */
     const PRESETS = {
-      banner:    { minMaster: 90,  minVersion: 35,  corrMaster: 15, corrVersion: 4 },
-      richmedia: { minMaster: 180, minVersion: 60,  corrMaster: 30, corrVersion: 8 },
-      edm:       { minMaster: 120, minVersion: 30,  corrMaster: 20, corrVersion: 5 },
-      landing:   { minMaster: 480, minVersion: 120, corrMaster: 60, corrVersion: 15 },
-      qa:        { minMaster: 0,   minVersion: 3,   corrMaster: 0,  corrVersion: 2 },
-      traffic:   { minMaster: 15,  minVersion: 5,   corrMaster: 0,  corrVersion: 2 },
-      pm:        { minMaster: 60,  minVersion: 0,   corrMaster: 0,  corrVersion: 0 },
-      custom:    { minMaster: 0,   minVersion: 0,   corrMaster: 15, corrVersion: 4 }
+      banner: { minMaster: 90, minVersion: 35, corrMin: 15 },
+      richmedia: { minMaster: 180, minVersion: 60, corrMin: 30 },
+      edm: { minMaster: 120, minVersion: 30, corrMin: 20 },
+      landing: { minMaster: 480, minVersion: 120, corrMin: 45 },
+      custom: { minMaster: 0, minVersion: 0, corrMin: 15 }
     };
-
-    /* ── Mô hình sửa đổi ────────────────────────────────────────────
-       Sửa đổi = w(R) × (SL master × phút/master + SL version × phút/version)
-       w(R) = 1 + d + d² + …  — vòng 1 sửa concept, vòng 5 sửa 2px padding.
-       CORR_DECAY = 1.0 → mọi vòng tốn như nhau (tuyến tính).
-    ─────────────────────────────────────────────────────────────── */
-    const CORR_DECAY = 0.7;
-    function corrWeight(rounds) {
-      let w = 0;
-      for (let n = 0; n < rounds; n++) w += Math.pow(CORR_DECAY, n);
-      return w;
-    }
 
     let tasks = [];
     let taskCounter = 0;
@@ -1980,17 +1942,12 @@
     const STORAGE_KEY = 'taskEstimation_v1';
 
     /* ── LocalStorage ──────────────────────────────────────────────── */
-    let _saveTimer = null;
-    function saveState() { clearTimeout(_saveTimer); _saveTimer = setTimeout(saveStateNow, 250); }
-
-    function saveStateNow() {
+    function saveState() {
       const state = {
         tasks, taskCounter, currentPreset,
         buffer: document.getElementById('bufferRange').value,
         corrRounds: document.getElementById('correctionRange').value,
         corrMin: document.getElementById('corrMinRange').value,
-        corrMinVer: document.getElementById('corrMinVerRange').value,
-        hoursPerDay: document.getElementById('hoursPerDay').value,
         projectName: document.getElementById('projectName').value,
         clientName: document.getElementById('clientName').value,
         lang: currentLang
@@ -2041,11 +1998,9 @@
         if (st.projectName) document.getElementById('projectName').value = st.projectName;
         if (st.clientName) document.getElementById('clientName').value = st.clientName;
 
-        document.getElementById('hoursPerDay').value = st.hoursPerDay ?? 8;
         document.getElementById('bufferRange').value = st.buffer ?? 0; updateBuffer(true);
         document.getElementById('correctionRange').value = st.corrRounds ?? 0; updateCorrection(true);
         document.getElementById('corrMinRange').value = st.corrMin ?? 0; updateCorrMin(true);
-        document.getElementById('corrMinVerRange').value = st.corrMinVer ?? 0; updateCorrMinVer(true);
 
         applyLang();
         if (tasks.length === 0) addTask();
@@ -2082,15 +2037,14 @@
       const t = tasks.find(t => t.id === id);
       if (!t) return;
       if (['masterQty', 'minMaster', 'versionQty', 'minVersion'].includes(field)) {
-        t[field] = Math.max(0, parseFloat(value) || 0);   // chặn số âm gõ tay
+        t[field] = parseFloat(value) || 0;
       } else if (field === 'type') {
-        const oldP = PRESETS[t.type], newP = PRESETS[value];
-        // Chỉ ghi đè phút khi bạn chưa tự sửa (đang đúng bằng preset cũ, hoặc = 0).
-        const untouched = !oldP || ((t.minMaster === oldP.minMaster || t.minMaster === 0) &&
-                                    (t.minVersion === oldP.minVersion || t.minVersion === 0));
         t.type = value;
-        if (newP && untouched) { t.minMaster = newP.minMaster; t.minVersion = newP.minVersion; }
-        render();
+        if (PRESETS[value] && value !== 'custom') {
+          t.minMaster = PRESETS[value].minMaster;
+          t.minVersion = PRESETS[value].minVersion;
+        }
+        render(); // type changes min/master inputs → needs full re-render
         return;
       } else {
         t[field] = value;
@@ -2120,29 +2074,14 @@
       recalc();
     }
 
-    const CHIP_ID = { banner: 'chipBanner', richmedia: 'chipRichMedia', edm: 'chipEdm', landing: 'chipLanding', custom: 'chipCustom' };
-
-    function applyPreset(key, ev) {
-      const p = PRESETS[key];
-      if (!p) return;
+    function applyPreset(key) {
       currentPreset = key;
       document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-      const btn = (ev && ev.currentTarget) || document.getElementById(CHIP_ID[key]);
-      if (btn && btn.classList) btn.classList.add('active');
-
-      document.getElementById('corrMinRange').value = p.corrMaster;
-      document.getElementById('corrMinVerRange').value = p.corrVersion;
-      updateCorrMin(true);
-      updateCorrMinVer(true);
-
-      // Áp preset lên các dòng bạn CHƯA tự gõ số. Số đã tự nhập thì giữ nguyên.
-      tasks.forEach(t => {
-        const old = PRESETS[t.type];
-        const untouched = !old || ((t.minMaster === old.minMaster || t.minMaster === 0) &&
-                                   (t.minVersion === old.minVersion || t.minVersion === 0));
-        if (untouched) { t.type = key; t.minMaster = p.minMaster; t.minVersion = p.minVersion; }
-      });
-      render();
+      event.target.classList.add('active');
+      if (PRESETS[key]) {
+        document.getElementById('corrMinRange').value = PRESETS[key].corrMin;
+        updateCorrMin();
+      }
     }
 
     /* ── Sliders ───────────────────────────────────────────────────── */
@@ -2160,16 +2099,6 @@
       const v = document.getElementById('corrMinRange').value;
       document.getElementById('corrMinDisplay').innerHTML = v + '<span class="value-unit"> min</span>';
       recalc(skipSave);
-    }
-    function updateCorrMinVer(skipSave) {
-      const v = document.getElementById('corrMinVerRange').value;
-      document.getElementById('corrMinVerDisplay').innerHTML = v + '<span class="value-unit"> min</span>';
-      recalc(skipSave);
-    }
-    function updateHoursPerDay(skipSave) { recalc(skipSave); }
-    function getHoursPerDay() {
-      const v = parseFloat(document.getElementById('hoursPerDay').value);
-      return (v > 0 && v <= 24) ? v : 8;
     }
 
     /* ── Render ────────────────────────────────────────────────────── */
@@ -2195,10 +2124,10 @@
           <td class="row-num">${i + 1}</td>
           <td><input class="t-input task-name" value="${esc(t.name)}" placeholder="${esc(st.taskPlaceholder)}" onchange="updateField(${t.id},'name',this.value)"></td>
           <td><select class="t-select" onchange="updateField(${t.id},'type',this.value)">${presetOptions}</select></td>
-          <td><input class="t-input num" type="number" min="0" value="${t.masterQty}"  oninput="updateField(${t.id},'masterQty',this.value)"  onkeydown="arrowNum(event,${t.id},'masterQty')"></td>
-          <td><input class="t-input num" type="number" min="0" value="${t.minMaster}"  oninput="updateField(${t.id},'minMaster',this.value)"  onkeydown="arrowNum(event,${t.id},'minMaster')"></td>
-          <td><input class="t-input num" type="number" min="0" value="${t.versionQty}" oninput="updateField(${t.id},'versionQty',this.value)" onkeydown="arrowNum(event,${t.id},'versionQty')"></td>
-          <td><input class="t-input num" type="number" min="0" value="${t.minVersion}" oninput="updateField(${t.id},'minVersion',this.value)" onkeydown="arrowNum(event,${t.id},'minVersion')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.masterQty}"  onchange="updateField(${t.id},'masterQty',this.value)"  onkeydown="arrowNum(event,${t.id},'masterQty')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.minMaster}"  onchange="updateField(${t.id},'minMaster',this.value)"  onkeydown="arrowNum(event,${t.id},'minMaster')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.versionQty}" onchange="updateField(${t.id},'versionQty',this.value)" onkeydown="arrowNum(event,${t.id},'versionQty')"></td>
+          <td><input class="t-input num" type="number" min="0" value="${t.minVersion}" onchange="updateField(${t.id},'minVersion',this.value)" onkeydown="arrowNum(event,${t.id},'minVersion')"></td>
           <td class="td-notes"><input class="t-input notes" value="${esc(t.notes || '')}" placeholder="${esc(st.notesPlaceholder)}" onchange="updateField(${t.id},'notes',this.value)"></td>
           <td class="computed">${mh.toFixed(2)}<span class="cm">${Math.round(mh * 60)} min</span></td>
           <td class="computed">${vh.toFixed(2)}<span class="cm">${Math.round(vh * 60)} min</span></td>
@@ -2218,10 +2147,10 @@
             <button class="m-delete" onclick="removeTask(${t.id})">✕</button>
           </div>
           <div class="m-card-grid">
-            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMasterQty}</span><input type="number" inputmode="numeric" min="0" value="${t.masterQty}"  oninput="updateField(${t.id},'masterQty',this.value)"  onkeydown="arrowNum(event,${t.id},'masterQty')"  onfocus="this.select()"></div>
-            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMinMaster}</span><input type="number" inputmode="numeric" min="0" value="${t.minMaster}"  oninput="updateField(${t.id},'minMaster',this.value)"  onkeydown="arrowNum(event,${t.id},'minMaster')"  onfocus="this.select()"></div>
-            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardVersionQty}</span><input type="number" inputmode="numeric" min="0" value="${t.versionQty}" oninput="updateField(${t.id},'versionQty',this.value)" onkeydown="arrowNum(event,${t.id},'versionQty')" onfocus="this.select()"></div>
-            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMinVersion}</span><input type="number" inputmode="numeric" min="0" value="${t.minVersion}" oninput="updateField(${t.id},'minVersion',this.value)" onkeydown="arrowNum(event,${t.id},'minVersion')" onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMasterQty}</span><input type="number" inputmode="numeric" min="0" value="${t.masterQty}"  onchange="updateField(${t.id},'masterQty',this.value)"  onkeydown="arrowNum(event,${t.id},'masterQty')"  onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMinMaster}</span><input type="number" inputmode="numeric" min="0" value="${t.minMaster}"  onchange="updateField(${t.id},'minMaster',this.value)"  onkeydown="arrowNum(event,${t.id},'minMaster')"  onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardVersionQty}</span><input type="number" inputmode="numeric" min="0" value="${t.versionQty}" onchange="updateField(${t.id},'versionQty',this.value)" onkeydown="arrowNum(event,${t.id},'versionQty')" onfocus="this.select()"></div>
+            <div class="m-card-field" onclick="this.querySelector('input').focus();this.querySelector('input').select()"><span>${st.mCardMinVersion}</span><input type="number" inputmode="numeric" min="0" value="${t.minVersion}" onchange="updateField(${t.id},'minVersion',this.value)" onkeydown="arrowNum(event,${t.id},'minVersion')" onfocus="this.select()"></div>
           </div>
           <div class="m-card-result">
             <div class="m-res"><span>${st.mCardMaster}</span><b>${mh.toFixed(2)}h</b><span class="cm">${Math.round(mh * 60)} min</span></div>
@@ -2237,72 +2166,49 @@
       recalc(skipSave);
     }
 
-    /* ── computeTotals — NGUỒN SỰ THẬT DUY NHẤT ─────────────────────
-       Summary, Copy và Export Excel đều gọi hàm này. Không tính lại ở nơi khác.
-       Mọi phép cộng dồn làm bằng PHÚT rồi mới đổi ra giờ → không sai số làm tròn.
-    ─────────────────────────────────────────────────────────────── */
-    function computeTotals() {
-      const bufferPct   = parseFloat(document.getElementById('bufferRange').value) || 0;
-      const corrRounds  = parseInt(document.getElementById('correctionRange').value) || 0;
-      const corrMinM    = parseFloat(document.getElementById('corrMinRange').value) || 0;
-      const corrMinV    = parseFloat(document.getElementById('corrMinVerRange').value) || 0;
-      const hoursPerDay = getHoursPerDay();
-
-      let masterMin = 0, versionMin = 0, masterQty = 0, versionQty = 0;
-      tasks.forEach(t => {
-        masterMin  += t.masterQty  * t.minMaster;
-        versionMin += t.versionQty * t.minVersion;
-        masterQty  += t.masterQty;
-        versionQty += t.versionQty;
-      });
-
-      const w = corrWeight(corrRounds);
-      // Master và version có đơn giá sửa khác nhau: version chỉ propagate + QA + re-export,
-      // không dựng lại từ đầu. Đây là chỗ công thức cũ tính sai.
-      const corrM   = w * (masterQty * corrMinM + versionQty * corrMinV);
-      const baseM   = masterMin + versionMin;
-      // Buffer áp lên cả phần sửa — vòng sửa cũng có thể phát sinh ngoài dự tính.
-      const bufferM = (baseM + corrM) * bufferPct / 100;
-      const totalM  = baseM + corrM + bufferM;
-      const h = m => m / 60;
-
-      return {
-        bufferPct, corrRounds, corrMinM, corrMinV, hoursPerDay, w,
-        masterQty, versionQty, totalQty: masterQty + versionQty,
-        baseMin: baseM, corrMin: corrM, bufferMin: bufferM, totalMin: totalM,
-        masterH: h(masterMin), versionH: h(versionMin), baseH: h(baseM),
-        corrH: h(corrM), bufferH: h(bufferM), totalH: h(totalM),
-        baseDays: h(baseM) / hoursPerDay, totalDays: h(totalM) / hoursPerDay
-      };
-    }
-
     /* ── Recalc ────────────────────────────────────────────────────── */
     function recalc(skipSave) {
-      const st = s(), T = computeTotals();
-      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      const st = s();
+      const buffer = parseInt(document.getElementById('bufferRange').value) / 100;
+      const corrRounds = parseInt(document.getElementById('correctionRange').value);
+      const corrMin = parseInt(document.getElementById('corrMinRange').value);
 
-      set('sumBase',      T.baseH.toFixed(2) + 'h');
-      set('sumBaseDay',   st.baseDay(T.baseDays.toFixed(2)) + ' · ' + st.subMin(Math.round(T.baseMin)));
-      set('sumBuffer',    T.bufferH.toFixed(2) + 'h');
-      set('sumBufferPct', st.bufferPct(T.bufferPct.toFixed(0)));
-      set('sumCorr',      T.corrH.toFixed(2) + 'h');
-      set('sumCorrInfo',  st.corrInfo(T.totalQty, T.corrRounds, T.w.toFixed(2)));
-      set('sumTotal',     T.totalH.toFixed(2) + 'h');
-      set('sumTotalDay',  st.totalDay(T.totalDays.toFixed(2), T.hoursPerDay) + ' · ' + st.subMin(Math.round(T.totalMin)));
-      set('sumTasks',     T.totalQty);
-      set('sumTasksInfo', st.tasksInfo(T.masterQty, T.versionQty));
+      let totalMasterH = 0, totalVersionH = 0, totalMasterQty = 0, totalVersionQty = 0, totalTasks = 0;
+      tasks.forEach(t => {
+        totalMasterH += (t.masterQty * t.minMaster) / 60;
+        totalVersionH += (t.versionQty * t.minVersion) / 60;
+        totalMasterQty += t.masterQty;
+        totalVersionQty += t.versionQty;
+        totalTasks += t.masterQty + t.versionQty;
+      });
 
-      const barTotal = T.masterH + T.versionH + T.bufferH + T.corrH || 1;
-      const seg = (sel, v) => { const el = document.querySelector(sel); if (el) el.style.width = (v / barTotal * 100) + '%'; };
-      seg('.seg.master', T.masterH);
-      seg('.seg.version', T.versionH);
-      seg('.seg.buffer', T.bufferH);
-      seg('.seg.correction', T.corrH);
+      const baseH = totalMasterH + totalVersionH;
+      const bufferH = baseH * buffer;
+      const corrH = (totalTasks * corrRounds * corrMin) / 60;
+      const totalH = baseH + bufferH + corrH;
+      const totalDays = totalH / 8;
 
-      set('legMaster',  T.masterH.toFixed(2) + 'h');
-      set('legVersion', T.versionH.toFixed(2) + 'h');
-      set('legBuffer',  T.bufferH.toFixed(2) + 'h');
-      set('legCorr',    T.corrH.toFixed(2) + 'h');
+      document.getElementById('sumBase').textContent = baseH.toFixed(2) + 'h';
+      document.getElementById('sumBaseDay').textContent = st.baseDay((baseH / 8).toFixed(2));
+      document.getElementById('sumBuffer').textContent = bufferH.toFixed(2) + 'h';
+      document.getElementById('sumBufferPct').textContent = st.bufferPct((buffer * 100).toFixed(0));
+      document.getElementById('sumCorr').textContent = corrH.toFixed(2) + 'h';
+      document.getElementById('sumCorrInfo').textContent = st.corrInfo(totalTasks, corrRounds, corrMin);
+      document.getElementById('sumTotal').textContent = totalH.toFixed(2) + 'h';
+      document.getElementById('sumTotalDay').textContent = st.totalDay(totalDays.toFixed(2));
+      document.getElementById('sumTasks').textContent = totalTasks;
+      document.getElementById('sumTasksInfo').textContent = st.tasksInfo(totalMasterQty, totalVersionQty);
+
+      const barTotal = totalMasterH + totalVersionH + bufferH + corrH || 1;
+      document.querySelector('.seg.master').style.width = (totalMasterH / barTotal * 100) + '%';
+      document.querySelector('.seg.version').style.width = (totalVersionH / barTotal * 100) + '%';
+      document.querySelector('.seg.buffer').style.width = (bufferH / barTotal * 100) + '%';
+      document.querySelector('.seg.correction').style.width = (corrH / barTotal * 100) + '%';
+
+      document.getElementById('legMaster').textContent = totalMasterH.toFixed(2) + 'h';
+      document.getElementById('legVersion').textContent = totalVersionH.toFixed(2) + 'h';
+      document.getElementById('legBuffer').textContent = bufferH.toFixed(2) + 'h';
+      document.getElementById('legCorr').textContent = corrH.toFixed(2) + 'h';
 
       if (!skipSave) saveState();
     }
@@ -2349,9 +2255,7 @@
 
     /* ── Helpers ───────────────────────────────────────────────────── */
     function esc(str) {
-      return String(str ?? '')
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     }
 
     function resetAll() {
@@ -2362,36 +2266,38 @@
       document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
       document.getElementById('bufferRange').value = 0; updateBuffer();
       document.getElementById('correctionRange').value = 0; updateCorrection();
-      document.getElementById('corrMinRange').value = 0; updateCorrMin(true);
-      document.getElementById('corrMinVerRange').value = 0; updateCorrMinVer(true);
-      document.getElementById('hoursPerDay').value = 8;
+      document.getElementById('corrMinRange').value = 0; updateCorrMin();
       render();
     }
 
     /* ── Copy Summary ──────────────────────────────────────────────── */
     function copySummary() {
-      const T = computeTotals();
       const proj = document.getElementById('projectName').value;
       const client = document.getElementById('clientName').value;
+      const totalH = document.getElementById('sumTotal').textContent;
+      const totalD = document.getElementById('sumTotalDay').textContent;
+      const baseH = document.getElementById('sumBase').textContent;
+      const bufH = document.getElementById('sumBuffer').textContent;
+      const corrH = document.getElementById('sumCorr').textContent;
+      const buffer = document.getElementById('bufferRange').value;
+      const corrR = document.getElementById('correctionRange').value;
+      const corrM = document.getElementById('corrMinRange').value;
+      const tasks_ = document.getElementById('sumTasksInfo').textContent;
       const date = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-      const hm = m => `${String(Math.round(m)).padStart(5)} min  (${(m / 60).toFixed(2)}h)`;
 
       const lines = [];
       if (proj || client) lines.push(`📋 ${[proj, client].filter(Boolean).join(' — ')}`);
-      lines.push(`Date: ${date}   |   Output: ${T.masterQty} master + ${T.versionQty} version = ${T.totalQty} files`);
-      lines.push('─'.repeat(58));
-      lines.push(`Base            ${hm(T.baseMin)}`);
-      lines.push(`Corrections     ${hm(T.corrMin)}   ${T.corrRounds} rnd · ${T.corrMinM}min/master · ${T.corrMinV}min/version · factor ${T.w.toFixed(2)}`);
-      lines.push(`Buffer ${String(T.bufferPct).padStart(2)}%       ${hm(T.bufferMin)}   applied to base + corrections`);
-      lines.push('─'.repeat(58));
-      lines.push(`TOTAL           ${hm(T.totalMin)}  =  ${T.totalDays.toFixed(2)} days @ ${T.hoursPerDay}h/day`);
+      lines.push(`Date: ${date}  |  Tasks: ${tasks_}`);
+      lines.push(`Base: ${baseH}  |  Buffer (${buffer}%): ${bufH}  |  Corrections (${corrR}rnd × ${corrM}min): ${corrH}`);
+      lines.push('─'.repeat(46));
+      lines.push(`TOTAL: ${totalH}  (${totalD})`);
 
       if (tasks.length > 0) {
         lines.push('');
         tasks.forEach((t, i) => {
-          const subMin = (t.masterQty * t.minMaster) + (t.versionQty * t.minVersion);
+          const sub = ((t.masterQty * t.minMaster) + (t.versionQty * t.minVersion)) / 60;
           const note = t.notes ? `  — ${t.notes}` : '';
-          lines.push(`${i + 1}. ${t.name || '(unnamed)'}${note}  →  ${Math.round(subMin)} min (${(subMin / 60).toFixed(2)}h)`);
+          lines.push(`${i + 1}. ${t.name || '(unnamed)'}${note}  →  ${sub.toFixed(2)}h`);
         });
       }
 
@@ -2443,9 +2349,9 @@
         return;
       }
       try {
-      const T = computeTotals();
-      const buffer = T.bufferPct;
-      const corrRounds = T.corrRounds;
+      const buffer = parseInt(document.getElementById('bufferRange').value);
+      const corrRounds = parseInt(document.getElementById('correctionRange').value);
+      const corrMin = parseInt(document.getElementById('corrMinRange').value);
       const projName = document.getElementById('projectName').value || '';
       const clientName = document.getElementById('clientName').value || '';
 
@@ -2473,8 +2379,7 @@
         { width: 12 }, { width: 13 }, { width: 22 }, { width: 12 }, { width: 12 }, { width: 13 }
       ];
 
-      const fillRows = Math.max(40, 5 + tasks.length + 12);
-      for (let r = 1; r <= fillRows; r++) {
+      for (let r = 1; r <= 40; r++) {
         const row = ws.getRow(r);
         for (let c = 1; c <= 11; c++)
           row.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cBg } };
@@ -2494,7 +2399,7 @@
 
       ws.mergeCells('A2:K2');
       const cfgCell = ws.getCell('A2');
-      cfgCell.value = `Buffer: ${buffer}% (base + corrections)  |  Corrections: ${corrRounds} round(s) — ${T.corrMinM} min/master, ${T.corrMinV} min/version, decay factor ${T.w.toFixed(2)}  |  ${T.hoursPerDay}h/day  |  Date: ${new Date().toLocaleDateString()}`;
+      cfgCell.value = `Buffer: ${buffer}%  |  Corrections: ${corrRounds} round(s) × ${corrMin} min/task  |  Date: ${new Date().toLocaleDateString()}`;
       cfgCell.font = { name: 'Segoe UI', size: 9, italic: true, color: { argb: cDim } };
       cfgCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cSurface } };
       cfgCell.alignment = { vertical: 'middle' };
@@ -2514,11 +2419,13 @@
         cell.border = borders;
       });
 
+      let baseTotal = 0;
       const startRow = 5;
       tasks.forEach((t, i) => {
         const mh = +(t.masterQty * t.minMaster / 60).toFixed(2);
         const vh = +(t.versionQty * t.minVersion / 60).toFixed(2);
         const sub = +(mh + vh).toFixed(2);
+        baseTotal += sub;
         const r = ws.getRow(startRow + i);
         r.height = 24;
         const vals = [i + 1, t.name || '—', PRESETS[t.type] ? s().presets[t.type] || t.type : t.type,
@@ -2541,19 +2448,20 @@
       const sumStart = startRow + tasks.length + 1;
       ws.getRow(sumStart - 1).height = 8;
 
-      // Không cộng dồn số đã làm tròn từng dòng — lấy thẳng từ computeTotals.
-      const baseTotal = T.baseH, bufferH = T.bufferH, corrH = T.corrH, grand = T.totalH, totalQty = T.totalQty;
+      const bufferH = baseTotal * buffer / 100;
+      const totalQty = tasks.reduce((s, t) => s + t.masterQty + t.versionQty, 0);
+      const corrH = (totalQty * corrRounds * corrMin) / 60;
+      const grand = baseTotal + bufferH + corrH;
 
       const summaryData = [
-        { label: 'Base Total (h)', value: +baseTotal.toFixed(2), color: cAccent },
-        { label: `Corrections (${corrRounds} rnd · ${T.corrMinM}min/master · ${T.corrMinV}min/version · factor ${T.w.toFixed(2)})`, value: +corrH.toFixed(2), color: cRed },
-        { label: `Buffer (${buffer}% of base + corrections)`, value: +bufferH.toFixed(2), color: cOrange },
-        { label: 'GRAND TOTAL (h)', value: +grand.toFixed(2), color: cGreen, grand: true },
-        { label: 'Grand Total (minutes)', value: Math.round(T.totalMin), color: cPurple },
-        { label: `Total Days (${T.hoursPerDay}h/day)`, value: +T.totalDays.toFixed(2), color: cPurple },
+        { label: 'Base Total', value: +baseTotal.toFixed(2), color: cAccent },
+        { label: `Buffer (${buffer}%)`, value: +bufferH.toFixed(2), color: cOrange },
+        { label: `Corrections (${corrRounds}rnd × ${corrMin}min)`, value: +corrH.toFixed(2), color: cRed },
+        { label: 'GRAND TOTAL', value: +grand.toFixed(2), color: cGreen, grand: true },
+        { label: 'Total Days (8h/day)', value: +(grand / 8).toFixed(2), color: cPurple },
         {
-          label: 'Total Output (files)', value: totalQty, color: cDim,
-          info: `${T.masterQty} master + ${T.versionQty} version`
+          label: 'Total Task Units', value: totalQty, color: cDim,
+          info: `${tasks.reduce((s, t) => s + t.masterQty, 0)} master + ${tasks.reduce((s, t) => s + t.versionQty, 0)} version`
         },
       ];
 
@@ -2577,7 +2485,7 @@
         lc.border = borders;
         const vc = r.getCell(11);
         vc.value = item.value;
-        vc.numFmt = (item.label.includes('files') || item.label.includes('minutes')) ? '0' : '0.00';
+        vc.numFmt = item.label.includes('Units') ? '0' : '0.00';
         vc.font = item.grand ? fontGrand : { name: 'Consolas', size: 11, bold: true, color: { argb: item.color } };
         vc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: item.grand ? cSurface2 : cSurface } };
         vc.alignment = { vertical: 'middle', horizontal: 'center' };
