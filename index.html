@@ -349,6 +349,15 @@
       background: #282828;
       border: 1px solid rgba(229, 210, 184, 0.16);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      /* 12 tabs no longer fit the pill at common widths — scroll instead of
+         silently clipping the last tab under .liquid-glass's overflow:hidden. */
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-tab {
@@ -1229,6 +1238,9 @@
         <button class="nav-tab" data-tool="Image_Compressor" onclick="switchTab(this)">
           <span class="nav-tab-icon">🗜</span> Compress
         </button>
+        <button class="nav-tab" data-tool="Ink_Palette" onclick="switchTab(this)">
+          <span class="nav-tab-icon">🎨</span> Ink
+        </button>
       </div>
 
       <!-- Env badge — light-blue small badge -->
@@ -1343,6 +1355,12 @@
                 <div class="stat-card-label">Compress JPG, PNG, WebP in-browser — no app needed</div>
                 <span class="stat-card-tag">Offline</span>
               </div>
+              <div class="stat-card liquid-glass" onclick="openTool('Ink_Palette')" role="button">
+                <div class="liquid-glass-nest stat-card-icon">🎨</div>
+                <div class="stat-card-value">Ink</div>
+                <div class="stat-card-label">OKLCH palette bench — scales, contrast &amp; brand audit</div>
+                <span class="stat-card-tag">Offline</span>
+              </div>
             </div><!-- /hero-stats -->
           </div><!-- /stats-slider -->
 
@@ -1364,6 +1382,7 @@
             <span class="hero-footer-name" onclick="openTool('PDF_overview')">PDFOverview</span>
             <span class="hero-footer-name" onclick="openTool('Base64_converter')">Base64</span>
             <span class="hero-footer-name" onclick="openTool('Image_Compressor')">ImgPress</span>
+            <span class="hero-footer-name" onclick="openTool('Ink_Palette')">InkBench</span>
           </div>
         </div>
 
@@ -1569,6 +1588,24 @@
               <span class="card-arrow">→</span>
             </div>
 
+            <div class="tool-card liquid-glass on-view" onclick="openTool('Ink_Palette')"
+              style="transition-delay:1.30s; position:relative;">
+              <div class="card-top">
+                <div class="card-icon-wrap liquid-glass-nest">🎨</div>
+                <div class="card-tags">
+                  <span class="card-tag-pill liquid-glass">OKLCH</span>
+                  <span class="card-tag-pill liquid-glass">Contrast / APCA</span>
+                  <span class="card-tag-pill liquid-glass">Offline</span>
+                </div>
+              </div>
+              <div class="card-spacer"></div>
+              <div class="card-bottom">
+                <div class="card-name">Ink Palette<br />Bench</div>
+                <div class="card-desc">OKLCH color scales, contrast &amp; APCA checks, banner mockups, gradient lab and brand audit — all in one bench.</div>
+              </div>
+              <span class="card-arrow">→</span>
+            </div>
+
           </div><!-- /tools-grid -->
 
           <footer class="tools-footer">
@@ -1637,6 +1674,7 @@
       PDF_overview: { file: 'Overview_Qa_PDF_builder.html', label: 'PDF Overview' },
       Base64_converter: { file: 'base64-converter.html', label: 'Base64 Converter' },
       Image_Compressor: { file: 'Image_Compressor.html', label: 'Image Compressor' },
+      Ink_Palette: { file: 'ink-palette-bench.html', label: 'Ink Palette Bench' },
     };
 
     const frames = {};
