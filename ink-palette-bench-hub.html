@@ -550,6 +550,115 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border:0;border-radiu
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* ---- Convert panel ---- */
+.cv-wrap{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.cv-left{flex:0 0 300px;max-width:100%;position:sticky;top:0}
+.cv-right{flex:1 1 380px;min-width:0}
+.cv-in{width:100%;height:44px;padding:0 12px;border:1px solid var(--rule);border-radius:8px;
+  background:var(--surface);color:var(--ink);font-family:var(--mono);font-size:15px;
+  letter-spacing:.02em;outline:none}
+.cv-in:focus{border-color:var(--ink-2)}
+.cv-in.bad{border-color:#D64B2E}
+.cv-flags{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;min-height:18px}
+.cv-badge{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;background:var(--ink);color:var(--ink-contrast)}
+.cv-badge.warn{background:#D64B2E;color:#fff}
+.cv-hint{font-size:11px;color:var(--ink-3)}
+.cv-chip{margin-top:12px;height:76px;border-radius:10px;border:1px solid var(--rule);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:12px 13px;overflow:hidden}
+.cv-chip-name{font-size:13px;font-weight:600;line-height:1.25}
+.cv-chip-hex{font-family:var(--mono);font-size:11.5px;opacity:.72;margin-top:2px}
+.cv-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.cv-pick{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px}
+.cv-pick i{width:26px;height:26px;border-radius:5px;border:1px solid var(--rule);
+  cursor:pointer;flex:0 0 auto}
+.cv-row{display:flex;align-items:center;gap:9px;padding:6px 0;border-top:1px solid var(--rule-2)}
+.cv-row:first-of-type{border-top:0}
+.cv-k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);flex:0 0 62px}
+.cv-v{flex:1 1 auto;min-width:0;height:30px;padding:0 9px;border:1px solid transparent;
+  border-radius:6px;background:transparent;color:var(--ink);font-family:var(--mono);
+  font-size:12.5px;outline:none}
+.cv-v:hover{border-color:var(--rule-2)}
+.cv-v:focus{border-color:var(--ink-2);background:var(--surface)}
+.cv-row .sw-btn{opacity:.45;flex:0 0 auto}
+.cv-row:hover .sw-btn{opacity:.8}
+.cv-row .sw-btn:hover{opacity:1}
+.cv-caveat{font-size:11.5px;color:var(--ink-2);line-height:1.6;margin:-2px 0 12px;
+  padding-bottom:11px;border-bottom:1px solid var(--rule-2)}
+.cv-caveat b{color:var(--ink)}
+.cv-print{margin-top:20px;border:1px solid var(--rule);border-radius:10px;background:var(--card);
+  padding:13px 14px}
+.cv-print-head{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:10px}
+.cv-opt{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+.cv-opt .lbl{flex:0 0 88px}
+.cv-mini{height:25px;padding:0 8px;border:1px solid var(--rule);border-radius:5px;
+  background:transparent;color:var(--ink-2);font-family:var(--mono);font-size:10px;
+  letter-spacing:.04em;cursor:pointer}
+.cv-mini.on{background:var(--ink);color:var(--ink-contrast);border-color:var(--ink)}
+.cv-stat{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--rule-2);
+  font-size:12px;flex-wrap:wrap}
+.cv-stat b{font-family:var(--mono);font-weight:500;font-size:12px}
+.cv-vs{display:flex;gap:0;margin-top:10px;border-radius:7px;overflow:hidden;
+  border:1px solid var(--rule)}
+.cv-vs>div{flex:1 1 0;height:52px;display:flex;align-items:flex-end;padding:6px 8px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.06em}
+@media(max-width:820px){
+  .cv-left{position:static;flex:1 1 100%}
+  .cv-in{font-size:16px}
+  .cv-v{font-size:12px}
+  .cv-k{flex:0 0 52px;font-size:9px}
+}
+.note code{font-family:var(--mono);font-size:11px;padding:1px 4px;border-radius:3px;
+  background:var(--rule-2);color:var(--ink)}
+
+/* ---- visual picker ---- */
+.pk{display:flex;gap:9px;align-items:flex-start;margin-top:12px}
+.pk-plane,.pk-hue{position:relative;background:var(--paper);
+  box-shadow:inset 0 0 0 1px var(--rule);touch-action:none;flex:0 0 auto;
+  cursor:crosshair;outline:none;overflow:hidden}
+.pk-plane{border-radius:10px}
+/* Not a pill: at a 24px width a 12px radius eats the first and last few
+   degrees of hue, which are exactly the reds people reach for most. */
+.pk-hue{border-radius:8px}
+.pk-plane canvas,.pk-hue canvas{display:block;width:100%;height:100%;border-radius:inherit}
+.pk-plane:focus-visible,.pk-hue:focus-visible{box-shadow:inset 0 0 0 1px var(--rule),0 0 0 2px var(--ink-2)}
+/* The knob is two rings, not one: a light inner and a dark outer, so it stays
+   findable on white paper and on near-black alike without ever inventing a
+   colour of its own. */
+.pk-dot{position:absolute;width:15px;height:15px;border-radius:50%;pointer-events:none;
+  transform:translate(-50%,-50%);box-shadow:0 0 0 2px #fff,0 0 0 3.2px rgba(0,0,0,.55),
+  0 1px 4px rgba(0,0,0,.35);transition:width .12s,height .12s}
+.pk-plane.drag .pk-dot{width:19px;height:19px}
+.pk-hdot{position:absolute;left:-2px;right:-2px;height:4px;border-radius:3px;pointer-events:none;
+  transform:translateY(-50%);background:#fff;
+  box-shadow:0 0 0 1.4px rgba(0,0,0,.62),0 1px 3px rgba(0,0,0,.4)}
+.pk-read{display:flex;gap:11px;flex-wrap:wrap;margin-top:9px;font-family:var(--mono);
+  font-size:10px;letter-spacing:.05em;color:var(--ink-3)}
+.pk-read b{color:var(--ink-2);font-weight:500}
+.pk-modes{display:flex;gap:5px;margin-top:9px;align-items:center}
+.pk-modes .lbl{margin-right:2px}
+/* popover on a strip swatch */
+.pk-pop{position:fixed;z-index:90;background:var(--card);border:1px solid var(--rule);
+  border-radius:12px;padding:13px;box-shadow:0 18px 48px rgba(0,0,0,.5);width:max-content}
+.pk-pop .pk{margin-top:0}
+.pk-pop-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pk-pop-head .sw-btn{opacity:.7;margin-left:auto}
+.pk-pop-hex{width:100%;height:32px;margin-top:10px;padding:0 9px;border:1px solid var(--rule);
+  border-radius:7px;background:var(--surface);color:var(--ink);font-family:var(--mono);
+  font-size:13px;letter-spacing:.03em;outline:none}
+.pk-pop-hex:focus{border-color:var(--ink-2)}
+.pk-pop-acts{display:flex;gap:7px;margin-top:11px}
+.pk-pop-acts .btn{flex:1 1 auto;justify-content:center}
+.pk-scrim{position:fixed;inset:0;z-index:89}
+@media(max-width:560px){
+  .pk-pop{left:12px!important;right:12px!important;top:auto!important;
+    bottom:max(12px,env(safe-area-inset-bottom));width:auto}
+  .pk-pop .pk{justify-content:center}
+  .pk-pop-hex{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -622,6 +731,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border:0;border-radiu
   <button class="tab" role="tab" data-t="vision" aria-selected="false">Color vision</button>
   <button class="tab" role="tab" data-t="gradient" aria-selected="false">Gradient</button>
   <button class="tab" role="tab" data-t="audit" aria-selected="false">Brand audit</button>
+  <button class="tab" role="tab" data-t="convert" aria-selected="false">Convert</button>
   <button class="tab" role="tab" data-t="export" aria-selected="false">Export</button>
   </div>
 </div>
@@ -929,7 +1039,14 @@ function extractPalette(px,k){
    ============================================================ */
 const state={colors:[],locks:[],mode:'auto',vivid:.72,tab:'scale',
   metric:'apca',expFmt:'css',roles:0,torsion:1,
-  gFrom:0,gTo:1,gStops:7,gSpace:'oklab',gFmt:'gsap'};
+  gFrom:0,gTo:1,gStops:7,gSpace:'oklab',gFmt:'gsap',
+  /* Convert tab. cvColor is the single source of truth; cvRaw is only what was
+     typed, kept so the field survives a tab switch. */
+  cvRaw:'',cvColor:parseHex('#0B4F6C'),cvFmt:'HEX',cvNote:null,
+  cvPaper:'relative',cvPolicy:'minink',
+  /* Picker: 'fill' normalises the chroma axis so the square has no dead
+     space; 'true' puts real chroma on it and shows the sRGB gamut edge. */
+  pkMode:'fill'};
 let undoStack=[];
 
 const $=s=>document.querySelector(s);
@@ -978,7 +1095,9 @@ const ICON={
   x:'<svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
   grip:'<svg width="14" height="14" viewBox="0 0 14 14"><g fill="currentColor"><circle cx="5" cy="3" r="1.1"/><circle cx="9" cy="3" r="1.1"/><circle cx="5" cy="7" r="1.1"/><circle cx="9" cy="7" r="1.1"/><circle cx="5" cy="11" r="1.1"/><circle cx="9" cy="11" r="1.1"/></g></svg>',
   up:'<svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 8l3.5-3.5L10 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  down:'<svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 5l3.5 3.5L10 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  down:'<svg width="13" height="13" viewBox="0 0 13 13"><path d="M3 5l3.5 3.5L10 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pick:'<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.4" y="1.4" width="10.2" height="10.2" rx="2.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8.4" cy="4.6" r="1.7" fill="currentColor"/></svg>',
+  copy:'<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.2" y="1.2" width="7.6" height="7.6" rx="1.4" stroke="currentColor" stroke-width="1.3"/><path d="M4.2 11.8h6a1.6 1.6 0 0 0 1.6-1.6v-6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
 };
 
 function renderStrip(){
@@ -1016,7 +1135,13 @@ function renderStrip(){
     del.innerHTML=ICON.x;del.title='Remove this color';
     del.onclick=e=>{e.stopPropagation();if(state.colors.length<=2)return;
       snapshot();state.colors.splice(i,1);state.locks.splice(i,1);renderAll()};
-    top.append(up,down,lock,del);
+    /* Opens the plane on this slot. Sits before the lock so the two
+       destructive buttons stay together on the right. */
+    const pkb=el('button','sw-btn');
+    pkb.innerHTML=ICON.pick;
+    pkb.title='Pick this colour on a plane';
+    pkb.onclick=e=>{e.stopPropagation();openPickerPop(i,sw)};
+    top.append(up,down,pkb,lock,del);
 
     const grip=el('button','sw-drag');
     grip.innerHTML=ICON.grip;grip.title='Drag to reorder';
@@ -1040,13 +1165,17 @@ function renderStrip(){
 
     const input=el('input','sw-hex');
     input.value=hex.toUpperCase();
-    input.spellcheck=false;input.setAttribute('aria-label','Hex value');
+    input.spellcheck=false;input.setAttribute('aria-label','Colour value');
+    input.title='Any notation: hex, rgb(), hsl(), oklch(), lab(), cmyk(), a CSS name';
     input.addEventListener('focus',()=>input.select());
     input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();
       if(e.key==='Escape'){input.value=hex.toUpperCase();input.blur()}});
     input.addEventListener('change',()=>{
-      const p=parseHex(input.value);
-      if(p){snapshot();state.colors[i]=p;renderAll()}else input.value=hex.toUpperCase();
+      /* Not just hex any more. Whatever notation the value arrived in, it is
+         read here and stored as the tool's own OKLCH; the field goes back to
+         showing hex because that is what the strip is for. */
+      const p=parseAnyColor(input.value,state.cvPaper,state.cvPolicy);
+      if(p){snapshot();state.colors[i]=p.o;renderAll()}else input.value=hex.toUpperCase();
     });
 
     const nm=el('div','sw-name',nameOf(col));
@@ -1106,6 +1235,1170 @@ function copyHex(hex,host){
     const t=el('div','copied','copied '+hex.toUpperCase());
     host.appendChild(t);setTimeout(()=>t.remove(),950);
   }
+}
+
+/* ============================================================
+   6. MULTI-FORMAT COLOR I/O  +  COATED CMYK MODEL
+   ------------------------------------------------------------
+   Everything above this line is colorimetrically exact: sRGB,
+   OKLab and OKLCH are defined by matrices, so a round trip
+   loses nothing. CMYK is not like that. Four ink percentages
+   only name a color once you also name a printing condition,
+   and the same numbers on ISO Coated v2, SWOP and Japan Color
+   land visibly apart. So the CMYK here is a MODEL, stated
+   openly as one, not an ICC transform:
+
+     - 16 Neugebauer primaries. The 8 without black are the
+       ISO 12647-2 solid aim values for premium coated stock
+       (paper type 1/2), which is what FOGRA39 / ISO Coated v2
+       is built on. The 8 with black on top are INTERPOLATED,
+       not measured: lightness pulled toward the K solid and
+       residual chroma damped. They are plausible and monotone,
+       they are not a measurement.
+     - Demichel area fractions for dot overlap.
+     - One mid-tone TVI figure (14%) applied to all four
+       channels. A real profile carries a different curve per
+       channel.
+     - Yule-Nielsen n = 1.9, the usual offset litho range.
+
+   Expect this to sit within a few dE00 of a real coated
+   profile through the middle of the gamut and to drift further
+   in deep shadow and heavy four-colour blacks. It is a reading
+   instrument for design decisions. It is not a print proof and
+   nothing here should be signed off against it.
+   ============================================================ */
+
+/* ---- CIE XYZ, D65 <-> D50, Lab, LCH ---- */
+const M_RGB_XYZ65=[[0.4123907993,0.3575843394,0.1804807884],
+                   [0.2126390059,0.7151686788,0.0721923154],
+                   [0.0193308187,0.1191947798,0.9505321522]];
+const M_XYZ65_RGB=[[ 3.2409699419,-1.5373831776,-0.4986107603],
+                   [-0.9692436363, 1.8759675015, 0.0415550574],
+                   [ 0.0556300797,-0.2039769589, 1.0569715142]];
+const M_65_50=[[ 1.0479298208,0.0229467933,-0.0501922295],
+               [ 0.0296278157,0.9904344846,-0.0170738250],
+               [-0.0092430582,0.0150551449, 0.7518742900]];
+const M_50_65=[[ 0.9554734527,-0.0230985369,0.0632593087],
+               [-0.0283697070, 1.0099954580,0.0210413990],
+               [ 0.0123140017,-0.0205076964,1.3303659366]];
+const WP_D50=[0.9642956764,1.0,0.8251046025];
+const mv=(M,v)=>[M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2],
+                 M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2],
+                 M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]];
+
+const LAB_E=216/24389, LAB_K=24389/27;
+function xyz50ToLab(X,Y,Z){
+  const f=t=>t>LAB_E?Math.cbrt(t):(LAB_K*t+16)/116;
+  const fx=f(X/WP_D50[0]),fy=f(Y/WP_D50[1]),fz=f(Z/WP_D50[2]);
+  return[116*fy-16,500*(fx-fy),200*(fy-fz)];
+}
+function labToXyz50(L,a,b){
+  const fy=(L+16)/116,fx=fy+a/500,fz=fy-b/200;
+  const g=f=>{const c=f*f*f;return c>LAB_E?c:(116*f-16)/LAB_K};
+  return[g(fx)*WP_D50[0],(L>8?Math.pow(fy,3):L/LAB_K)*WP_D50[1],g(fz)*WP_D50[2]];
+}
+/* OKLCH <-> Lab(D50), routed through the linear sRGB primaries the engine
+   above already uses, so the two halves of the tool cannot disagree. */
+function oklchToLab50(o){
+  const[r,g,b]=oklchToLinearRGB(o);
+  return xyz50ToLab(...mv(M_65_50,mv(M_RGB_XYZ65,[r,g,b])));
+}
+function lab50ToOklch(L,a,b){
+  const[r,g,bb]=mv(M_XYZ65_RGB,mv(M_50_65,labToXyz50(L,a,b)));
+  return oklabToOklch(...linearToOklab(r,g,bb));
+}
+/* True if this Lab lands inside sRGB without clipping. */
+function labInSrgb(L,a,b){
+  const v=mv(M_XYZ65_RGB,mv(M_50_65,labToXyz50(L,a,b)));
+  return v.every(x=>x>=-0.0015&&x<=1.0015);
+}
+
+/* ---- CIEDE2000 ---- */
+function dE00(L1,a1,b1,L2,a2,b2){
+  const P25=6103515625; /* 25^7 */
+  const C1=Math.hypot(a1,b1),C2=Math.hypot(a2,b2),Cb=(C1+C2)/2,Cb7=Math.pow(Cb,7);
+  const G=0.5*(1-Math.sqrt(Cb7/(Cb7+P25)));
+  const a1p=(1+G)*a1,a2p=(1+G)*a2;
+  const C1p=Math.hypot(a1p,b1),C2p=Math.hypot(a2p,b2);
+  const R2D=180/Math.PI,D2R=Math.PI/180;
+  const h1p=C1p===0?0:mod360(Math.atan2(b1,a1p)*R2D);
+  const h2p=C2p===0?0:mod360(Math.atan2(b2,a2p)*R2D);
+  const dLp=L2-L1,dCp=C2p-C1p;
+  let dhp=0;
+  if(C1p*C2p!==0){dhp=h2p-h1p;if(dhp>180)dhp-=360;else if(dhp<-180)dhp+=360}
+  const dHp=2*Math.sqrt(C1p*C2p)*Math.sin(dhp*D2R/2);
+  const Lbp=(L1+L2)/2,Cbp=(C1p+C2p)/2;
+  let hbp;
+  if(C1p*C2p===0)hbp=h1p+h2p;
+  else{const d=Math.abs(h1p-h2p);
+    if(d<=180)hbp=(h1p+h2p)/2;
+    else if(h1p+h2p<360)hbp=(h1p+h2p+360)/2;
+    else hbp=(h1p+h2p-360)/2}
+  const T=1-0.17*Math.cos((hbp-30)*D2R)+0.24*Math.cos(2*hbp*D2R)
+           +0.32*Math.cos((3*hbp+6)*D2R)-0.20*Math.cos((4*hbp-63)*D2R);
+  const dTh=30*Math.exp(-Math.pow((hbp-275)/25,2));
+  const Cbp7=Math.pow(Cbp,7);
+  const Rc=2*Math.sqrt(Cbp7/(Cbp7+P25));
+  const Sl=1+(0.015*Math.pow(Lbp-50,2))/Math.sqrt(20+Math.pow(Lbp-50,2));
+  const Sc=1+0.045*Cbp,Sh=1+0.015*Cbp*T;
+  const Rt=-Math.sin(2*dTh*D2R)*Rc;
+  const tL=dLp/Sl,tC=dCp/Sc,tH=dHp/Sh;
+  return Math.sqrt(tL*tL+tC*tC+tH*tH+Rt*tC*tH);
+}
+
+/* ---- the coated press model ---- */
+/* Order matters: index bit 0=C, 1=M, 2=Y, 3=K. */
+const NG_LAB=[
+  [95.0,  0.0, -2.0],  /* paper            */
+  [55.0,-37.0,-50.0],  /* C                */
+  [48.0, 74.0, -3.0],  /* M                */
+  [24.0, 22.0,-46.0],  /* C+M              */
+  [89.0, -5.0, 93.0],  /* Y                */
+  [50.0,-65.0, 26.0],  /* C+Y              */
+  [47.0, 68.0, 48.0],  /* M+Y              */
+  [23.0,  0.0,  0.0],  /* C+M+Y            */
+  [16.0,  0.0,  0.0],  /* K                */
+  [13.0, -6.2, -8.4],  /* C+K   interpolated */
+  [14.0, 12.4, -0.5],  /* M+K   interpolated */
+  [11.0,  3.7, -7.7],  /* C+M+K interpolated */
+  [15.0, -0.8, 15.6],  /* Y+K   interpolated */
+  [12.0,-10.9,  4.4],  /* C+Y+K interpolated */
+  [12.5, 11.4,  8.0],  /* M+Y+K interpolated */
+  [ 8.0,  0.0,  0.0]   /* C+M+Y+K           */
+];
+const NG_XYZ=NG_LAB.map(([L,a,b])=>labToXyz50(L,a,b));
+const YN_N=1.9, TVI=0.14, INK_LIMIT=3.30;
+const _yn=Array.from({length:16},(_,i)=>NG_XYZ[i].map(v=>Math.pow(Math.max(v,1e-9),1/YN_N)));
+/* Mid-tone tone value increase. One curve, all four channels. */
+const dotArea=a=>{const x=clamp01(a);return clamp01(x+TVI*Math.sin(Math.PI*x))};
+
+/* cmyk in 0..1 -> XYZ D50. paperWhite:'relative' rescales so bare paper reads
+   as white, which is what a relative-colorimetric ICC conversion does and what
+   a designer sees on screen in Photoshop; 'absolute' leaves paper at L*95. */
+function cmykToXyz50(c,m,y,k,paperWhite){
+  const A=[dotArea(c),dotArea(m),dotArea(y),dotArea(k)];
+  let X=0,Y=0,Z=0;
+  for(let i=0;i<16;i++){
+    let w=1;
+    for(let ch=0;ch<4;ch++)w*=(i>>ch&1)?A[ch]:1-A[ch];
+    if(w<=0)continue;
+    X+=w*_yn[i][0];Y+=w*_yn[i][1];Z+=w*_yn[i][2];
+  }
+  let out=[Math.pow(X,YN_N),Math.pow(Y,YN_N),Math.pow(Z,YN_N)];
+  if(paperWhite!=='absolute'){
+    const P=NG_XYZ[0];
+    out=[out[0]/P[0]*WP_D50[0],out[1]/P[1]*WP_D50[1],out[2]/P[2]*WP_D50[2]];
+  }
+  return out;
+}
+const cmykToLab=(c,m,y,k,pw)=>xyz50ToLab(...cmykToXyz50(c,m,y,k,pw));
+function cmykToOklch(c,m,y,k,pw){
+  const[X,Y,Z]=cmykToXyz50(c,m,y,k,pw);
+  const[r,g,b]=mv(M_XYZ65_RGB,mv(M_50_65,[X,Y,Z]));
+  return oklabToOklch(...linearToOklab(r,g,b));
+}
+
+/* Separation. CMYK -> Lab is many-to-one: a target Lab has a whole family of
+   solutions and the choice among them is a POLICY, not a calculation, which is
+   exactly the thing every online converter hides from you. So the policy is
+   named and switchable:
+     minink   - least total ink that still hits the target. Neutrals come out
+                as almost pure K. This is maximum GCR.
+     balanced - K nearest the classic UCR estimate, which is roughly what a
+                stock ICC profile with medium black generation gives you.
+     nok      - K held at zero, CMY only. Useful when a printer asks for it.
+   Total ink is capped at 330%, hard, in every policy. A candidate that cannot
+   be printed is not a candidate. */
+const K_POLICY={minink:'Minimum ink (max GCR)',balanced:'Balanced (UCR-like)',nok:'No black (CMY only)'};
+function oklchToCmyk(o,pw,policy){
+  const[tL,ta,tb]=oklchToLab50(clampChroma(o));
+  return labToCmyk(tL,ta,tb,pw,policy);
+}
+function labToCmyk(tL,ta,tb,pw,policy){
+  policy=K_POLICY[policy]?policy:'minink';
+  const srgb=mv(M_XYZ65_RGB,mv(M_50_65,labToXyz50(tL,ta,tb))).map(x=>linearToSrgb(clamp01(x)));
+  const kUcr=clamp01(Math.min(1-srgb[0],1-srgb[1],1-srgb[2])*0.75);
+  const solveCMY=k0=>{
+    const k=clamp01(k0);
+    let v=[0.4,0.4,0.4];
+    if(k<0.999)v=srgb.map(x=>clamp01((1-x-k)/(1-k)));
+    const F=q=>{const L=cmykToLab(q[0],q[1],q[2],k,pw);return[L[0]-tL,L[1]-ta,L[2]-tb]};
+    for(let it=0;it<14;it++){
+      const f=F(v);
+      if(Math.hypot(f[0],f[1],f[2])<0.004)break;
+      const h=0.0025,J=[[0,0,0],[0,0,0],[0,0,0]];
+      for(let j=0;j<3;j++){
+        const up=v.slice(),dn=v.slice();
+        up[j]=Math.min(1,v[j]+h);dn[j]=Math.max(0,v[j]-h);
+        const d=up[j]-dn[j]||1e-6,fu=F(up),fd=F(dn);
+        for(let i=0;i<3;i++)J[i][j]=(fu[i]-fd[i])/d;
+      }
+      const s=solve3(J,f.map(x=>-x));
+      if(!s)break;
+      let step=1;const mx=Math.max(...s.map(Math.abs));
+      if(mx>0.3)step=0.3/mx;
+      let moved=0;
+      for(let i=0;i<3;i++){const nv=clamp01(v[i]+s[i]*step);moved+=Math.abs(nv-v[i]);v[i]=nv}
+      if(moved<1e-5)break;
+    }
+    const L=cmykToLab(v[0],v[1],v[2],k,pw);
+    return{cmyk:[v[0],v[1],v[2],k],de:dE00(tL,ta,tb,L[0],L[1],L[2]),lab:L,
+           ink:v[0]+v[1]+v[2]+k};
+  };
+  const ks=policy==='nok'?[0]:Array.from({length:21},(_,i)=>i/20);
+  /* The ink cap is applied before anything else: an illegal separation is not
+     a near miss, it is not printable at all. k=0 always lands under 300%, so
+     this can never empty the pool. */
+  let pool=ks.map(solveCMY).filter(r=>r.ink<=INK_LIMIT+1e-9);
+  if(!pool.length)pool=[solveCMY(0)];
+  const best=pool.reduce((a,b)=>b.de<a.de?b:a);
+  /* Candidates that tie on colour, judged at 0.15 dE00. Wider than that and
+     the ink-saving preference starts quietly costing accuracy; 0.15 is far
+     under anything an eye can resolve, so nothing is given away. */
+  const tie=pool.filter(r=>r.de<=best.de+0.15);
+  const pick=policy==='balanced'
+    ? tie.reduce((a,b)=>Math.abs(b.cmyk[3]-kUcr)<Math.abs(a.cmyk[3]-kUcr)?b:a)
+    : tie.reduce((a,b)=>b.ink<a.ink?b:a);
+  return{cmyk:pick.cmyk,de:pick.de,ink:pick.ink,lab:pick.lab,
+         policy:policy,inGamut:pick.de<=1.0};
+}
+function solve3(A,b){
+  const M=[[A[0][0],A[0][1],A[0][2],b[0]],
+           [A[1][0],A[1][1],A[1][2],b[1]],
+           [A[2][0],A[2][1],A[2][2],b[2]]];
+  for(let i=0;i<3;i++){
+    let p=i;
+    for(let r=i+1;r<3;r++)if(Math.abs(M[r][i])>Math.abs(M[p][i]))p=r;
+    if(Math.abs(M[p][i])<1e-12)return null;
+    [M[i],M[p]]=[M[p],M[i]];
+    for(let r=0;r<3;r++){
+      if(r===i)continue;
+      const f=M[r][i]/M[i][i];
+      for(let c=i;c<4;c++)M[r][c]-=f*M[i][c];
+    }
+  }
+  return[M[0][3]/M[0][0],M[1][3]/M[1][1],M[2][3]/M[2][2]];
+}
+
+/* ============================================================
+   7. PARSE ANYTHING  /  PRINT EVERYTHING
+   ------------------------------------------------------------
+   One entry point. Give it whatever the brand guideline, the
+   PDF, the Illustrator swatch panel or the client email had in
+   it, and it returns the tool's own OKLCH plus a label saying
+   how it read the string. It refuses rather than guesses: an
+   unreadable string returns null, it never falls back to a
+   nearby colour.
+   ============================================================ */
+const CSS_NAMES=('aliceblue f0f8ff antiquewhite faebd7 aqua 00ffff aquamarine 7fffd4 azure f0ffff '+
+'beige f5f5dc bisque ffe4c4 black 000000 blanchedalmond ffebcd blue 0000ff blueviolet 8a2be2 '+
+'brown a52a2a burlywood deb887 cadetblue 5f9ea0 chartreuse 7fff00 chocolate d2691e coral ff7f50 '+
+'cornflowerblue 6495ed cornsilk fff8dc crimson dc143c cyan 00ffff darkblue 00008b darkcyan 008b8b '+
+'darkgoldenrod b8860b darkgray a9a9a9 darkgreen 006400 darkgrey a9a9a9 darkkhaki bdb76b '+
+'darkmagenta 8b008b darkolivegreen 556b2f darkorange ff8c00 darkorchid 9932cc darkred 8b0000 '+
+'darksalmon e9967a darkseagreen 8fbc8f darkslateblue 483d8b darkslategray 2f4f4f darkslategrey 2f4f4f '+
+'darkturquoise 00ced1 darkviolet 9400d3 deeppink ff1493 deepskyblue 00bfff dimgray 696969 '+
+'dimgrey 696969 dodgerblue 1e90ff firebrick b22222 floralwhite fffaf0 forestgreen 228b22 '+
+'fuchsia ff00ff gainsboro dcdcdc ghostwhite f8f8ff gold ffd700 goldenrod daa520 gray 808080 '+
+'green 008000 greenyellow adff2f grey 808080 honeydew f0fff0 hotpink ff69b4 indianred cd5c5c '+
+'indigo 4b0082 ivory fffff0 khaki f0e68c lavender e6e6fa lavenderblush fff0f5 lawngreen 7cfc00 '+
+'lemonchiffon fffacd lightblue add8e6 lightcoral f08080 lightcyan e0ffff lightgoldenrodyellow fafad2 '+
+'lightgray d3d3d3 lightgreen 90ee90 lightgrey d3d3d3 lightpink ffb6c1 lightsalmon ffa07a '+
+'lightseagreen 20b2aa lightskyblue 87cefa lightslategray 778899 lightslategrey 778899 '+
+'lightsteelblue b0c4de lightyellow ffffe0 lime 00ff00 limegreen 32cd32 linen faf0e6 magenta ff00ff '+
+'maroon 800000 mediumaquamarine 66cdaa mediumblue 0000cd mediumorchid ba55d3 mediumpurple 9370db '+
+'mediumseagreen 3cb371 mediumslateblue 7b68ee mediumspringgreen 00fa9a mediumturquoise 48d1cc '+
+'mediumvioletred c71585 midnightblue 191970 mintcream f5fffa mistyrose ffe4e1 moccasin ffe4b5 '+
+'navajowhite ffdead navy 000080 oldlace fdf5e6 olive 808000 olivedrab 6b8e23 orange ffa500 '+
+'orangered ff4500 orchid da70d6 palegoldenrod eee8aa palegreen 98fb98 paleturquoise afeeee '+
+'palevioletred db7093 papayawhip ffefd5 peachpuff ffdab9 peru cd853f pink ffc0cb plum dda0dd '+
+'powderblue b0e0e6 purple 800080 rebeccapurple 663399 red ff0000 rosybrown bc8f8f royalblue 4169e1 '+
+'saddlebrown 8b4513 salmon fa8072 sandybrown f4a460 seagreen 2e8b57 seashell fff5ee sienna a0522d '+
+'silver c0c0c0 skyblue 87ceeb slateblue 6a5acd slategray 708090 slategrey 708090 snow fffafa '+
+'springgreen 00ff7f steelblue 4682b4 tan d2b48c teal 008080 thistle d8bfd8 tomato ff6347 '+
+'turquoise 40e0d0 violet ee82ee wheat f5deb3 white ffffff whitesmoke f5f5f5 yellow ffff00 '+
+'yellowgreen 9acd32').split(' ');
+const NAMED={};
+for(let i=0;i<CSS_NAMES.length;i+=2)NAMED[CSS_NAMES[i]]='#'+CSS_NAMES[i+1];
+
+/* Numeric tokens plus whether each carried a unit, because 50 and 50% are not
+   the same number in half of these notations. */
+function numTokens(s){
+  const out=[];
+  const re=/([-+]?(?:\d*\.\d+|\d+))\s*(%|deg|grad|rad|turn)?/gi;
+  let m;
+  while((m=re.exec(s))){
+    out.push({v:parseFloat(m[1]),unit:(m[2]||'').toLowerCase()});
+  }
+  return out;
+}
+const hueDeg=t=>{
+  if(!t)return 0;
+  switch(t.unit){
+    case 'turn':return mod360(t.v*360);
+    case 'rad': return mod360(t.v*180/Math.PI);
+    case 'grad':return mod360(t.v*0.9);
+    default:    return mod360(t.v);
+  }
+};
+/* 0..1 from a token that may be a percentage or already a fraction of `full`. */
+const frac=(t,full)=>t?clamp01(t.unit==='%'?t.v/100:t.v/full):0;
+
+function hslToOklch(h,s,l){
+  const a=s*Math.min(l,1-l);
+  const f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};
+  return rgb255ToOklch(f(0)*255,f(8)*255,f(4)*255);
+}
+function hwbToOklch(h,w,b){
+  if(w+b>=1){const g=w/(w+b)*255;return rgb255ToOklch(g,g,g)}
+  const base=hslToOklch(h,1,0.5);
+  const[r,g,bl]=toRGB(base).map(v=>(v/255*(1-w-b)+w)*255);
+  return rgb255ToOklch(r,g,bl);
+}
+
+/* The one public entry point.
+   -> {o:oklch, fmt:'hex'|'rgb'|..., label:'HEX', cmyk:[c,m,y,k]|null, note:string|null}
+   -> null when the string is not a colour. Never a guess. */
+function parseAnyColor(str,pw,policy){
+  if(str==null)return null;
+  const raw=String(str).trim();
+  if(!raw)return null;
+  const s=raw.toLowerCase().replace(/[–—]/g,'-');
+  const wrap=(o,fmt,label,extra)=>o?Object.assign({o:o,fmt:fmt,label:label,cmyk:null,note:null},extra||{}):null;
+
+  /* 1. CSS colour keyword */
+  if(/^[a-z]+$/.test(s)){
+    if(s==='transparent')return null;
+    if(NAMED[s])return wrap(parseHex(NAMED[s]),'name','CSS name',{note:'CSS keyword "'+s+'"'});
+  }
+
+  /* 2. functional notation */
+  const fn=s.match(/^([a-z][a-z0-9-]*)\s*\(([\s\S]*)\)\s*$/);
+  if(fn){
+    const name=fn[1],body=fn[2].replace(/\//g,' ');
+    const t=numTokens(body);
+    const alpha=/\/\s*[\d.]/.test(fn[2])||t.length>(name==='cmyk'||name==='device-cmyk'?4:3);
+    const aNote=alpha?'alpha ignored':null;
+    if(t.length<3&&name!=='cmyk'&&name!=='device-cmyk')return null;
+    switch(name){
+      case 'rgb': case 'rgba': {
+        const c=t.slice(0,3).map(x=>x.unit==='%'?x.v/100*255:x.v);
+        if(c.some(v=>!isFinite(v)))return null;
+        return wrap(rgb255ToOklch(...c.map(v=>Math.max(0,Math.min(255,v)))),'rgb','RGB',{note:aNote});
+      }
+      case 'hsl': case 'hsla':
+        return wrap(hslToOklch(hueDeg(t[0]),frac(t[1],100),frac(t[2],100)),'hsl','HSL',{note:aNote});
+      case 'hwb':
+        return wrap(hwbToOklch(hueDeg(t[0]),frac(t[1],100),frac(t[2],100)),'hwb','HWB',{note:aNote});
+      case 'oklch': {
+        /* L accepts 0..1 or 0..100 (with or without %); C accepts 0..0.4, or a
+           percentage of 0.4 as the CSS spec defines it. */
+        const L=t[0].unit==='%'?t[0].v/100:(t[0].v>1.0001?t[0].v/100:t[0].v);
+        const C=t[1].unit==='%'?t[1].v/100*0.4:t[1].v;
+        return wrap(clampChroma({l:clamp01(L),c:Math.max(0,C),h:hueDeg(t[2])}),'oklch','OKLCH',{note:aNote});
+      }
+      case 'oklab': {
+        const L=t[0].unit==='%'?t[0].v/100:(t[0].v>1.0001?t[0].v/100:t[0].v);
+        const A=t[1].unit==='%'?t[1].v/100*0.4:t[1].v;
+        const B=t[2].unit==='%'?t[2].v/100*0.4:t[2].v;
+        return wrap(clampChroma(oklabToOklch(clamp01(L),A,B)),'oklab','OKLAB',{note:aNote});
+      }
+      case 'lab': {
+        const L=t[0].unit==='%'?t[0].v:t[0].v;
+        const A=t[1].unit==='%'?t[1].v/100*125:t[1].v;
+        const B=t[2].unit==='%'?t[2].v/100*125:t[2].v;
+        return wrap(clampChroma(lab50ToOklch(L,A,B)),'lab','LAB D50',{note:aNote});
+      }
+      case 'lch': {
+        const L=t[0].v;
+        const C=t[1].unit==='%'?t[1].v/100*150:t[1].v;
+        const H=hueDeg(t[2])*Math.PI/180;
+        return wrap(clampChroma(lab50ToOklch(L,C*Math.cos(H),C*Math.sin(H))),'lch','LCH D50',{note:aNote});
+      }
+      case 'cmyk': case 'device-cmyk': {
+        if(t.length<4)return null;
+        /* cmyk() is read as 0-100 because that is what every print person
+           types. device-cmyk() follows the CSS spec: 0-1, or percentages. */
+        const asPct=name==='cmyk'
+          ? t.slice(0,4).map(x=>x.v/100)
+          : t.slice(0,4).map(x=>x.unit==='%'?x.v/100:x.v);
+        const q=asPct.map(clamp01);
+        return wrap(cmykToOklch(q[0],q[1],q[2],q[3],pw),'cmyk','CMYK',
+          {cmyk:q,note:name==='cmyk'?'read as 0-100%':'CSS device-cmyk, read as 0-1'});
+      }
+      case 'color': return null; /* color(display-p3 ...) is a different gamut; not guessed at */
+    }
+    return null;
+  }
+
+  /* 3. hex, with or without the hash, 3/4/6/8 digits.
+        A bare hex has to contain at least one digit. Without that rule
+        "decade", "facade", "efface" and "beaded" are all valid six-letter
+        hex and the field silently turns a word into a colour. Every hex a
+        brand guideline actually contains has a digit in it; a letters-only
+        one still works, you just have to type the hash. */
+  const hx=s.replace(/^#/,'');
+  const hashed=/^#/.test(s);
+  const hexOk=n=>new RegExp('^[0-9a-f]{'+n+'}$').test(hx)&&(hashed||/\d/.test(hx));
+  if(hexOk(3)||hexOk(6))return wrap(parseHex(hx),'hex','HEX');
+  if(hexOk(4))return wrap(parseHex(hx.slice(0,3)),'hex','HEX',{note:'alpha ignored'});
+  if(hexOk(8))return wrap(parseHex(hx.slice(0,6)),'hex','HEX',{note:'alpha ignored'});
+
+  /* 4. labelled channels: "C 0 M 100 Y 100 K 0", "C:0/M:100/Y:100/K:0",
+        "c0 m100 y100 k0", and the tool's own "L 45.2  C 0.120  H 260.0". */
+  const lab1=ch=>{
+    const m=s.match(new RegExp(ch+'\\s*[:=]?\\s*([-+]?(?:\\d*\\.\\d+|\\d+))\\s*%?','i'));
+    return m?parseFloat(m[1]):null;
+  };
+  const C=lab1('c'),M=lab1('m'),Y=lab1('y'),K=lab1('k');
+  if(C!=null&&M!=null&&Y!=null&&K!=null&&!/[a-z]/.test(s.replace(/[cmyk\s:=\/,%.\d+-]/g,''))){
+    const q=[C,M,Y,K].map(v=>clamp01(v/100));
+    return wrap(cmykToOklch(q[0],q[1],q[2],q[3],pw),'cmyk','CMYK',
+      {cmyk:q,note:'labelled C/M/Y/K, read as 0-100%'});
+  }
+  const L1=lab1('l'),H1=lab1('h');
+  if(L1!=null&&C!=null&&H1!=null){
+    /* This is the strip's own readout pasted back in: L on 0-100, C on 0-0.4. */
+    return wrap(clampChroma({l:clamp01(L1>1.0001?L1/100:L1),c:Math.max(0,C),h:mod360(H1)}),
+      'oklch','OKLCH',{note:'read as the strip readout: L 0-100, C 0-0.4'});
+  }
+
+  /* 5. bare numbers. 3 of them are RGB, 4 are CMYK percentages. */
+  const t=numTokens(s);
+  if(/^[\s\d.,;:\/|%+-]+$/.test(s)){
+    if(t.length===3&&t.every(x=>x.v>=0&&x.v<=255))
+      return wrap(rgb255ToOklch(...t.map(x=>x.unit==='%'?x.v/100*255:x.v)),'rgb','RGB',
+        {note:'three bare numbers, read as RGB 0-255'});
+    if(t.length===4&&t.every(x=>x.v>=0&&x.v<=100)){
+      const q=t.map(x=>clamp01(x.v/100));
+      return wrap(cmykToOklch(q[0],q[1],q[2],q[3],pw),'cmyk','CMYK',
+        {cmyk:q,note:'four bare numbers, read as CMYK 0-100%'});
+    }
+  }
+  return null;
+}
+
+/* ---- formatters, all from one OKLCH ---- */
+function fmtAll(o,pw,policy){
+  const s=clampChroma(o),rgb=toRGB(s),hex=toHex(s).toUpperCase();
+  const[L50,a50,b50]=oklchToLab50(s);
+  const lch=[L50,Math.hypot(a50,b50),mod360(Math.atan2(b50,a50)*180/Math.PI)];
+  const okl=oklchToOklab(s);
+  const sep=labToCmyk(L50,a50,b50,pw,policy);
+  const p=n=>(n*100);
+  return {
+    hex:hex,
+    rgb:'rgb('+rgb.join(' ')+')',
+    rgbp:'rgb('+rgb.map(v=>(v/255*100).toFixed(1)+'%').join(' ')+')',
+    hsl:(()=>{
+      const[r,g,b]=rgb.map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+      let h=0;
+      if(d){h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4);h*=60}
+      const l=(mx+mn)/2,sat=d?d/(1-Math.abs(2*l-1)):0;
+      return'hsl('+h.toFixed(1)+' '+(sat*100).toFixed(1)+'% '+(l*100).toFixed(1)+'%)';
+    })(),
+    hwb:(()=>{
+      const[r,g,b]=rgb.map(v=>v/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+      let h=0;
+      if(d){h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4);h*=60}
+      return'hwb('+h.toFixed(1)+' '+(mn*100).toFixed(1)+'% '+((1-mx)*100).toFixed(1)+'%)';
+    })(),
+    oklch:'oklch('+(s.l*100).toFixed(2)+'% '+s.c.toFixed(4)+' '+s.h.toFixed(2)+')',
+    oklab:'oklab('+(okl[0]*100).toFixed(2)+'% '+okl[1].toFixed(4)+' '+okl[2].toFixed(4)+')',
+    lab:'lab('+L50.toFixed(2)+' '+a50.toFixed(2)+' '+b50.toFixed(2)+')',
+    lch:'lch('+lch[0].toFixed(2)+' '+lch[1].toFixed(2)+' '+lch[2].toFixed(2)+')',
+    cmyk:'cmyk('+sep.cmyk.map(v=>p(v).toFixed(0)).join(' ')+')',
+    cmykFine:sep.cmyk.map(v=>p(v).toFixed(1)),
+    sep:sep
+  };
+}
+
+/* ============================================================
+   CONVERT PANEL
+   Type a value in any notation, read it back in all of them.
+   The panel is built once and repainted in place rather than
+   re-rendered, because rebuilding a text field under a typing
+   cursor loses the caret and the tool becomes unusable exactly
+   when you are using it most.
+   ============================================================ */
+const CV_ROWS=[
+  ['hex',  'HEX'  ],
+  ['rgb',  'RGB'  ],
+  ['rgbp', 'RGB %'],
+  ['hsl',  'HSL'  ],
+  ['hwb',  'HWB'  ],
+  ['oklch','OKLCH'],
+  ['oklab','OKLAB'],
+  ['lab',  'LAB'  ],
+  ['lch',  'LCH'  ],
+  ['cmyk', 'CMYK' ]
+];
+function panelConvert(){
+  const p=$('#panel');
+  p.appendChild(noteEl(
+    'Type or paste a colour in any notation. Hex with or without the hash, '+
+    '<code>rgb()</code>, <code>hsl()</code>, <code>hwb()</code>, <code>oklch()</code>, '+
+    '<code>oklab()</code>, <code>lab()</code>, <code>lch()</code>, <code>cmyk()</code>, '+
+    'a CSS colour name, <code>C 0 M 69 Y 62 K 0</code>, four bare numbers, or the '+
+    '<code>L / C / H</code> readout off a swatch above. Every row below is editable, so it '+
+    'converts in both directions.'));
+
+  const wrap=el('div','cv-wrap');
+  const left=el('div','cv-left'),right=el('div','cv-right');
+  wrap.append(left,right);
+  p.appendChild(wrap);
+
+  /* ---- left: input, verdict badges, big chip, actions ---- */
+  const inp=el('input','cv-in');
+  inp.value=state.cvRaw;
+  inp.spellcheck=false;
+  inp.autocapitalize='off';
+  inp.setAttribute('aria-label','Colour value in any notation');
+  inp.placeholder='#0B4F6C  ·  cmyk(86 18 3 50)';
+  left.appendChild(inp);
+
+  const flags=el('div','cv-flags');
+  const badge=el('span','cv-badge');
+  const hint=el('span','cv-hint');
+  flags.append(badge,hint);
+  left.appendChild(flags);
+
+  /* The plane, the hue rail, the three numbers and the axis toggle. Dragging
+     writes straight into state.cvColor, so all ten rows on the right and the
+     print block follow it live. */
+  const pk=makePicker(()=>state.cvColor,o=>{
+    state.cvColor=o;state.cvFmt='PICKED';state.cvNote='dragged on the plane';
+    state.cvRaw=toHex(o).toUpperCase();
+    if(document.activeElement!==inp)inp.value=state.cvRaw;
+    inp.classList.remove('bad');
+    paint();
+  },PK_SIZE);
+  const pkr=pkReadout();
+  const pkm=pkModes(()=>{pk.invalidate();pk.repaint();pkm.sync()});
+  left.append(pk.el,pkr,pkm);
+  window.__pk=pk;
+
+  const chip=el('div','cv-chip');
+  const chipName=el('div','cv-chip-name'),chipHex=el('div','cv-chip-hex');
+  chip.append(chipName,chipHex);
+  left.appendChild(chip);
+
+  const acts=el('div','cv-acts');
+  const bAdd=el('button','btn solid','Add to palette');
+  bAdd.onclick=()=>{
+    if(state.colors.length>=8)return;
+    snapshot();
+    state.colors.push({...state.cvColor});
+    state.locks.push(false);
+    renderStrip();writeHash();paint();
+  };
+  const bAll=el('button','btn','Copy all');
+  bAll.onclick=()=>{
+    const F=fmtAll(state.cvColor,state.cvPaper,state.cvPolicy);
+    copyHex(CV_ROWS.map(([k,lb])=>lb.padEnd(6)+' '+F[k]).join('\n'));
+    bAll.textContent='Copied';setTimeout(()=>bAll.textContent='Copy all',1200);
+  };
+  acts.append(bAdd,bAll);
+  left.appendChild(acts);
+
+  const pick=el('div','cv-pick');
+  left.appendChild(pick);
+  const pickCap=el('div',null,'Click a palette colour to load it');
+  pickCap.style.cssText='font-size:11px;color:var(--ink-3);margin-top:7px';
+  left.appendChild(pickCap);
+
+  /* ---- right: one editable row per notation ---- */
+  const rowInputs={};
+  CV_ROWS.forEach(([k,label])=>{
+    const row=el('div','cv-row');
+    row.appendChild(el('span','cv-k',label));
+    const v=el('input','cv-v');
+    v.spellcheck=false;v.autocapitalize='off';
+    v.setAttribute('aria-label',label+' value');
+    v.addEventListener('focus',()=>v.select());
+    v.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){v.blur()}
+      if(e.key==='Escape'){paint();v.blur()}
+    });
+    v.addEventListener('change',()=>{
+      const r=parseAnyColor(v.value,state.cvPaper,state.cvPolicy);
+      if(r){state.cvColor=r.o;state.cvRaw=v.value.trim();state.cvFmt=r.label;state.cvNote=r.note;
+        inp.value=state.cvRaw;inp.classList.remove('bad');paint()}
+      else paint();
+    });
+    const cp=el('button','sw-btn');
+    cp.innerHTML=ICON.copy;
+    cp.title='Copy '+label;
+    cp.onclick=()=>{copyHex(v.value);cp.classList.add('pinned');
+      setTimeout(()=>cp.classList.remove('pinned'),700)};
+    row.append(v,cp);
+    right.appendChild(row);
+    rowInputs[k]=v;
+  });
+
+  /* ---- right: the print block ---- */
+  const pr=el('div','cv-print');
+  pr.appendChild(el('div','cv-print-head','Coated CMYK — model, not a proof'));
+  /* The caveat sits here rather than at the top of the panel, because this is
+     the one place in the tool where it changes what you should do next. */
+  const cav=el('div','cv-caveat');
+  cav.innerHTML='Every other row on this panel is exact \u2014 defined by matrices, lossless in both '+
+    'directions. This one is not, and a converter that implies otherwise is lying to you: four ink '+
+    'percentages only name a colour once you also name a printing condition. Modelled here is '+
+    '<b>premium coated stock, ISO 12647-2 solid aim values, roughly ISO Coated v2 / FOGRA39</b>, '+
+    'via Neugebauer / Yule-Nielsen with a single mid-tone dot gain figure. Good enough to decide '+
+    'with. Not a proof \u2014 sign off against the printer\u2019s own profile.';
+  pr.appendChild(cav);
+
+  const mkOpt=(label,map,cur,set)=>{
+    const o=el('div','cv-opt');
+    o.appendChild(el('span','lbl',label));
+    const btns={};
+    Object.entries(map).forEach(([k,txt])=>{
+      const b=el('button','cv-mini',txt);
+      b.onclick=()=>{set(k);paint()};
+      btns[k]=b;o.appendChild(b);
+    });
+    pr.appendChild(o);
+    return{btns:btns,get:cur};
+  };
+  const optPolicy=mkOpt('Separation',K_POLICY,()=>state.cvPolicy,k=>state.cvPolicy=k);
+  const optPaper=mkOpt('Paper white',
+    {relative:'Paper → white',absolute:'Paper at L*95'},
+    ()=>state.cvPaper,k=>state.cvPaper=k);
+
+  const stInk=el('div','cv-stat'),stGam=el('div','cv-stat'),stSrgb=el('div','cv-stat');
+  pr.append(stInk,stGam,stSrgb);
+  const vs=el('div','cv-vs');
+  const vsA=el('div'),vsB=el('div');
+  vs.append(vsA,vsB);
+  pr.appendChild(vs);
+  right.appendChild(pr);
+
+  /* ---- repaint everything that is not the field being typed in ---- */
+  function paint(){
+    const o=clampChroma(state.cvColor);
+    const hex=toHex(o).toUpperCase(),ink=inkOn(o);
+    const F=fmtAll(o,state.cvPaper,state.cvPolicy);
+    const sep=F.sep;
+
+    badge.textContent=state.cvFmt||'HEX';
+    badge.classList.toggle('warn',false);
+    hint.textContent=state.cvNote||'';
+
+    pk.repaint();pkr.update(o);pkm.sync();
+    chip.style.background=hex;chip.style.color=ink;
+    chipName.textContent=nameOf(o);
+    chipHex.textContent=hex+'   ·   '+F.rgb;
+
+    CV_ROWS.forEach(([k])=>{
+      const v=rowInputs[k];
+      if(document.activeElement!==v)v.value=F[k];
+    });
+
+    Object.entries(optPolicy.btns).forEach(([k,b])=>b.classList.toggle('on',k===state.cvPolicy));
+    Object.entries(optPaper.btns).forEach(([k,b])=>b.classList.toggle('on',k===state.cvPaper));
+
+    const inkPct=sep.ink*100;
+    stInk.innerHTML='Total ink <b>'+inkPct.toFixed(0)+'%</b>'+
+      '<span class="cv-hint">cap 330% · C'+(sep.cmyk[0]*100).toFixed(0)+
+      ' M'+(sep.cmyk[1]*100).toFixed(0)+' Y'+(sep.cmyk[2]*100).toFixed(0)+
+      ' K'+(sep.cmyk[3]*100).toFixed(0)+'</span>';
+
+    if(sep.inGamut){
+      stGam.innerHTML='<span class="vd ok">Printable</span>'+
+        '<span class="cv-hint">coated CMYK reaches this colour, ΔE00 '+sep.de.toFixed(2)+'</span>';
+    }else{
+      stGam.innerHTML='<span class="vd '+(sep.de>5?'fail':'warn')+'">Outside coated CMYK</span>'+
+        '<span class="cv-hint">nearest printable is ΔE00 <b>'+sep.de.toFixed(2)+
+        '</b> away — '+(sep.de>5?'a shift anyone will see':'a shift a careful eye will see')+'</span>';
+    }
+    /* The asked-versus-prints bar only earns its space when the two differ. */
+    vs.style.display=sep.de<0.5?'none':'flex';
+    const nearest=lab50ToOklch(sep.lab[0],sep.lab[1],sep.lab[2]);
+    const nHex=toHex(clampChroma(nearest)).toUpperCase();
+    vsA.style.background=hex;vsA.style.color=ink;vsA.textContent='ASKED  '+hex;
+    vsB.style.background=nHex;vsB.style.color=inkOn(clampChroma(nearest));
+    vsB.textContent='PRINTS  '+nHex;
+
+    const raw=oklchToLinearRGB(state.cvColor);
+    const outSrgb=raw.some(x=>x<-0.0015||x>1.0015);
+    stSrgb.innerHTML=outSrgb
+      ? '<span class="vd warn">Outside sRGB</span><span class="cv-hint">the value you typed is wider than sRGB; '+
+        'the swatch shows the clamped version</span>'
+      : '<span class="vd ok">Inside sRGB</span><span class="cv-hint">no clamping needed</span>';
+
+    bAdd.disabled=state.colors.length>=8;
+    /* The palette row was being torn down and rebuilt, handlers and all, on
+       every repaint — which during a drag means sixty times a second for a
+       list that had not changed. It is rebuilt only when it actually differs. */
+    const sig=state.colors.map(toHex).join(',');
+    if(pick.dataset.sig!==sig){
+      pick.dataset.sig=sig;
+      pick.innerHTML='';
+      state.colors.forEach(c=>{
+        const i=el('i');
+        i.style.background=toHex(c);
+        i.title=nameOf(c)+'  '+toHex(c).toUpperCase();
+        i.onclick=()=>{
+          state.cvColor={...c};state.cvRaw=toHex(c).toUpperCase();
+          state.cvFmt='HEX';state.cvNote='loaded from the palette';
+          inp.value=state.cvRaw;inp.classList.remove('bad');paint();
+        };
+        pick.appendChild(i);
+      });
+    }
+  }
+
+  inp.addEventListener('input',()=>{
+    const txt=inp.value;
+    if(!txt.trim()){inp.classList.remove('bad');return}
+    const r=parseAnyColor(txt,state.cvPaper,state.cvPolicy);
+    if(r){
+      inp.classList.remove('bad');
+      state.cvColor=r.o;state.cvRaw=txt;state.cvFmt=r.label;state.cvNote=r.note;
+      paint();
+    }else{
+      inp.classList.add('bad');
+      badge.textContent='unreadable';badge.classList.add('warn');
+      hint.textContent='no colour in that string';
+    }
+  });
+  paint();
+  setTimeout(()=>{if(!state.cvRaw)inp.focus()},0);
+}
+
+
+/* ============================================================
+   8. VISUAL PICKER — an OKLCH plane, not an HSB square
+   ------------------------------------------------------------
+   Photoshop's square is Saturation x Brightness. It is familiar
+   and it is perceptually a lie: the same drag distance changes
+   a yellow far less than it changes a blue, because HSB knows
+   nothing about how eyes work. This tool's whole engine is
+   OKLCH, so the plane is too.
+
+   Vertical axis is lightness. Horizontal axis is chroma
+   expressed as a fraction of the MOST chroma sRGB can hold at
+   that lightness and hue — so the square fills completely, has
+   no unreachable corners, and a drag of n pixels means roughly
+   the same amount of colour change wherever you do it. That
+   normalisation is the same trick Björn Ottosson's okhsl uses,
+   built here on the gamut cusp search the tool already had.
+
+   The 'True C' mode drops the normalisation and puts real
+   chroma on the axis. The square then stops being full and you
+   see the actual silhouette of the sRGB gamut at that hue —
+   the shape every picker hides from you.
+
+   The hue rail is drawn at the lightness and chroma you are
+   actually on, so it previews the colour you will get.
+   Photoshop's rail is always full-saturation, which means it
+   shows you a colour you are not about to pick.
+   ============================================================ */
+const PK_SIZE=212, PK_HUE_W=24, PK_POP=196, PK_CMAX=0.33;
+/* linear -> sRGB byte, tabulated. Three pow() calls per pixel across a
+   212x212 plane at 2x DPR is a quarter of a million pow() calls per repaint,
+   and the plane repaints on every pixel of a hue drag. 4096 steps keeps the
+   error under one 8-bit level even down in the steep part near black. */
+const PK_LUT=(()=>{
+  const n=4096,t=new Uint8Array(n+1);
+  for(let i=0;i<=n;i++)t[i]=Math.round(clamp01(linearToSrgb(i/n))*255);
+  return t;
+})();
+const pkByte=v=>PK_LUT[v<=0?0:v>=1?4096:(v*4096)|0];
+
+/* One shared inner loop for both canvases: given L, chroma and the sine and
+   cosine of the hue (constant for a whole plane), write one RGB triple. */
+function pkPix(d,i,L,c,ch,sh){
+  const a=c*ch,b=c*sh;
+  const l_=L+0.3963377774*a+0.2158037573*b;
+  const m_=L-0.1055613458*a-0.0638541728*b;
+  const s_=L-0.0894841775*a-1.291485548*b;
+  const l=l_*l_*l_,m=m_*m_*m_,s=s_*s_*s_;
+  d[i]  =pkByte( 4.0767416621*l-3.3077115913*m+0.2309699292*s);
+  d[i+1]=pkByte(-1.2684380046*l+2.6097574011*m-0.3413193965*s);
+  d[i+2]=pkByte(-0.0041960863*l-0.7034186147*m+1.707614701*s);
+  d[i+3]=255;
+}
+const pkMaxC=(l,h)=>Math.max(1e-4,maxChroma(l,h));
+/* maxChroma is a 20-step binary gamut search. Calling it once per canvas row
+   means 424 searches per repaint at 2x DPR, and the cache misses every one of
+   them because the lightness changes with the pointer. That was the stutter.
+   It is a smooth function of both arguments away from the cusp, so it gets
+   sampled on a coarse grid and interpolated while a drag is in flight, then
+   recomputed exactly the moment the pointer is released. */
+function pkMcColumn(n,hue,exact){
+  const out=new Float32Array(n);
+  if(exact){
+    for(let y=0;y<n;y++)out[y]=pkMaxC(1-y/(n-1),hue);
+    return out;
+  }
+  const S=Math.min(n-1,48),g=new Float32Array(S+1);
+  for(let i=0;i<=S;i++)g[i]=pkMaxC(1-i/S,hue);
+  for(let y=0;y<n;y++){
+    const x=y/(n-1)*S,i=Math.min(S-1,x|0),f=x-i;
+    out[y]=g[i]+(g[i+1]-g[i])*f;
+  }
+  return out;
+}
+/* Same idea across hue, for the 24px-wide rail. */
+function pkMcHueGrid(l,exact){
+  const S=exact?96:24,g=new Float32Array(S+1);
+  for(let i=0;i<=S;i++)g[i]=pkMaxC(l,i/S*360);
+  return hue=>{
+    const x=mod360(hue)/360*S,i=Math.min(S-1,x|0),f=x-i;
+    return g[i]+(g[i+1]-g[i])*f;
+  };
+}
+function pkToColor(l,t,h,mode){
+  const c=mode==='true'?t*PK_CMAX:t*pkMaxC(l,h);
+  return clampChroma({l:clamp01(l),c:Math.max(0,c),h:mod360(h)});
+}
+
+/* get()/set() are the only contract. Whoever owns the colour keeps owning it;
+   the picker never stores one, which is why the same widget can drive the
+   Convert tab and a strip swatch without either knowing about the other. */
+function makePicker(get,set,size){
+  size=size||PK_SIZE;
+  const wrap=el('div','pk');
+  const pbox=el('div','pk-plane'),hbox=el('div','pk-hue');
+  pbox.style.width=pbox.style.height=size+'px';
+  hbox.style.width=PK_HUE_W+'px';hbox.style.height=size+'px';
+  pbox.tabIndex=0;hbox.tabIndex=0;
+  pbox.setAttribute('role','application');
+  pbox.setAttribute('aria-label','Lightness and chroma plane. Arrow keys to move.');
+  hbox.setAttribute('role','slider');
+  hbox.setAttribute('aria-label','Hue. Up and down arrows to move.');
+  const cv=el('canvas'),hcv=el('canvas');
+  const dot=el('div','pk-dot'),hdot=el('div','pk-hdot');
+  pbox.append(cv,dot);hbox.append(hcv,hdot);
+  wrap.append(pbox,hbox);
+
+  /* A grey has no hue to remember, so the last real one is kept here.
+     Without this, dragging a colour to the left edge and back would snap
+     the hue to zero and lose where you were. */
+  let lastH=clampChroma(get()).h;
+  const cur=()=>{
+    const s=clampChroma(get());
+    if(s.c>0.002)lastH=s.h;
+    const h=mod360(lastH);
+    const t=state.pkMode==='true'?clamp01(s.c/PK_CMAX):clamp01(s.c/pkMaxC(s.l,h));
+    return{l:s.l,t:t,h:h};
+  };
+  const emit=(l,t,h)=>{lastH=mod360(h);set(pkToColor(l,t,h,state.pkMode))};
+
+  let planeKey='',dragging=false;
+  /* While the pointer is down the plane is drawn at 1x and from interpolated
+     gamut data; on release it is redrawn exactly at full device resolution.
+     Nobody can see the difference in a moving image, and it is the difference
+     between four milliseconds and sixteen. */
+  const dprNow=()=>{
+    const d=Math.min(2,window.devicePixelRatio||1);
+    return dragging?Math.min(d,1):d;
+  };
+  function paintPlane(h){
+    const dpr=dprNow();
+    const key=h.toFixed(2)+'|'+state.pkMode+'|'+size+'|'+dpr+'|'+(dragging?'d':'x');
+    if(key===planeKey)return;
+    planeKey=key;
+    const n=Math.max(2,Math.round(size*dpr));
+    cv.width=n;cv.height=n;
+    const ctx=cv.getContext('2d',{alpha:true});
+    const img=ctx.createImageData(n,n),d=img.data;
+    const hr=h*Math.PI/180,ch=Math.cos(hr),sh=Math.sin(hr);
+    const trueMode=state.pkMode==='true';
+    const edge=pkMcColumn(n,h,!dragging);
+    for(let y=0;y<n;y++){
+      const L=1-y/(n-1);
+      const mc=edge[y];
+      const row=y*n*4;
+      if(trueMode){
+        /* Past the cusp there is no colour to draw, so nothing is drawn: the
+           void is the page behind the canvas, and its outline is the gamut. */
+        const lim=Math.min(n-1,Math.floor(mc/PK_CMAX*(n-1)));
+        for(let x=0;x<n;x++){
+          const i=row+x*4;
+          if(x>lim){d[i]=d[i+1]=d[i+2]=d[i+3]=0;continue}
+          pkPix(d,i,L,x/(n-1)*PK_CMAX,ch,sh);
+        }
+      }else{
+        for(let x=0;x<n;x++)pkPix(d,row+x*4,L,x/(n-1)*mc,ch,sh);
+      }
+    }
+    ctx.putImageData(img,0,0);
+    /* The ramp the Scales tab builds has fixed lightness stops. Marking them
+       here means you can see which step of 50-950 you are picking, instead of
+       picking blind and finding out two tabs later. */
+    ctx.fillStyle='rgba(128,128,128,.16)';
+    SCALE_L.forEach(l=>{
+      const y=Math.round((1-l)*(n-1));
+      ctx.fillRect(0,y,trueMode?Math.floor(edge[y]/PK_CMAX*(n-1)):n,Math.max(1,dpr*0.6));
+    });
+    if(trueMode){
+      ctx.beginPath();
+      for(let y=0;y<n;y++){
+        const x=edge[y]/PK_CMAX*(n-1);
+        if(y===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      }
+      /* A hairline, not a highlight. The eye is here for the colours; the
+         gamut edge only has to be readable, not loud. */
+      ctx.strokeStyle='rgba(150,150,150,.34)';
+      ctx.lineWidth=Math.max(1,dpr*0.75);
+      ctx.stroke();
+    }
+  }
+  function paintHue(l,t){
+    const dpr=dprNow();
+    const w=Math.max(2,Math.round(PK_HUE_W*dpr)),n=Math.max(2,Math.round(size*dpr));
+    hcv.width=w;hcv.height=n;
+    const ctx=hcv.getContext('2d');
+    const img=ctx.createImageData(w,n),d=img.data;
+    const mcAt=state.pkMode==='true'?null:pkMcHueGrid(l,!dragging);
+    for(let y=0;y<n;y++){
+      const h=y/(n-1)*360,hr=h*Math.PI/180;
+      const c=mcAt?t*mcAt(h):t*PK_CMAX;
+      const row=y*w*4;
+      pkPix(d,row,l,c,Math.cos(hr),Math.sin(hr));
+      for(let x=1;x<w;x++){
+        const i=row+x*4;
+        d[i]=d[row];d[i+1]=d[row+1];d[i+2]=d[row+2];d[i+3]=255;
+      }
+    }
+    ctx.putImageData(img,0,0);
+  }
+  function repaint(){
+    const p=cur();
+    paintPlane(p.h);
+    paintHue(p.l,p.t);
+    dot.style.left=(p.t*100)+'%';
+    dot.style.top=((1-p.l)*100)+'%';
+    hdot.style.top=(p.h/360*100)+'%';
+    const o=clampChroma(get());
+    dot.style.background=toHex(o);
+    hdot.style.background='#fff';
+  }
+
+  /* --- pointer --- */
+  const grab=(box,move)=>{
+    let id=null,queued=null,scheduled=false;
+    /* A trackpad on a 120Hz panel delivers pointermove twice per frame or
+       more, and every one of them used to trigger a full repaint. Only the
+       newest position matters, so it is held and applied once per frame.
+       Without this the work is done two or three times over and thrown away,
+       which is exactly what a dropped frame looks like. */
+    const flush=()=>{
+      scheduled=false;
+      if(queued===null)return;
+      const q=queued;queued=null;
+      move(q);
+    };
+    box.addEventListener('pointerdown',e=>{
+      e.preventDefault();box.focus({preventScroll:true});
+      id=e.pointerId;
+      /* setPointerCapture throws if the pointer is already gone — a tap that
+         ends inside the same frame, a cancelled gesture, a synthetic event.
+         Unguarded, that exception kills the rest of this handler and the very
+         first move of the drag is silently lost. Capture is a nicety; landing
+         the colour under the finger is not. */
+      try{box.setPointerCapture(id)}catch(err){}
+      box.classList.add('drag');
+      dragging=true;
+      move(e);
+    });
+    box.addEventListener('pointermove',e=>{
+      if(id===null)return;
+      queued={clientX:e.clientX,clientY:e.clientY};
+      if(!scheduled){scheduled=true;requestAnimationFrame(flush)}
+    });
+    const up=()=>{
+      if(id===null)return;
+      try{box.releasePointerCapture(id)}catch(x){}
+      id=null;box.classList.remove('drag');
+      if(queued!==null){const q=queued;queued=null;move(q)}
+      scheduled=false;
+      /* Back to exact gamut data at full device resolution. */
+      dragging=false;planeKey='';repaint();
+    };
+    box.addEventListener('pointerup',up);
+    box.addEventListener('pointercancel',up);
+    box.addEventListener('lostpointercapture',up);
+  };
+  grab(pbox,e=>{
+    const r=pbox.getBoundingClientRect();
+    const t=clamp01((e.clientX-r.left)/r.width);
+    const l=clamp01(1-(e.clientY-r.top)/r.height);
+    emit(l,t,cur().h);
+  });
+  grab(hbox,e=>{
+    const r=hbox.getBoundingClientRect();
+    const p=cur();
+    emit(p.l,p.t,clamp01((e.clientY-r.top)/r.height)*360);
+  });
+
+  /* --- keyboard, because a 1-in-255 nudge is not a mouse gesture --- */
+  pbox.addEventListener('keydown',e=>{
+    const p=cur(),big=e.shiftKey;
+    const dt=big?0.05:0.01,dl=big?0.02:0.004;
+    let l=p.l,t=p.t,hit=true;
+    switch(e.key){
+      case 'ArrowLeft': t=clamp01(t-dt);break;
+      case 'ArrowRight':t=clamp01(t+dt);break;
+      case 'ArrowUp':   l=clamp01(l+dl);break;
+      case 'ArrowDown': l=clamp01(l-dl);break;
+      case 'Home':      t=0;break;
+      case 'End':       t=1;break;
+      default: hit=false;
+    }
+    if(!hit)return;
+    e.preventDefault();emit(l,t,p.h);
+  });
+  hbox.addEventListener('keydown',e=>{
+    const p=cur(),d=e.shiftKey?10:1;
+    let h=p.h,hit=true;
+    switch(e.key){
+      case 'ArrowUp':   case 'ArrowLeft': h=p.h-d;break;
+      case 'ArrowDown': case 'ArrowRight':h=p.h+d;break;
+      default: hit=false;
+    }
+    if(!hit)return;
+    e.preventDefault();emit(p.l,p.t,mod360(h));
+  });
+
+  return{el:wrap,repaint:repaint,invalidate:()=>{planeKey=''},
+    /* test hook: force a cold full repaint, the worst case of a hue drag */
+    _cold:()=>{planeKey='';repaint()}};
+}
+
+/* Readout under the picker: the three numbers, plus which step of the tool's
+   own 50-950 ramp this lightness belongs to. */
+function pkReadout(){
+  const r=el('div','pk-read');
+  r.update=o=>{
+    const s=clampChroma(o),st=nearestStop(s);
+    r.innerHTML='L <b>'+(s.l*100).toFixed(1)+'</b>'+
+      '<span>C <b>'+s.c.toFixed(3)+'</b></span>'+
+      '<span>H <b>'+s.h.toFixed(1)+'</b></span>'+
+      '<span>ramp <b>'+st.stop+'</b></span>';
+  };
+  return r;
+}
+function pkModes(onChange){
+  const box=el('div','pk-modes');
+  box.appendChild(el('span','lbl','Chroma axis'));
+  const btns={};
+  ({fill:'Fill',true:'True C'}) && Object.entries({fill:'Fill',true:'True C'}).forEach(([k,t])=>{
+    const b=el('button','cv-mini',t);
+    b.title=k==='fill'
+      ? 'Chroma as a fraction of the most sRGB can hold there — the square stays full'
+      : 'Real chroma on the axis — the empty part is outside sRGB';
+    b.onclick=()=>{state.pkMode=k;onChange()};
+    btns[k]=b;box.appendChild(b);
+  });
+  box.sync=()=>Object.entries(btns).forEach(([k,b])=>b.classList.toggle('on',k===state.pkMode));
+  return box;
+}
+
+/* ---- popover picker, opened from a swatch on the strip ---- */
+let pkPopOpen=null;
+function closePickerPop(){
+  if(!pkPopOpen)return;
+  pkPopOpen.cleanup();
+  pkPopOpen=null;
+}
+function openPickerPop(i,anchor){
+  closePickerPop();
+  const before={...state.colors[i]};
+  snapshot();
+  const scrim=el('div','pk-scrim');
+  const pop=el('div','pk-pop');
+  const head=el('div','pk-pop-head');
+  const title=el('div',null,'Slot '+(i+1));
+  title.style.cssText='font-size:12px;font-weight:600';
+  const x=el('button','sw-btn');
+  x.innerHTML=ICON.x;x.title='Cancel';
+  head.append(title,x);
+  pop.appendChild(head);
+
+  const read=pkReadout();
+  const hexf=el('input','pk-pop-hex');
+  hexf.spellcheck=false;hexf.autocapitalize='off';
+  hexf.setAttribute('aria-label','Colour value in any notation');
+
+  /* Repainting the whole strip on every pointer move would rebuild eight
+     swatches and their icons sixty times a second. Only the one swatch that
+     changed is touched; the full render happens once, on commit. */
+  const live=()=>{
+    const o=state.colors[i],hx=toHex(o);
+    const sw=document.querySelectorAll('.sw')[i];
+    if(sw){
+      sw.style.background=hx;sw.style.color=inkOn(o);
+      const inp=sw.querySelector('.sw-hex');
+      if(inp&&document.activeElement!==inp)inp.value=hx.toUpperCase();
+      const nm=sw.querySelector('.sw-name');
+      if(nm)nm.textContent=nameOf(o);
+      const mt=sw.querySelector('.sw-meta');
+      if(mt){const s=clampChroma(o);
+        mt.innerHTML='L '+(s.l*100).toFixed(1)+' &nbsp; C '+s.c.toFixed(3)+
+          ' &nbsp; H '+s.h.toFixed(1)+'<br>rgb '+toRGB(o).join(' ')}
+    }
+    const rib=$('#ribbon').children[i];
+    if(rib)rib.style.background=hx;
+    read.update(o);
+    if(document.activeElement!==hexf)hexf.value=hx.toUpperCase();
+  };
+  const pk=makePicker(()=>state.colors[i],o=>{state.colors[i]=o;pk.repaint();live()},PK_POP);
+  const modes=pkModes(()=>{pk.invalidate();pk.repaint();modes.sync()});
+  pop.append(pk.el,read,modes,hexf);
+
+  hexf.addEventListener('change',()=>{
+    const r=parseAnyColor(hexf.value,state.cvPaper,state.cvPolicy);
+    if(r){state.colors[i]=r.o;pk.repaint();live()}else live();
+  });
+  hexf.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit()}});
+
+  const acts=el('div','pk-pop-acts');
+  const ok=el('button','btn solid','Apply');
+  const no=el('button','btn','Cancel');
+  acts.append(ok,no);
+  pop.appendChild(acts);
+
+  function cleanup(){
+    document.removeEventListener('keydown',onKey,true);
+    window.removeEventListener('resize',place);
+    scrim.remove();pop.remove();
+  }
+  function commit(){pkPopOpen=null;cleanup();renderAll()}
+  function cancel(){
+    state.colors[i]=before;
+    /* The snapshot taken on open would otherwise sit in the undo stack as a
+       step that undoes nothing. */
+    undoStack.pop();
+    if(!undoStack.length)$('#undo').disabled=true;
+    pkPopOpen=null;cleanup();renderAll();
+  }
+  ok.onclick=commit;no.onclick=cancel;x.onclick=cancel;
+  scrim.onclick=cancel;
+  function onKey(e){
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();cancel()}
+    else if(e.key==='Enter'&&e.target!==hexf){e.preventDefault();commit()}
+  }
+  document.addEventListener('keydown',onKey,true);
+
+  function place(){
+    const r=anchor.getBoundingClientRect();
+    const w=pop.offsetWidth||PK_POP+PK_HUE_W+40,h=pop.offsetHeight||360;
+    let left=r.left+r.width/2-w/2,top=r.bottom+8;
+    if(top+h>window.innerHeight-8)top=Math.max(8,r.top-h-8);
+    pop.style.left=Math.max(8,Math.min(left,window.innerWidth-w-8))+'px';
+    pop.style.top=top+'px';
+  }
+  document.body.append(scrim,pop);
+  place();
+  window.addEventListener('resize',place);
+  pkPopOpen={cleanup:cleanup};
+  pk.repaint();modes.sync();live();
+  setTimeout(()=>{const f=pop.querySelector('.pk-plane');if(f)f.focus({preventScroll:true})},0);
 }
 
 /* ============================================================
@@ -1875,18 +3168,25 @@ function smallNote(t){
 /* ---------- import brand colors ---------- */
 function parseColorList(txt){
   const out=[],seen={};
-  const push=hex=>{
-    const o=parseHex(hex);if(!o)return;
+  const pushO=o=>{
+    if(!o)return;
     const k=toHex(o);if(seen[k])return;seen[k]=1;out.push(o);
   };
+  const push=hex=>pushO(parseHex(hex));
   /* hash-prefixed first: a bare six-letter word can be valid hex by accident
      ("decade", "efface"), so only fall back to bare tokens if nothing is found. */
   (txt.match(/#[0-9a-fA-F]{6}\b/g)||[]).forEach(push);
   (txt.match(/#[0-9a-fA-F]{3}\b/g)||[]).forEach(push);
-  (txt.match(/rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+/g)||[]).forEach(m=>{
-    const n=m.match(/\d+/g).map(Number);
-    if(n.length>=3&&n.every(v=>v<=255))push('#'+n.slice(0,3).map(v=>v.toString(16).padStart(2,'0')).join(''));
-  });
+  /* Functional notations go through the same reader the Convert tab uses, so a
+     CSS block, an Illustrator swatch dump or a brand PDF that states its
+     colours in CMYK is read whole instead of half-read. */
+  (txt.match(/\b(?:rgba?|hsla?|hwb|oklch|oklab|lab|lch|cmyk|device-cmyk)\s*\([^)]*\)/gi)||[])
+    .forEach(m=>{const r=parseAnyColor(m,'relative',state.cvPolicy);if(r)pushO(r.o)});
+  /* Labelled print channels, the way a guideline lays them out in a table:
+     "C 0  M 100  Y 100  K 0" or "C:0/M:100/Y:100/K:0". */
+  const chan='\\s*[:=]?\\s*\\d+(?:\\.\\d+)?\\s*%?[\\s,;\\/|]*';
+  (txt.match(new RegExp('\\bc'+chan+'m'+chan+'y'+chan+'k\\s*[:=]?\\s*\\d+(?:\\.\\d+)?\\s*%?','gi'))||[])
+    .forEach(m=>{const r=parseAnyColor(m,'relative',state.cvPolicy);if(r)pushO(r.o)});
   if(!out.length){
     (txt.match(/(?:^|[\s,;:|])([0-9a-fA-F]{6})(?=$|[\s,;:|])/gm)||[])
       .forEach(m=>push('#'+m.trim().replace(/^[\s,;:|]+/,'')));
@@ -1898,9 +3198,11 @@ function importModal(m){
   const body=el('div','modal-body');
   body.appendChild(smallNote(
     'Paste anything: a hex list, a CSS block, a swatch table copied out of a PDF. '+
-    'Hash-prefixed values and rgb() are read first.'));
+    'Hash-prefixed values are read first, then rgb() hsl() hwb() oklch() oklab() lab() lch() '+
+    'cmyk(), then labelled C/M/Y/K rows. CMYK is read against the coated model described in '+
+    'the Convert tab, so treat those as close, not exact.'));
   const ta=el('textarea','paste');
-  ta.placeholder='#0B4F6C\n#01BAEF\n#FBFBFF\nrgb(32, 191, 85)\n\n--brand-ink: #20232A;';
+  ta.placeholder='#0B4F6C\n#01BAEF\nrgb(32, 191, 85)\noklch(62% 0.19 29)\nC 86 M 18 Y 3 K 50\n\n--brand-ink: #20232A;';
   ta.spellcheck=false;
   ta.style.marginTop='10px';
   const found=el('div','found');
@@ -2235,7 +3537,7 @@ function panelGradient(){
 function noteEl(html){
   const n=el('div','note');n.innerHTML=html;return n;
 }
-const PANELS={scale:panelScale,contrast:panelContrast,banner:panelBanner,
+const PANELS={scale:panelScale,contrast:panelContrast,banner:panelBanner,convert:panelConvert,
   vision:panelVision,gradient:panelGradient,audit:panelAudit,export:panelExport};
 function renderPanel(){
   const p=$('#panel'),scroller=document.querySelector('.panel');
