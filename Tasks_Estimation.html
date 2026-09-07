@@ -1612,6 +1612,7 @@
           <button id="chipRichMedia" class="preset-chip" onclick="applyPreset('richmedia', event)">Rich Media</button>
           <button id="chipEdm" class="preset-chip" onclick="applyPreset('edm', event)">EDM / Email</button>
           <button id="chipLanding" class="preset-chip" onclick="applyPreset('landing', event)">Landing Page</button>
+          <button id="chipAiChar" class="preset-chip" onclick="applyPreset('aichar', event)">AI Character/Scene</button>
           <button id="chipCustom" class="preset-chip" onclick="applyPreset('custom', event)">Custom</button>
         </div>
       </div>
@@ -1769,7 +1770,7 @@
         projectPlaceholder: 'Tên dự án...', clientPlaceholder: 'Tên khách hàng...',
         lblPresets: 'Presets nhanh',
         chipBanner: 'HTML5 Banner', chipRichMedia: 'Rich Media',
-        chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipCustom: 'Custom',
+        chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipAiChar: 'AI Character/Scene', chipCustom: 'Custom',
         lblBuffer: 'Buffer', lblCorrRounds: 'Số vòng sửa',
         lblMinCorr: 'Phút sửa / Master', lblMinCorrVer: 'Phút sửa / Version',
         lblHoursPerDay: 'Giờ / ngày',
@@ -1798,7 +1799,7 @@
         baseDay: (d) => `${d} ngày`,
         subMin: (m) => `${m} phút`,
         convResult: (h, m, hm) => `${h} giờ  =  ${m} phút  ·  ${hm}`,
-        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', qa: 'QA / Test', traffic: 'Trafficking', pm: 'Briefing / PM', custom: 'Custom' },
+        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', aichar: 'AI Character/Scene', qa: 'QA / Test', traffic: 'Trafficking', pm: 'Briefing / PM', custom: 'Custom' },
         mCardMasterQty: 'Master Qty', mCardMinMaster: 'Phút/Master',
         mCardVersionQty: 'Version Qty', mCardMinVersion: 'Phút/Ver',
         mCardMaster: 'Master', mCardVersion: 'Version', mCardSubtotal: 'Tổng phụ',
@@ -1812,7 +1813,7 @@
         projectPlaceholder: 'Project name...', clientPlaceholder: 'Client name...',
         lblPresets: 'Quick Presets',
         chipBanner: 'HTML5 Banner', chipRichMedia: 'Rich Media',
-        chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipCustom: 'Custom',
+        chipEdm: 'EDM / Email', chipLanding: 'Landing Page', chipAiChar: 'AI Character/Scene', chipCustom: 'Custom',
         lblBuffer: 'Buffer', lblCorrRounds: 'Corr. Rounds',
         lblMinCorr: 'Min / Corr. Master', lblMinCorrVer: 'Min / Corr. Version',
         lblHoursPerDay: 'Hours / day',
@@ -1841,7 +1842,7 @@
         baseDay: (d) => `${d} days`,
         subMin: (m) => `${m} min`,
         convResult: (h, m, hm) => `${h.replace(',', '.')} hrs  =  ${m} min  ·  ${hm}`,
-        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', qa: 'QA / Test', traffic: 'Trafficking', pm: 'Briefing / PM', custom: 'Custom' },
+        presets: { banner: 'HTML5 Banner', richmedia: 'Rich Media', edm: 'EDM / Email', landing: 'Landing Page', aichar: 'AI Character/Scene', qa: 'QA / Test', traffic: 'Trafficking', pm: 'Briefing / PM', custom: 'Custom' },
         mCardMasterQty: 'Master Qty', mCardMinMaster: 'Min/Master',
         mCardVersionQty: 'Version Qty', mCardMinVersion: 'Min/Ver',
         mCardMaster: 'Master', mCardVersion: 'Version', mCardSubtotal: 'Subtotal',
@@ -1894,6 +1895,7 @@
       set('chipRichMedia', st.chipRichMedia);
       set('chipEdm', st.chipEdm);
       set('chipLanding', st.chipLanding);
+      set('chipAiChar', st.chipAiChar);
       set('chipCustom', st.chipCustom);
 
       // Sliders
@@ -1954,6 +1956,7 @@
       richmedia: { minMaster: 180, minVersion: 60,  corrMaster: 30, corrVersion: 8 },
       edm:       { minMaster: 120, minVersion: 30,  corrMaster: 20, corrVersion: 5 },
       landing:   { minMaster: 480, minVersion: 120, corrMaster: 60, corrVersion: 15 },
+      aichar:    { minMaster: 90,  minVersion: 20,  corrMaster: 25, corrVersion: 8 },
       qa:        { minMaster: 0,   minVersion: 3,   corrMaster: 0,  corrVersion: 2 },
       traffic:   { minMaster: 15,  minVersion: 5,   corrMaster: 0,  corrVersion: 2 },
       pm:        { minMaster: 60,  minVersion: 0,   corrMaster: 0,  corrVersion: 0 },
@@ -2120,7 +2123,7 @@
       recalc();
     }
 
-    const CHIP_ID = { banner: 'chipBanner', richmedia: 'chipRichMedia', edm: 'chipEdm', landing: 'chipLanding', custom: 'chipCustom' };
+    const CHIP_ID = { banner: 'chipBanner', richmedia: 'chipRichMedia', edm: 'chipEdm', landing: 'chipLanding', aichar: 'chipAiChar', custom: 'chipCustom' };
 
     function applyPreset(key, ev) {
       const p = PRESETS[key];
