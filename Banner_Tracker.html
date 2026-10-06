@@ -2369,7 +2369,7 @@
     function autoSave() {
       S.projectName = document.getElementById('projectName').value;
       // minsPerLang is maintained directly in S via onMinBInput — no input to read here
-      try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); } catch (e) { }
+      try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); localStorage.setItem('bannerTracker_dirty', '1'); } catch (e) { }
       const ind = document.getElementById('saveIndicator');
       ind.textContent = '● SAVED'; ind.className = 'save-dot saved';
     }
@@ -2532,7 +2532,8 @@
 
     // ── JOB LIST ──────────────────────────────────────────────────
     // Populates the dropdown and pre-selects the last used job,
-    // but does NOT auto-load cloud data — local state is preserved.
+    // and auto-loads the last job's cloud data, unless local has unsaved
+    // edits — then the user chooses which side wins.
     async function loadJobList() {
       if (!(await ensureAuth())) { toast('Cloud sign-in failed — job list unavailable'); return; }
       let snap = null;
@@ -2554,14 +2555,19 @@
       document.getElementById('jobArea').classList.add('visible');
       setSaveLoad(false);
 
-      // Pre-select last job (does NOT load cloud data)
+      // Pre-select last job and load it (Save stays locked until the load succeeds)
       const lastJob = localStorage.getItem('bannerTracker_job_' + currentAccount);
       if (lastJob && sel.querySelector(`option[value="${lastJob}"]`)) {
         sel.value = lastJob;
         currentJob = lastJob;
         document.getElementById('delJobBtn').style.display = '';
-        setSaveLoad(true);
-        // ← no loadFromCloud here: user decides when to pull
+        const dirty = localStorage.getItem('bannerTracker_dirty') === '1';
+        if (dirty && confirm('This browser has edits that were never saved to the cloud.\n\nOK = keep local edits (then press Save to push them)\nCancel = discard them and load the cloud version')) {
+          lastLoadedJob = lastJob; // user explicitly chose local over cloud
+          setSaveLoad(true);
+        } else {
+          await switchJob(lastJob);
+        }
       }
     }
 
@@ -2658,6 +2664,7 @@
           ...S,
           _updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }), 10000);
+        try { localStorage.removeItem('bannerTracker_dirty'); } catch (e) { }
         ind.textContent = '● CLOUD SAVED'; ind.className = 'save-dot saved';
         toast('☁ Saved — ' + (S.projectName || currentJob));
       } catch (e) {
@@ -2688,7 +2695,7 @@
         S.products = data.products || [];
         S.matrix = data.matrix || {};
         document.getElementById('projectName').value = S.projectName;
-        try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); } catch (e) { }
+        try { localStorage.setItem('bannerTracker_v2', JSON.stringify(S)); localStorage.removeItem('bannerTracker_dirty'); } catch (e) { }
         render();
         lastLoadedJob = currentJob; // on-screen data now matches this job
         ind.textContent = '● LOADED'; ind.className = 'save-dot saved';
